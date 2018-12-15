@@ -69,6 +69,25 @@ add_executable(vcontrold ${vcontrold_SRCS})
 target_link_libraries(vcontrold ${LIBXML2_LIBRARIES})
 add_dependencies(vcontrold UpdateVersion)
 
+include(ExternalProject)
+
+ExternalProject_Add(
+    libvcontrol
+    DOWNLOAD_COMMAND ""
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND cargo build COMMAND cargo build --release
+    BINARY_DIR "${CMAKE_SOURCE_DIR}"
+    INSTALL_COMMAND ""
+    LOG_BUILD ON
+)
+
+add_dependencies(vcontrold libvcontrol)
+
+target_link_libraries(vcontrold
+    debug "${CMAKE_SOURCE_DIR}/target/debug/libvcontrol.a"
+    optimized "${CMAKE_SOURCE_DIR}/target/release/libvcontrol.a"
+)
+
 if(VCLIENT)
     add_executable(vclient ${vclient_SRCS})
     add_dependencies(vclient UpdateVersion)

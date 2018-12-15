@@ -22,7 +22,6 @@ int receive(int fd, char *r_buf, int r_len, unsigned long *etime);
 int receive_nb(int fd, char *r_buf, int r_len, unsigned long *etime);
 int waitfor(int fd, char *w_buf, int w_len);
 int opentty(char *device);
-int openDevice(char *device);
 void closeDevice(int fd);
 
 // Interface parameters

@@ -1,0 +1,17 @@
+[package]
+name = "vcontrol"
+version = "0.1.0"
+authors = ["Markus Reiter <me@reitermark.us>"]
+edition = "2018"
+
+[lib]
+name = "vcontrol"
+crate-type = ["staticlib"]
+
+[dependencies]
+nix = "0.12"
+
+[build-dependencies]
+bindgen = "0.45"
+cbindgen = "0.6"
+glob = "0.2"

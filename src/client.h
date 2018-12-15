@@ -27,6 +27,8 @@
 
 typedef struct txRx *trPtr;
 
+#include <sys/types.h>
+
 ssize_t recvSync(int fd, char *wait, char **recv);
 int connectServer(char *host, int port);
 void disconnectServer(int sockfd);

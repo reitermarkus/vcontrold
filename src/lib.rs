@@ -7,11 +7,11 @@ use std::ffi::{CStr, CString};
 use std::mem;
 use std::ptr;
 
-use libc::{c_int, c_char, c_void, addrinfo, freeaddrinfo, close, gai_strerror};
+use libc::{c_int, c_short, c_char, c_void, addrinfo, freeaddrinfo, close, gai_strerror, getnameinfo, fork};
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-use libc::{AI_PASSIVE, AI_ALL, AI_V4MAPPED, TCP_NODELAY, LOG_INFO, LOG_NOTICE, LOG_ERR};
+use libc::{AI_PASSIVE, AI_ALL, AI_V4MAPPED, TCP_NODELAY, LOG_INFO, LOG_NOTICE, LOG_ERR, SIG_IGN, signal, NI_NUMERICHOST, NI_MAXSERV, NI_MAXHOST};
 use libc::getaddrinfo;
 use libc::exit;
 
@@ -172,4 +172,51 @@ pub unsafe extern fn openSocket(tcpport: c_int) -> c_int {
   log_it!(LOG_NOTICE, "TCP socket {} opened", tcpport);
 
   listenfd
+}
+
+#[no_mangle]
+pub unsafe extern fn listenToSocket(listenfd: c_int, makeChild: c_int, checkP: extern fn(ip: *mut c_char) -> c_short) -> c_int {
+  let _ = checkP;
+
+  let mut cliaddr: sockaddr_storage = mem::zeroed();
+
+  signal(SIGCHLD as _, SIG_IGN);
+
+  let cliaddrlen: *const usize = &mem::size_of_val(&cliaddr);
+
+  loop {
+    let connfd = accept(listenfd, &mut cliaddr as *mut sockaddr_storage as *mut sockaddr, cliaddrlen as *mut u32);
+
+    let mut client_host: [c_char; NI_MAXHOST as usize] = mem::zeroed();
+    let mut client_service: [c_char; NI_MAXSERV as usize] = mem::zeroed();
+
+    getnameinfo(&mut cliaddr as *mut _ as *mut _, *cliaddrlen as _, client_host.as_mut_ptr(), NI_MAXHOST, client_service.as_mut_ptr(), NI_MAXSERV, NI_NUMERICHOST);
+
+    let client_host = CStr::from_ptr(client_host.as_ptr());
+    let client_service = CStr::from_ptr(client_service.as_ptr());
+
+    if connfd < 0 {
+        log_it!(LOG_NOTICE, "accept on host {}: port {}", client_host.to_str().unwrap(), client_service.to_str().unwrap());
+        close(connfd);
+        continue
+    }
+
+    log_it!(LOG_NOTICE, "Client connected {}:{} (FD:{})", client_host.to_str().unwrap(), client_service.to_str().unwrap(), connfd);
+
+    if makeChild == 0 {
+      return connfd;
+    } else {
+      match fork() {
+        0 => {
+          close(listenfd);
+          return connfd;
+        },
+        childpid => {
+          log_it!(LOG_INFO, "Child process started with pid {}", childpid);
+        }
+      }
+    }
+
+    close(connfd);
+  }
 }

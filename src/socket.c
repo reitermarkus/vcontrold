@@ -48,43 +48,6 @@
 #include "common.h"
 #include "vclient.h"
 
-int listenToSocket(int listenfd, int makeChild, short (*checkP)(char *))
-{
-    int connfd;
-    pid_t childpid;
-    struct sockaddr_storage cliaddr;
-    socklen_t cliaddrlen = sizeof(cliaddr);
-    char clienthost   [NI_MAXHOST];
-    char clientservice[NI_MAXSERV];
-
-    signal(SIGCHLD, SIG_IGN);
-
-    for (;;) {
-        connfd = accept(listenfd, (struct sockaddr *) &cliaddr, &cliaddrlen);
-        getnameinfo((struct sockaddr *) &cliaddr, cliaddrlen, clienthost, sizeof(clienthost),
-                    clientservice, sizeof(clientservice), NI_NUMERICHOST);
-
-        if (connfd < 0) {
-            logIT(LOG_NOTICE, "accept on host %s: port %s", clienthost, clientservice);
-            close(connfd);
-            continue;
-        }
-
-        logIT(LOG_NOTICE, "Client connected %s:%s (FD:%d)", clienthost, clientservice, connfd);
-        if (! makeChild) {
-            return connfd;
-        } else if ( (childpid = fork()) == 0) {
-            // unser Kind
-            close(listenfd);
-            return connfd;
-        } else {
-            logIT(LOG_INFO, "Child process started with pid %d", childpid);
-        }
-
-        close(connfd);
-    }
-}
-
 void closeSocket(int sockfd)
 {
     logIT(LOG_INFO, "Closed connection (fd:%d)", sockfd);

@@ -30,6 +30,7 @@ fn main(){
     .clang_arg(format!("-I{}/src", crate_dir))
     .clang_arg(format!("-I{}", out_dir))
     .clang_arg(format!("-D{}", INCLUDE_GUARD))
+    .blacklist_function("signal")
     .generate().unwrap()
     .write_to_file(out_path.join("bindings.rs")).unwrap();
 

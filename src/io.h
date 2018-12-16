@@ -17,6 +17,8 @@
 #ifndef IO_H
 #define IO_H
 
+#include "bindings.h"
+
 int my_send(int fd, char *s_buf, int len);
 int receive(int fd, char *r_buf, int r_len, unsigned long *etime);
 int receive_nb(int fd, char *r_buf, int r_len, unsigned long *etime);

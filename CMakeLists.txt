@@ -69,33 +69,48 @@ add_executable(vcontrold ${vcontrold_SRCS})
 target_link_libraries(vcontrold ${LIBXML2_LIBRARIES})
 add_dependencies(vcontrold UpdateVersion)
 
-include(ExternalProject)
+foreach(target IN ITEMS debug release)
+    set(CARGO_TARGET_DIR "${CMAKE_CURRENT_SOURCE_DIR}/target/${target}")
+    set(LIBVCONTROL "${CARGO_TARGET_DIR}/libvcontrol.a")
+    set(LIBVCONTROL_INCLUDE_DIR "${CARGO_TARGET_DIR}")
 
-ExternalProject_Add(
-    libvcontrol
-    DOWNLOAD_COMMAND ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND cargo build COMMAND cargo build --release
-    BINARY_DIR "${CMAKE_SOURCE_DIR}"
-    INSTALL_COMMAND ""
-    LOG_BUILD ON
+    file(MAKE_DIRECTORY ${LIBVCONTROL_INCLUDE_DIR})
+
+    if(${target} STREQUAL release)
+      set(CARGO_FLAGS "--release")
+    endif()
+
+    add_custom_command(OUTPUT ${LIBVCONTROL}
+        COMMAND cargo build ${CARGO_FLAGS}
+    )
+
+    add_library("libvcontrol_${target}" STATIC IMPORTED GLOBAL)
+    add_custom_target("libvcontrol_target_${target}" DEPENDS "${LIBVCONTROL}")
+    add_dependencies("libvcontrol_${target}" "libvcontrol_target_${target}")
+    set_target_properties("libvcontrol_${target}"
+        PROPERTIES
+        IMPORTED_LOCATION "${LIBVCONTROL}"
+        INTERFACE_INCLUDE_DIRECTORIES "${LIBVCONTROL_INCLUDE_DIR}"
+    )
+endforeach()
+
+set(libvcontrol
+    debug libvcontrol_debug
+    optimized libvcontrol_release
 )
 
-add_dependencies(vcontrold libvcontrol)
-
-target_link_libraries(vcontrold
-    debug "${CMAKE_SOURCE_DIR}/target/debug/libvcontrol.a"
-    optimized "${CMAKE_SOURCE_DIR}/target/release/libvcontrol.a"
-)
+target_link_libraries(vcontrold ${libvcontrol})
 
 if(VCLIENT)
     add_executable(vclient ${vclient_SRCS})
     add_dependencies(vclient UpdateVersion)
+    target_link_libraries(vclient ${libvcontrol})
 endif(VCLIENT)
 
 if(VSIM)
     add_executable(vsim ${vsim_SRCS})
     add_dependencies(vsim UpdateVersion)
+    target_link_libraries(vsim ${libvcontrol})
 endif(VSIM)
 
 if(MANPAGES)

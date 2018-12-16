@@ -21,7 +21,6 @@
 
 #include <arpa/inet.h>
 
-int openSocket(int tcpport);
 int listenToSocket(int listenfd, int makeChild, short (*checkP)(char *));
 void closeSocket(int sockfd);
 

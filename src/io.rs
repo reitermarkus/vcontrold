@@ -28,6 +28,11 @@ pub unsafe extern fn openDevice(device: *const c_char) -> c_int {
 }
 
 #[no_mangle]
+pub unsafe extern fn closeDevice(fd: c_int) {
+  close(fd);
+}
+
+#[no_mangle]
 pub unsafe extern fn openCliSocket(host: *const c_char, port: c_int, noTCPdelay: c_int) -> c_int {
   let host = CStr::from_ptr(host);
 

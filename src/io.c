@@ -45,10 +45,6 @@
 static void sig_alrm(int);
 static jmp_buf    env_alrm;
 
-void closeDevice(int fd)
-{
-    close(fd);
-}
 
 int opentty(char *device)
 {

@@ -81,7 +81,7 @@ foreach(target IN ITEMS debug release)
     endif()
 
     add_custom_command(OUTPUT ${LIBVCONTROL}
-        COMMAND cargo build ${CARGO_FLAGS}
+        COMMAND cargo build ${CARGO_FLAGS} --verbose
     )
 
     add_library("libvcontrol_${target}" STATIC IMPORTED GLOBAL)

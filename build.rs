@@ -9,6 +9,10 @@ use glob::glob;
 const INCLUDE_GUARD: &str = "LIBVCONTROL_H";
 
 fn main(){
+  if cfg!(not(target_os = "macos")) {
+    println!("cargo:rustc-link-lib=dl");
+  }
+
   let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
   let out_dir = env::var("OUT_DIR").unwrap();
   let out_path = PathBuf::from(&out_dir);

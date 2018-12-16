@@ -21,8 +21,6 @@
 
 #include <arpa/inet.h>
 
-void closeSocket(int sockfd);
-
 ssize_t writen(int fd, const void *vptr, size_t n);
 ssize_t Writen(int fd, void *ptr, size_t nbytes);
 

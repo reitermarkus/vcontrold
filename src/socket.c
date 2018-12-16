@@ -48,12 +48,6 @@
 #include "common.h"
 #include "vclient.h"
 
-void closeSocket(int sockfd)
-{
-    logIT(LOG_INFO, "Closed connection (fd:%d)", sockfd);
-    close(sockfd);
-}
-
 // Stuff aus Unix Network Programming Vol 1
 // include writen
 

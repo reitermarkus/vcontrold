@@ -220,3 +220,9 @@ pub unsafe extern fn listenToSocket(listenfd: c_int, makeChild: c_int, checkP: e
     close(connfd);
   }
 }
+
+#[no_mangle]
+pub unsafe extern fn closeSocket(sockfd: c_int) {
+  log_it!(LOG_INFO, "Closed connection (fd:{})", sockfd);
+  close(sockfd);
+}

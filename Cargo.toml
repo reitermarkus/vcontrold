@@ -9,6 +9,7 @@ name = "vcontrol"
 crate-type = ["staticlib"]
 
 [dependencies]
+libc = { version = "0.2", git = "https://github.com/reitermarkus/libc", branch = "macos-netdb" }
 nix = "0.12"
 
 [build-dependencies]

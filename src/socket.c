@@ -169,59 +169,6 @@ void closeSocket(int sockfd)
     close(sockfd);
 }
 
-int openCliSocket(char *host, int port, int noTCPdelay)
-{
-    struct addrinfo hints; // use hints for ipv46 address resolution
-    struct addrinfo *res;
-    struct addrinfo *ressave;
-    int n;
-    int sockfd;
-    char port_string[16]; // the IPv6 world use a char* instead of an int in getaddrinfo
-
-    memset(&hints, 0, sizeof(struct addrinfo));
-
-    hints.ai_family   = PF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags    = AI_ALL | AI_V4MAPPED;
-
-    snprintf(port_string, sizeof(port_string), "%d", port);
-    n = getaddrinfo(host, port_string, &hints, &res);
-    if (n < 0) {
-        logIT(LOG_ERR, "Error in getaddrinfo: %s:%s", host, gai_strerror(n));
-        exit(1);
-    }
-
-    ressave = res;
-
-    sockfd = -1;
-    while (res) {
-        sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-        if (! (sockfd < 0)) {
-            if (connect(sockfd, res->ai_addr, res->ai_addrlen) == 0) {
-                break;
-            }
-            // we have a succesfull connection
-            close(sockfd);
-            sockfd = -1;
-        }
-        res = res->ai_next;
-    }
-
-    freeaddrinfo(ressave);
-
-    if (sockfd < 0) {
-        logIT(LOG_ERR, "TTY Net: No connection to %s:%d", host, port);
-        return -1;
-    }
-    logIT(LOG_INFO, "ClI Net: connected %s:%d (FD:%d)", host, port, sockfd);
-    int flag = 1;
-    if (noTCPdelay && (setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char *) &flag, sizeof(int)))) {
-        logIT(LOG_ERR, "Error in setsockopt TCP_NODELAY (%s)", strerror(errno));
-    }
-
-    return sockfd;
-}
-
 // Stuff aus Unix Network Programming Vol 1
 // include writen
 

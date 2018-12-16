@@ -48,45 +48,6 @@
 #include "common.h"
 #include "vclient.h"
 
-// Stuff aus Unix Network Programming Vol 1
-// include writen
-
-// Write "n" bytes to a descriptor.
-ssize_t writen(int fd, const void *vptr, size_t n)
-{
-    size_t nleft;
-    ssize_t nwritten;
-    const char *ptr;
-
-    ptr = vptr;
-    nleft = n;
-    while (nleft > 0) {
-        if ((nwritten = write(fd, ptr, nleft)) <= 0) {
-            if (errno == EINTR) {
-                // and call write() again
-                nwritten = 0;
-            }  else {
-                // error
-                return -1;
-            }
-        }
-        nleft -= nwritten;
-        ptr   += nwritten;
-    }
-    return n;
-}
-
-// end writen
-
-ssize_t Writen(int fd, void *ptr, size_t nbytes)
-{
-    if (writen(fd, ptr, nbytes) != nbytes) {
-        logIT1(LOG_ERR, "Error writing to socket");
-        return 0;
-    }
-    return nbytes;
-}
-
 // include readn
 
 // Read "n" bytes from a descriptor.

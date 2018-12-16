@@ -1,6 +1,44 @@
+use nix::{self, errno::Errno};
+
 use super::*;
 
 const LISTEN_QUEUE: c_int = 128;
+
+#[no_mangle]
+pub unsafe extern fn writen(fd: c_int, vptr: *const c_void, n: size_t) -> ssize_t {
+  let mut ptr: *const c_char = vptr as _;
+  let mut nleft: size_t = n;
+
+  while nleft > 0 {
+    let slice = std::slice::from_raw_parts(ptr as *const _, nleft);
+
+    let nwritten = match nix::unistd::write(fd, &slice) {
+      Ok(nwritten) => nwritten,
+      Err(err) => {
+        if err.as_errno() == Some(Errno::EINTR) {
+          0
+        } else {
+          return -1
+        }
+      },
+    };
+
+    nleft -= nwritten;
+    ptr = ptr.add(nwritten);
+  }
+
+  n as _
+}
+
+#[no_mangle]
+pub unsafe extern fn Writen(fd: c_int, ptr: *mut c_void, nbytes: size_t) -> ssize_t {
+  if writen(fd, ptr, nbytes) != nbytes as _ {
+    log_it!(LOG_ERR, "Error writing to socket");
+    return 0
+  }
+
+  nbytes as _
+}
 
 #[no_mangle]
 pub unsafe extern fn openSocket(tcpport: c_int) -> c_int {

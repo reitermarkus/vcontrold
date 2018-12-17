@@ -48,60 +48,6 @@
 #include "common.h"
 #include "vclient.h"
 
-// include readn
-
-// Read "n" bytes from a descriptor.
-ssize_t readn(int fd, void *vptr, size_t n)
-{
-    size_t nleft;
-    ssize_t nread;
-    char *ptr;
-
-    ptr = vptr;
-    nleft = n;
-    while (nleft > 0) {
-        if ((nread = read(fd, ptr, nleft)) < 0) {
-            if (errno == EINTR) {
-                // and call read() again
-                nread = 0;
-            }
-            else {
-                return -1;
-            }
-        } else if (nread == 0) {
-            // EOF
-            break;
-        }
-
-#ifdef __CYGWIN__
-        // This is a workaround for Cygwin.
-        // Here cygwins read(fd,buff,count) is reading more than count chars! this is bad!
-        if (nread > nleft) {
-            nleft = 0;
-        } else {
-            nleft -= nread;
-        }
-#else
-        nleft -= nread;
-#endif
-        ptr   += nread;
-    }
-
-    return n - nleft; //return >= 0
-}
-
-// end readn
-
-ssize_t Readn(int fd, void *ptr, size_t nbytes)
-{
-    ssize_t n;
-    if ((n = readn(fd, ptr, nbytes)) < 0) {
-        logIT1(LOG_ERR, "Error reading from socket");
-        return 0;
-    }
-    return n;
-}
-
 // include readline
 
 static ssize_t my_read(int fd, char *ptr)

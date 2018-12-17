@@ -24,7 +24,6 @@ int char2hex(char *outString, const char *charPtr, int len);
 short string2chr(char *line, char *buf, short bufsize);
 void sendErrMsg(int fd);
 void setDebugFD(int fd);
-ssize_t readn(int fd, void *vptr, size_t n);
 
 #ifndef MAXBUF
 #define MAXBUF 4096

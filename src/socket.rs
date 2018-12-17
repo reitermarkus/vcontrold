@@ -41,6 +41,45 @@ pub unsafe extern fn Writen(fd: c_int, ptr: *mut c_void, nbytes: size_t) -> ssiz
 }
 
 #[no_mangle]
+pub unsafe extern fn readn(fd: c_int, vptr: *mut c_void, n: size_t) -> ssize_t {
+  let mut ptr: *mut c_char = vptr as _;
+
+  let mut nleft: size_t = n;
+  while nleft > 0 {
+    let mut slice = std::slice::from_raw_parts_mut(ptr as *mut _, nleft);
+
+    let nread = match nix::unistd::read(fd, &mut slice) {
+      Ok(0) => break,
+      Ok(nread) => nread,
+      Err(err) => {
+        if err.as_errno() == Some(Errno::EINTR) {
+          0
+        } else {
+          return -1
+        }
+      },
+    };
+
+    nleft -= nread;
+    ptr = ptr.add(nread);
+  }
+
+  (n - nleft) as _
+}
+
+#[no_mangle]
+pub unsafe extern fn Readn(fd: c_int, ptr: *mut c_void , nbytes: size_t) -> ssize_t {
+  let n: ssize_t = readn(fd, ptr, nbytes);
+
+  if n < 0 {
+    log_it!(LOG_ERR, "Error reading from socket");
+    return 0
+  }
+
+  n
+}
+
+#[no_mangle]
 pub unsafe extern fn openSocket(tcpport: c_int) -> c_int {
   let mut hints: addrinfo = mem::zeroed();
 

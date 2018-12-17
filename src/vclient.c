@@ -36,7 +36,7 @@
 #include <sys/ioctl.h>
 
 #include "common.h"
-#include "socket.h"
+#include "bindings.h"
 #include "io.h"
 #include "client.h"
 #include "vclient.h"

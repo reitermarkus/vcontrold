@@ -30,7 +30,7 @@
 #include "client.h"
 #include "prompt.h"
 #include "common.h"
-#include "socket.h"
+#include "bindings.h"
 
 static void sig_alrm(int);
 static jmp_buf  env_alrm;

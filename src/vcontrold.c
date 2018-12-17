@@ -42,7 +42,7 @@
 #include "common.h"
 #include "xmlconfig.h"
 #include "parser.h"
-#include "socket.h"
+#include "bindings.h"
 #include "prompt.h"
 #include "semaphore.h"
 #include "framer.h"

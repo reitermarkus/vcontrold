@@ -1,3 +1,8 @@
+use std::mem::ManuallyDrop;
+use std::net::TcpStream;
+use std::io::{BufReader, BufRead};
+use std::os::unix::io::FromRawFd;
+
 use nix::{self, errno::Errno};
 
 use super::*;
@@ -70,6 +75,43 @@ pub unsafe extern fn readn(fd: c_int, vptr: *mut c_void, n: size_t) -> ssize_t {
 #[no_mangle]
 pub unsafe extern fn Readn(fd: c_int, ptr: *mut c_void , nbytes: size_t) -> ssize_t {
   let n: ssize_t = readn(fd, ptr, nbytes);
+
+  if n < 0 {
+    log_it!(LOG_ERR, "Error reading from socket");
+    return 0
+  }
+
+  n
+}
+
+unsafe extern fn readline(fd: c_int, vptr: *mut c_void, max_len: size_t) -> ssize_t {
+  let mut stream = TcpStream::from_raw_fd(fd);
+
+  let mut line = String::new();
+  let res = BufReader::new(&mut stream).read_line(&mut line);
+
+  let _ = ManuallyDrop::new(stream);
+
+  let n: ssize_t = match res {
+    Ok(n) => n as _,
+    Err(_) => return -1,
+  };
+
+  let line = CString::new(line.into_bytes()).unwrap();
+
+  if n > max_len as _ {
+    log_it!(LOG_ERR, "Line was too long to read");
+    memcpy(vptr, line.as_ptr() as *const _, max_len);
+  } else {
+    memcpy(vptr, line.as_ptr() as *const _, n as _);
+  }
+
+  n
+}
+
+#[no_mangle]
+pub unsafe extern fn Readline(fd: c_int, ptr: *mut c_void, maxlen: size_t) -> ssize_t {
+  let n: ssize_t = readline(fd, ptr, maxlen);
 
   if n < 0 {
     log_it!(LOG_ERR, "Error reading from socket");

@@ -34,7 +34,7 @@
 #include <sys/ioctl.h>
 
 #include "io.h"
-#include "socket.h"
+#include "bindings.h"
 #include "common.h"
 
 #ifdef __CYGWIN__
@@ -110,7 +110,7 @@ int my_send(int fd, char *s_buf, int len)
     fcntl(fd, F_SETFL, !O_NONBLOCK);
     tcflush(fd, TCIFLUSH);
 
-    // We use the socket fixed variant from socket.c
+    // We use the socket fixed variant from socket.rs
     writen(fd, s_buf, len);
     for (i = 0; i < len; i++) {
         unsigned char byte = s_buf[i] & 255;
@@ -139,7 +139,7 @@ int receive(int fd, char *r_buf, int r_len, unsigned long *etime)
             return -1;
         }
         alarm(TIMEOUT);
-        // We use the socket fixed variant from socket.c
+        // We use the socket fixed variant from socket.rs
         if (readn(fd, &r_buf[i], 1) <= 0) {
             logIT1(LOG_ERR, "error read tty");;
             alarm(0);

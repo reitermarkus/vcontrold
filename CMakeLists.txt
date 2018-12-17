@@ -44,7 +44,6 @@ set(vcontrold_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/xmlconfig.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/parser.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/socket.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/semaphore.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/framer.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/unit.c
@@ -54,14 +53,12 @@ set(vcontrold_SRCS
 
 set(vclient_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/common.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/socket.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/io.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/client.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vclient.c
 )
 
 set(vsim_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/socket.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vsim.c
 )
 

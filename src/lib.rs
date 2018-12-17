@@ -7,7 +7,7 @@ use std::ffi::{CStr, CString};
 use std::mem;
 use std::ptr;
 
-use libc::{c_int, c_short, c_char, c_void, addrinfo, freeaddrinfo, close, gai_strerror, getnameinfo, fork, ssize_t, size_t};
+use libc::{c_int, c_short, c_char, c_void, addrinfo, freeaddrinfo, close, gai_strerror, getnameinfo, fork, ssize_t, size_t, memcpy};
 use libc::{AI_PASSIVE, AI_ALL, AI_V4MAPPED, TCP_NODELAY, LOG_INFO, LOG_NOTICE, LOG_ERR, SIG_IGN, signal, NI_NUMERICHOST, NI_MAXSERV, NI_MAXHOST};
 use libc::getaddrinfo;
 use libc::exit;

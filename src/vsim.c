@@ -35,7 +35,7 @@
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
 #include <stdarg.h>
-#include "socket.h"
+#include "bindings.h"
 #include "vclient.h"
 
 #define SERVERPORT 6578

@@ -152,19 +152,6 @@ void setDebugFD(int fd)
     dbgFD = fd;
 }
 
-char hex2chr(char *hex)
-{
-    char buffer[16];
-    int hex_value = -1;
-
-    snprintf(buffer, sizeof(buffer), "0x%s", hex);
-    if (sscanf(hex, "%x", &hex_value) != 1) {
-        logIT(LOG_WARNING, "Invalid hex char in %s", hex);
-    }
-
-    return hex_value;
-}
-
 int char2hex(char *outString, const char *charPtr, int len)
 {
     int n;

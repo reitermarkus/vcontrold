@@ -152,24 +152,6 @@ void setDebugFD(int fd)
     dbgFD = fd;
 }
 
-int char2hex(char *outString, const char *charPtr, int len)
-{
-    int n;
-    char string[MAXBUF];
-
-    bzero(string, sizeof(string));
-    for (n = 0; n < len; n++) {
-        unsigned char byte = *charPtr++ & 255;
-        snprintf(string, sizeof(string), "%02X ", byte);
-        strcat(outString, string);
-    }
-
-    // Remove last space
-    outString[strlen(outString) - 1] = '\0';
-
-    return len;
-}
-
 short string2chr(char *line, char *buf, short bufsize)
 {
     char *sptr;

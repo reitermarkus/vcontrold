@@ -1,4 +1,5 @@
 use std::num::ParseIntError;
+use std::slice;
 
 use super::*;
 
@@ -19,4 +20,18 @@ pub unsafe extern fn hex2chr(hex: *const c_char) -> c_char {
       -1
     },
   }
+}
+
+fn u8_to_hex(bytes: &[u8]) -> String {
+  bytes.iter().map(|byte| format!("{:02X}", byte))
+    .collect::<Vec<String>>()
+    .join(" ")
+}
+
+#[no_mangle]
+pub unsafe extern fn char2hex(outString: *mut c_char, charPtr: *const c_char, len: c_int) -> c_int {
+  let bytes = slice::from_raw_parts(charPtr as *const u8, len as usize);
+  let string = CString::new(u8_to_hex(bytes).as_bytes()).unwrap();
+  strcat(outString, string.as_ptr());
+  len
 }

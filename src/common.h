@@ -19,7 +19,6 @@
 
 int initLog(int useSyslog, char *logfile, int debugSwitch);
 void logIT (int class, char *string, ...);
-short string2chr(char *line, char *buf, short bufsize);
 void sendErrMsg(int fd);
 void setDebugFD(int fd);
 

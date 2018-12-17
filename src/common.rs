@@ -35,3 +35,22 @@ pub unsafe extern fn char2hex(outString: *mut c_char, charPtr: *const c_char, le
   strcat(outString, string.as_ptr());
   len
 }
+
+fn string_to_u8(string: &str) -> Result<Vec<u8>, ParseIntError> {
+  string.split_whitespace().map(|part| hex_to_u8(&part)).collect()
+}
+
+#[no_mangle]
+pub unsafe extern fn string2chr(line: *mut c_char, buf: *mut c_char, bufsize: c_short) -> c_short {
+  let line = CStr::from_ptr(line).to_str().unwrap();
+
+  let bytes = string_to_u8(line).unwrap_or_else(|_| Vec::new());
+
+  if bytes.len() < bufsize as _ {
+    memcpy(buf as *mut _, bytes.as_ptr() as *mut _, bytes.len());
+    bytes.len() as _
+  } else {
+    memcpy(buf as *mut _, bytes.as_ptr() as *mut _, bufsize as _);
+    bufsize
+  }
+}

@@ -24,6 +24,7 @@
 #include <libxml/xinclude.h>
 #include <arpa/inet.h>
 
+#include "bindings.h"
 #include "xmlconfig.h"
 #include "common.h"
 #include "parser.h"

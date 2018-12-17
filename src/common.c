@@ -151,21 +151,3 @@ void setDebugFD(int fd)
 {
     dbgFD = fd;
 }
-
-short string2chr(char *line, char *buf, short bufsize)
-{
-    char *sptr;
-    short count;
-
-    count = 0;
-
-    sptr = strtok(line, " ");
-    do {
-        if (*sptr == ' ') {
-            continue;
-        }
-        buf[count++] = hex2chr(sptr);
-    } while ((sptr = strtok(NULL, " ")) && (count < bufsize));
-
-    return count;
-}

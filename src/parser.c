@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <ctype.h>
 
+#include "bindings.h"
 #include "xmlconfig.h"
 #include "parser.h"
 #include "unit.h"

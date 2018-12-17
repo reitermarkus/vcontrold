@@ -21,6 +21,9 @@ macro_rules! log_it {
   }}
 }
 
+mod arithmetic;
+pub use crate::arithmetic::*;
+
 mod common;
 pub use crate::common::*;
 

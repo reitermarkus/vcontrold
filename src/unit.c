@@ -327,7 +327,7 @@ short text2Enum(enumPtr ptr, char *text, char **bytes, short *len)
     return *len;
 }
 
-int procGetUnit(unitPtr uPtr, char *recvBuf, int recvLen, char *result, char bitpos, char *pRecvPtr)
+int procGetUnit(unitPtr uPtr, unsigned char *recvBuf, int recvLen, char *result, char bitpos, char *pRecvPtr)
 {
     char string[256];
     char error[1000];
@@ -454,7 +454,7 @@ int procGetUnit(unitPtr uPtr, char *recvBuf, int recvLen, char *result, char bit
         logIT(LOG_INFO, "Typ: %s (in float: %f)", uPtr->type, floatV);
         inPtr = uPtr->gCalc;
         logIT(LOG_INFO, "(FLOAT) Exp: %s [%s]", inPtr, buffer);
-        erg = execExpression(&inPtr, recvBuf, floatV, errPtr);
+        erg = execExpression(&inPtr, (unsigned char*)recvBuf, floatV, errPtr);
         if (*errPtr) {
             logIT(LOG_ERR, "Exec %s: %s", uPtr->gCalc, error);
             strcpy(result, string);
@@ -465,7 +465,7 @@ int procGetUnit(unitPtr uPtr, char *recvBuf, int recvLen, char *result, char bit
         // icalc in XML and get defined within
         inPtr = uPtr->gICalc;
         logIT(LOG_INFO, "(INT) Exp: %s [BP:%d] [%s]", inPtr, bitpos, buffer);
-        ergI = execIExpression(&inPtr, recvBuf, bitpos, pRecvPtr, errPtr);
+        ergI = execIExpression(&inPtr, (unsigned char*)recvBuf, bitpos, pRecvPtr, errPtr);
         if (*errPtr) {
             logIT(LOG_ERR, "Exec %s: %s", uPtr->gCalc, error);
             strcpy(result, string);
@@ -515,7 +515,7 @@ int procSetUnit(unitPtr uPtr, char *sendBuf, short *sendLen, char bitpos, char *
     // Some logging
     int n = 0;
     char *ptr;
-    char dumBuf[10];
+    unsigned char dumBuf[10];
     bzero(dumBuf, sizeof(dumBuf));
     bzero(buffer, sizeof(buffer));
     // We copy the sendBuf, as this one is also used for return

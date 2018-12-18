@@ -1,5 +1,47 @@
 use super::*;
 
+const HEX: c_int = 8;
+const HEXDIGIT: c_int = 10;
+const DIGIT: c_int = 11;
+const PUNKT: c_int = 12;
+const END: c_int = 0;
+const ERROR: c_int = -100;
+const PLUS: c_int = 100;
+const MINUS: c_int = 101;
+const MAL: c_int = 102;
+const GETEILT: c_int = 103;
+const MODULO: c_int = 104;
+const KAUF: c_int = 110;
+const KZU: c_int = 111;
+const BYTE0: c_int = 200;
+const BYTE1: c_int = 201;
+const BYTE2: c_int = 202;
+const BYTE3: c_int = 203;
+const BYTE4: c_int = 204;
+const BYTE5: c_int = 205;
+const BYTE6: c_int = 206;
+const BYTE7: c_int = 207;
+const BYTE8: c_int = 208;
+const BYTE9: c_int = 209;
+const PBYTE0: c_int = 210;
+const PBYTE1: c_int = 211;
+const PBYTE2: c_int = 212;
+const PBYTE3: c_int = 213;
+const PBYTE4: c_int = 214;
+const PBYTE5: c_int = 215;
+const PBYTE6: c_int = 216;
+const PBYTE7: c_int = 217;
+const PBYTE8: c_int = 218;
+const PBYTE9: c_int = 219;
+const BITPOS: c_int = 220;
+const VALUE: c_int = 300;
+const NICHT: c_int = 400;
+const UND: c_int = 401;
+const ODER: c_int = 402;
+const XOR: c_int = 403;
+const SHL: c_int = 404;
+const SHR: c_int = 405;
+
 pub unsafe extern fn pushBack(str: *mut *mut c_char, count: c_int) {
   *str = (*str).sub(count as usize);
 }

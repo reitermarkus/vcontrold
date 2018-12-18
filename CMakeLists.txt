@@ -47,7 +47,6 @@ set(vcontrold_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/semaphore.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/framer.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/unit.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/arithmetic.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vcontrold.c
 )
 

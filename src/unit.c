@@ -45,7 +45,6 @@
 #include "xmlconfig.h"
 #include "common.h"
 #include "bindings.h"
-#include "arithmetic.h"
 
 // We need this at procSet ...
 #define FLOAT 1

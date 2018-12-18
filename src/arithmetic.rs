@@ -7,7 +7,6 @@ enum Token {
   Digit(char),
   Dot,
   End,
-  Error,
   Plus,
   Minus,
   Mul,
@@ -32,6 +31,12 @@ use self::Token::*;
 use std::slice;
 use itertools::{self, PeekingNext, structs::PutBackN};
 
+fn put_back(it: &mut PutBackN<impl Iterator<Item = char>>, string: &str) {
+  for c in string.chars() {
+    it.put_back(c);
+  }
+}
+
 #[no_mangle]
 pub unsafe extern fn execIExpression(str: *mut *mut c_char, bInPtr: *mut c_uchar, bitpos: c_char, pPtr: *mut c_char, err: *mut c_char) -> c_int {
   let input_string = CStr::from_ptr(*str).to_str().unwrap();
@@ -41,9 +46,8 @@ pub unsafe extern fn execIExpression(str: *mut *mut c_char, bInPtr: *mut c_uchar
   let slice = slice::from_raw_parts(bInPtr, mem::size_of_val(&b_ptr));
   b_ptr.copy_from_slice(slice);
 
-  execIExpression2(&mut it, &b_ptr, bitpos, pPtr, err)
+  execIExpression2(&mut it, &b_ptr, bitpos, pPtr).unwrap_or(0)
 }
-
 
 #[no_mangle]
 pub unsafe extern fn execExpression(str: *mut *mut c_char, bInPtr: *mut c_uchar, floatV: c_float, err: *mut c_char) -> c_float {
@@ -54,121 +58,78 @@ pub unsafe extern fn execExpression(str: *mut *mut c_char, bInPtr: *mut c_uchar,
   let slice = slice::from_raw_parts(bInPtr, mem::size_of_val(&b_ptr));
   b_ptr.copy_from_slice(slice);
 
-  execExpression2(&mut it, &b_ptr, floatV, err)
+  execExpression2(&mut it, &b_ptr, floatV).unwrap_or(0.0)
 }
 
-unsafe fn execIExpression2(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: &[u8; 10], bitpos: c_char, pPtr: *mut c_char, err: *mut c_char) -> c_int {
-  let mut term1: c_int = match nextToken(&mut it) {
-    (Plus, _) => execITerm(&mut it, &b_ptr, bitpos, pPtr, err),
-    (Minus, _) => -execITerm(&mut it, &b_ptr, bitpos, pPtr, err),
-    (Not, _) => !execITerm(&mut it, &b_ptr, bitpos, pPtr, err),
+unsafe fn execIExpression2(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: &[u8; 10], bitpos: c_char, pPtr: *mut c_char) -> Result<c_int, String> {
+  let mut term1: c_int = match nextToken(&mut it)? {
+    (Plus, _) => execITerm(&mut it, &b_ptr, bitpos, pPtr)?,
+    (Minus, _) => -execITerm(&mut it, &b_ptr, bitpos, pPtr)?,
+    (Not, _) => !execITerm(&mut it, &b_ptr, bitpos, pPtr)?,
     (_, cs) => {
-      for c in cs.chars() {
-        it.put_back(c);
-      }
-
-      execITerm(&mut it, &b_ptr, bitpos, pPtr, err)
+      put_back(&mut it, &cs);
+      execITerm(&mut it, &b_ptr, bitpos, pPtr)?
     },
   };
 
-  if *err != 0 {
-    return 0
-  }
-
   loop {
-    let term2: c_int = match nextToken(&mut it) {
-      (Plus, _) => execITerm(&mut it, &b_ptr, bitpos, pPtr, err),
-      (Minus, _) => -execITerm(&mut it, &b_ptr, bitpos, pPtr, err),
-      (Not, _) => !execITerm(&mut it, &b_ptr, bitpos, pPtr, err),
+    let term2: c_int = match nextToken(&mut it)? {
+      (Plus, _) => execITerm(&mut it, &b_ptr, bitpos, pPtr)?,
+      (Minus, _) => -execITerm(&mut it, &b_ptr, bitpos, pPtr)?,
+      (Not, _) => !execITerm(&mut it, &b_ptr, bitpos, pPtr)?,
       (_, cs) => {
-        for c in cs.chars() {
-          it.put_back(c);
-        }
-
-        return term1
+        put_back(&mut it, &cs);
+        return Ok(term1)
       }
     };
-
-    if *err != 0 {
-      return 0
-    }
 
     term1 += term2;
   }
 }
 
-unsafe fn execExpression2(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: &[u8; 10], floatV: c_float, err: *mut c_char) -> c_float {
-  let f: c_float = match nextToken(&mut it) {
+unsafe fn execExpression2(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: &[u8; 10], floatV: c_float) -> Result<c_float, String> {
+  let f: c_float = match nextToken(&mut it)? {
     (Plus, _) => 1.0,
     (Minus, _) => -1.0,
     (_, cs) => {
-      for c in cs.chars() {
-        it.put_back(c);
-      }
-
+      put_back(&mut it, &cs);
       1.0
     },
   };
 
-  let mut term1 = execTerm(&mut it, &b_ptr, floatV, err) * f;
-
-  if *err != 0 {
-    return 0.0
-  }
+  let mut term1 = execTerm(&mut it, &b_ptr, floatV)? * f;
 
   // println!("T1={}", term1);
 
   loop {
-    let f: c_float = match nextToken(&mut it) {
+    let f: c_float = match nextToken(&mut it)? {
       (Plus, _) => 1.0,
       (Minus, _) => -1.0,
       (_, cs) => {
-        for c in cs.chars() {
-          it.put_back(c);
-        }
-
+        put_back(&mut it, &cs);
         // println!("Exp={}", term1);
-
-        return term1
+        return Ok(term1)
       }
     };
 
-    let term2 = execTerm(&mut it, &b_ptr, floatV, err);
-
-    if *err != 0 {
-      return 0.0
-    }
-
-    term1 += term2 * f;
+    term1 += execTerm(&mut it, &b_ptr, floatV)? * f;
   }
 }
 
-unsafe fn execITerm(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: &[u8; 10], bitpos: c_char, pPtr: *mut c_char, err: *mut c_char) -> c_int {
-  let mut factor1 = execIFactor(&mut it, b_ptr, bitpos, pPtr, err);
-
-  if *err != 0 {
-    return 0
-  }
+unsafe fn execITerm(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: &[u8; 10], bitpos: c_char, pPtr: *mut c_char) -> Result<c_int, String> {
+  let mut factor1 = execIFactor(&mut it, b_ptr, bitpos, pPtr)?;
 
   loop {
-    let op = match nextToken(&mut it) {
+    let op = match nextToken(&mut it)? {
       (op @ Mul, _) | (op @ Div, _) | (op @ Mod, _) | (op @ And, _) | (op @ Or, _) | (op @ Xor, _) | (op @ Shl, _) | (op @ Shr, _) => op,
       (_, cs) => {
-        for c in cs.chars() {
-          it.put_back(c);
-        }
-
+        put_back(&mut it, &cs);
         // println!("ret({})", factor1);
-
-        return factor1
+        return Ok(factor1)
       },
     };
 
-    let factor2 = execIFactor(&mut it, b_ptr, bitpos, pPtr, err);
-
-    if *err != 0 {
-      return 0
-    }
+    let factor2 = execIFactor(&mut it, b_ptr, bitpos, pPtr)?;
 
     match op {
       Mul => factor1 *= factor2,
@@ -184,38 +145,26 @@ unsafe fn execITerm(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: &[
   }
 }
 
-unsafe fn execTerm(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: &[u8; 10], floatV: c_float, err: *mut c_char) -> c_float {
+unsafe fn execTerm(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: &[u8; 10], floatV: c_float) -> Result<c_float, String> {
   // println!("execTerm: {}", CStr::from_ptr(*str).to_str().unwrap());
 
-  let mut factor1: c_float = execFactor(&mut it, b_ptr, floatV, err);
-
-  if *err != 0 {
-    return 0.0
-  }
+  let mut factor1: c_float = execFactor(&mut it, b_ptr, floatV)?;
 
   // println!("F1={}", factor1);
 
   loop {
-    let op = match nextToken(&mut it) {
+    let op = match nextToken(&mut it)? {
       (op @ Mul, _) | (op @ Div, _) => op,
       (_, cs) => {
-        for c in cs.chars() {
-          it.put_back(c);
-        }
-
+        put_back(&mut it, &cs);
         // println!("ret({})", factor1);
-
-        return factor1
+        return Ok(factor1)
       },
     };
 
-    let factor2: c_float = execFactor(&mut it, b_ptr, floatV, err);
+    let factor2: c_float = execFactor(&mut it, b_ptr, floatV)?;
 
     // println!("F2={}", factor2);
-
-    if *err != 0 {
-      return 0.0
-    }
 
     match op {
       Mul => factor1 *= factor2,
@@ -225,7 +174,7 @@ unsafe fn execTerm(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: &[u
   }
 }
 
-unsafe fn nextToken(it: &mut PutBackN<impl Iterator<Item = char>>) -> (Token, String) {
+unsafe fn nextToken(it: &mut PutBackN<impl Iterator<Item = char>>) -> Result<(Token, String), String> {
   let mut token_string = String::with_capacity(2);
 
   while let Some(_) = it.peeking_next(|c| c.is_whitespace()) {}
@@ -259,7 +208,7 @@ unsafe fn nextToken(it: &mut PutBackN<impl Iterator<Item = char>>) -> (Token, St
             token_string.push(c);
             Shl
           },
-          _ => Error,
+          _ => return Err(String::from("unexpected character")),
         }
       },
       '>' => {
@@ -268,7 +217,7 @@ unsafe fn nextToken(it: &mut PutBackN<impl Iterator<Item = char>>) -> (Token, St
             token_string.push(c);
             Shr
           },
-          _ => Error,
+          _ => return Err(String::from("unexpected character")),
         }
       },
       'B' => {
@@ -283,9 +232,9 @@ unsafe fn nextToken(it: &mut PutBackN<impl Iterator<Item = char>>) -> (Token, St
           },
           Some(c) => {
             it.put_back(c);
-            Error
+            return Err(format!("unexpected character: '{}'; expected '0'...'9' or 'P'", c))
           },
-          None => Error,
+          None => return Err(String::from("unexpected EOF")),
         }
       },
       'P' => {
@@ -296,9 +245,9 @@ unsafe fn nextToken(it: &mut PutBackN<impl Iterator<Item = char>>) -> (Token, St
           },
           Some(c) => {
             it.put_back(c);
-            Error
+            return Err(format!("unexpected character: '{}'; expected '0'...'9'", c))
           },
-          _ => Error,
+          _ => return Err(String::from("unexpected EOF")),
         }
       },
       c @ '1'..='9' => Digit(c),
@@ -306,52 +255,48 @@ unsafe fn nextToken(it: &mut PutBackN<impl Iterator<Item = char>>) -> (Token, St
       '.' => Dot,
       c => {
         it.put_back(c);
-        Error
+        return Err(format!("unexpected character: '{}'", c))
       },
     }
   } else {
     End
   };
 
-  (token, token_string)
+  Ok((token, token_string))
 }
 
-unsafe fn execFactor(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: &[u8; 10], floatV: c_float, err: *mut c_char) -> c_float {
-  match nextToken(&mut it) {
-    (Byte(i), _) => b_ptr[i] as c_float,
-    (Value, _) => floatV,
+unsafe fn execFactor(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: &[u8; 10], floatV: c_float) -> Result<c_float, String> {
+  match nextToken(&mut it)? {
+    (Byte(i), _) => Ok(b_ptr[i] as c_float),
+    (Value, _) => Ok(floatV),
     (Hex, mut hex) => {
       loop {
-        match nextToken(&mut it) {
+        match nextToken(&mut it)? {
           (Digit(c), _) | (HexDigit(c), _) => hex.push(c),
           (_, cs) => {
-            for c in cs.chars() {
-              it.put_back(c);
-            }
+            put_back(&mut it, &cs);
             break
           },
         }
       }
 
       let without_prefix = hex.trim_start_matches("0x");
-      i32::from_str_radix(without_prefix, 16).unwrap_or(0) as c_float
+      Ok(i32::from_str_radix(without_prefix, 16).unwrap_or(0) as c_float)
     },
     (Digit(c), _) => {
       let mut dec = c.to_string();
 
       loop {
-        match nextToken(&mut it) {
+        match nextToken(&mut it)? {
           (Digit(c), _) => dec.push(c),
           (Dot, _) => {
             dec.push('.');
 
             loop {
-              match nextToken(&mut it) {
+              match nextToken(&mut it)? {
                 (Digit(c), _) => dec.push(c),
                 (_, cs) => {
-                  for c in cs.chars() {
-                    it.put_back(c);
-                  }
+                  put_back(&mut it, &cs);
                   break
                 },
               }
@@ -360,76 +305,61 @@ unsafe fn execFactor(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: &
             break
           }
           (_, cs) => {
-            for c in cs.chars() {
-              it.put_back(c);
-            }
+            put_back(&mut it, &cs);
             break
           },
         }
       }
 
-      dec.parse().unwrap_or(0.0)
+      Ok(dec.parse().unwrap_or(0.0))
     },
     (ParOpen, _) => {
-      let expression = execExpression2(&mut it, b_ptr, floatV, err);
+      let expression = execExpression2(&mut it, b_ptr, floatV)?;
 
-      if (*err) == 0 {
-        return 0.0
+      match nextToken(&mut it)? {
+        (ParClose, _) => Ok(expression),
+        _ => return Err("expected ')'".into())
       }
-
-      if nextToken(&mut it).0 != ParClose {
-        // sprintf(err, CString::new("expected factor:) [%c]\n").unwrap().as_ptr(), *item as c_int);
-        return 0.0
-      }
-
-      expression
     },
     _ => {
-      // sprintf(err, CString::new("expected factor: B0..B9 number ( ) [%c]\n").unwrap().as_ptr(), *item as c_int);
-      return 0.0
+      return Err("expected factor: B0..B9 BP number ( )".into())
     },
   }
 }
 
-unsafe fn execIFactor(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: &[u8; 10], bitpos: c_char, pPtr: *mut c_char, err: *mut c_char) -> c_int {
-  match nextToken(&mut it) {
-    (Byte(i), _) => b_ptr[i] as c_int & 0xff,
-    (BitPos, _) => bitpos as c_int & 0xff,
-    (PByte(i), _) => *pPtr.add(i) as c_int & 0xff,
-    (Hex, _) => {
-      let mut hex = String::from("0x");
-
+unsafe fn execIFactor(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: &[u8; 10], bitpos: c_char, pPtr: *mut c_char) -> Result<c_int, String> {
+  match nextToken(&mut it)? {
+    (Byte(i), _) => Ok(b_ptr[i] as c_int & 0xff),
+    (BitPos, _) => Ok(bitpos as c_int & 0xff),
+    (PByte(i), _) => Ok(*pPtr.add(i) as c_int & 0xff),
+    (Hex, mut hex) => {
       loop {
-        match nextToken(&mut it) {
+        match nextToken(&mut it)? {
           (Digit(c), _) | (HexDigit(c), _) => hex.push(c),
           (_, cs) => {
-            for c in cs.chars() {
-              it.put_back(c);
-            }
+            put_back(&mut it, &cs);
             break
           },
         }
       }
 
       let without_prefix = hex.trim_start_matches("0x");
-      c_int::from_str_radix(without_prefix, 16).unwrap_or(0)
+      Ok(c_int::from_str_radix(without_prefix, 16).unwrap_or(0))
     },
     (Digit(c), _) => {
       let mut dec = c.to_string();
 
       loop {
-        match nextToken(&mut it) {
+        match nextToken(&mut it)? {
           (Digit(c), _) => dec.push(c),
           (Dot, _) => {
             dec.push('.');
 
             loop {
-              match nextToken(&mut it) {
+              match nextToken(&mut it)? {
                 (Digit(c), _) => dec.push(c),
                 (_, cs) => {
-                  for c in cs.chars() {
-                    it.put_back(c);
-                  }
+                  put_back(&mut it, &cs);
                   break
                 },
               }
@@ -438,34 +368,25 @@ unsafe fn execIFactor(mut it: &mut PutBackN<impl Iterator<Item = char>>, b_ptr: 
             break
           }
           (_, cs) => {
-            for c in cs.chars() {
-              it.put_back(c);
-            }
+            put_back(&mut it, &cs);
             break
           },
         }
       }
 
-      dec.parse().unwrap_or(0)
+      Ok(dec.parse().unwrap_or(0))
     },
     (ParOpen, _) => {
-      let expression = execIExpression2(&mut it, b_ptr, bitpos, pPtr, err);
+      let expression = execIExpression2(&mut it, b_ptr, bitpos, pPtr)?;
 
-      if (*err) == 0 {
-        return 0
+      match nextToken(&mut it)? {
+        (ParClose, _) => Ok(expression),
+        _ => return Err("expected ')'".into())
       }
-
-      if nextToken(&mut it).0 != ParClose {
-        // sprintf(err, CString::new("expected factor:) [%c]\n").unwrap().as_ptr(), *item as c_int);
-        return 0
-      }
-
-      expression
     },
-    (Not, _) => !execIFactor(&mut it, b_ptr, bitpos, pPtr, err),
+    (Not, _) => Ok(!execIFactor(&mut it, b_ptr, bitpos, pPtr)?),
     _ => {
-      // sprintf(err, CString::new("expected factor: B0..B9 P0..P9 BP number ( ) [%c]\n").unwrap().as_ptr(), *item as c_int);
-      return 0
+      return Err("expected factor: B0..B9 P0..P9 BP number ( )".into())
     },
   }
 }

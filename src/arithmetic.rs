@@ -147,7 +147,6 @@ pub unsafe extern fn execExpression(str: *mut *mut c_char, bInPtr: *mut c_uchar,
   }
 }
 
-#[no_mangle]
 pub unsafe extern fn execITerm(str: *mut *mut c_char, bPtr: *mut c_uchar, bitpos: c_char, pPtr: *mut c_char, err: *mut c_char) -> c_int {
   let mut item: *mut c_char = ptr::null_mut();
   let mut n: c_int = 0;
@@ -197,7 +196,6 @@ pub unsafe extern fn execITerm(str: *mut *mut c_char, bPtr: *mut c_uchar, bitpos
   }
 }
 
-#[no_mangle]
 pub unsafe extern fn execTerm(str: *mut *mut c_char, bPtr: *mut c_uchar, floatV: c_float, err: *mut c_char) -> c_float {
   let mut item: *mut c_char = ptr::null_mut();
   let mut n: c_int = 0;
@@ -241,7 +239,6 @@ pub unsafe extern fn execTerm(str: *mut *mut c_char, bPtr: *mut c_uchar, floatV:
   }
 }
 
-#[no_mangle]
 pub unsafe extern fn nextToken(input_string: *mut *mut c_char, c: *mut *mut c_char, count: *mut c_int) -> c_int {
   let string = CStr::from_ptr(*input_string).to_str().unwrap();
 
@@ -336,7 +333,6 @@ pub unsafe extern fn nextToken(input_string: *mut *mut c_char, c: *mut *mut c_ch
   token as c_int
 }
 
-#[no_mangle]
 pub unsafe extern fn execFactor(str: *mut *mut c_char, bPtr: *mut c_uchar, floatV: c_float, err: *mut c_char) -> c_float {
   let mut item: *mut c_char = ptr::null_mut();
   let mut n: c_int = 0;
@@ -417,8 +413,6 @@ pub unsafe extern fn execFactor(str: *mut *mut c_char, bPtr: *mut c_uchar, float
   }
 }
 
-
-#[no_mangle]
 pub unsafe extern fn execIFactor(str: *mut *mut c_char, bPtr: *mut c_uchar, bitpos: c_char, pPtr: *mut c_char, err: *mut c_char) -> c_int {
   let mut item: *mut c_char = ptr::null_mut();
   let mut n: c_int = 0;

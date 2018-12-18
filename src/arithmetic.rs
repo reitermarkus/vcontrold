@@ -94,3 +94,177 @@ pub unsafe extern fn nextToken(input_string: *mut *mut c_char, c: *mut *mut c_ch
 
   token as c_int
 }
+
+#[no_mangle]
+pub unsafe extern fn execFactor(str: *mut *mut c_char, bPtr: *mut c_uchar, floatV: c_float, err: *mut c_char) -> c_float {
+  let mut item: *mut c_char = ptr::null_mut();
+  let mut n: c_int = 0;
+
+  match nextToken(str, &mut item, &mut n as *mut c_int) {
+    BYTE0 => *bPtr.add(0) as c_float,
+    BYTE1 => *bPtr.add(1) as c_float,
+    BYTE2 => *bPtr.add(2) as c_float,
+    BYTE3 => *bPtr.add(3) as c_float,
+    BYTE4 => *bPtr.add(4) as c_float,
+    BYTE5 => *bPtr.add(5) as c_float,
+    BYTE6 => *bPtr.add(6) as c_float,
+    BYTE7 => *bPtr.add(7) as c_float,
+    BYTE8 => *bPtr.add(8) as c_float,
+    BYTE9 => *bPtr.add(9) as c_float,
+    VALUE => floatV,
+    HEX => {
+      let mut hex = String::from("0x");
+
+      loop {
+        match nextToken(str, &mut item, &mut n as *mut c_int) {
+          DIGIT | HEXDIGIT => hex.push(char::from(*item as u8)),
+          _ => break,
+        }
+      }
+
+      pushBack(str, n);
+
+      let without_prefix = hex.trim_start_matches("0x");
+      i32::from_str_radix(without_prefix, 16).unwrap_or(0) as c_float
+    },
+    DIGIT => {
+      let mut dec = String::from("");
+
+      dec.push(char::from(*item as u8));
+
+      loop {
+        match nextToken(str, &mut item, &mut n as *mut c_int) {
+          DIGIT => dec.push(char::from(*item as u8)),
+          PUNKT => {
+            dec.push('.');
+
+            loop {
+              match nextToken(str, &mut item, &mut n as *mut c_int) {
+                DIGIT => dec.push(char::from(*item as u8)),
+                _ => break,
+              }
+            }
+
+            break
+          }
+          _ => break,
+        }
+      }
+
+      pushBack(str, n);
+
+      dec.parse().unwrap_or(0.0)
+    },
+    KAUF => {
+      let expression = execExpression(str, bPtr, floatV, err);
+
+      if (*err) == 0 {
+        return 0.0
+      }
+
+      if nextToken(str, &mut item, &mut n as *mut c_int) != KZU {
+        sprintf(err, CString::new("expected factor:) [%c]\n").unwrap().as_ptr(), *item as c_int);
+        return 0.0
+      }
+
+      expression
+    },
+    _ => {
+      sprintf(err, CString::new("expected factor: B0..B9 number ( ) [%c]\n").unwrap().as_ptr(), *item as c_int);
+      return 0.0
+    },
+  }
+}
+
+
+#[no_mangle]
+pub unsafe extern fn execIFactor(str: *mut *mut c_char, bPtr: *mut c_uchar, bitpos: c_char, pPtr: *mut c_char, err: *mut c_char) -> c_int {
+  let mut item: *mut c_char = ptr::null_mut();
+  let mut n: c_int = 0;
+
+  match nextToken(str, &mut item, &mut n as *mut c_int) {
+    BYTE0 => *bPtr.add(0) as c_int & 0xff,
+    BYTE1 => *bPtr.add(1) as c_int & 0xff,
+    BYTE2 => *bPtr.add(2) as c_int & 0xff,
+    BYTE3 => *bPtr.add(3) as c_int & 0xff,
+    BYTE4 => *bPtr.add(4) as c_int & 0xff,
+    BYTE5 => *bPtr.add(5) as c_int & 0xff,
+    BYTE6 => *bPtr.add(6) as c_int & 0xff,
+    BYTE7 => *bPtr.add(7) as c_int & 0xff,
+    BYTE8 => *bPtr.add(8) as c_int & 0xff,
+    BYTE9 => *bPtr.add(9) as c_int & 0xff,
+    BITPOS => bitpos as c_int & 0xff,
+    PBYTE0 => *pPtr.add(0) as c_int & 0xff,
+    PBYTE1 => *pPtr.add(1) as c_int & 0xff,
+    PBYTE2 => *pPtr.add(2) as c_int & 0xff,
+    PBYTE3 => *pPtr.add(3) as c_int & 0xff,
+    PBYTE4 => *pPtr.add(4) as c_int & 0xff,
+    PBYTE5 => *pPtr.add(5) as c_int & 0xff,
+    PBYTE6 => *pPtr.add(6) as c_int & 0xff,
+    PBYTE7 => *pPtr.add(7) as c_int & 0xff,
+    PBYTE8 => *pPtr.add(8) as c_int & 0xff,
+    PBYTE9 => *pPtr.add(9) as c_int & 0xff,
+    HEX => {
+      let mut hex = String::from("0x");
+
+      loop {
+        match nextToken(str, &mut item, &mut n as *mut c_int) {
+          DIGIT | HEXDIGIT => hex.push(char::from(*item as u8)),
+          _ => break,
+        }
+      }
+
+      pushBack(str, n);
+
+      let without_prefix = hex.trim_start_matches("0x");
+      c_int::from_str_radix(without_prefix, 16).unwrap_or(0)
+    },
+    DIGIT => {
+      let mut dec = String::from("");
+
+      dec.push(char::from(*item as u8));
+
+      loop {
+        match nextToken(str, &mut item, &mut n as *mut c_int) {
+          DIGIT => dec.push(char::from(*item as u8)),
+          PUNKT => {
+            dec.push('.');
+
+            loop {
+              match nextToken(str, &mut item, &mut n as *mut c_int) {
+                DIGIT => dec.push(char::from(*item as u8)),
+                _ => break,
+              }
+            }
+
+            break
+          }
+          _ => break,
+        }
+      }
+
+      pushBack(str, n);
+
+      dec.parse().unwrap_or(0)
+    },
+    KAUF => {
+      let expression = execIExpression(str, bPtr, bitpos, pPtr, err);
+
+      if (*err) == 0 {
+        return 0
+      }
+
+      if nextToken(str, &mut item, &mut n as *mut c_int) != KZU {
+        sprintf(err, CString::new("expected factor:) [%c]\n").unwrap().as_ptr(), *item as c_int);
+        return 0
+      }
+
+      expression
+    },
+    NICHT => !execIFactor(str, bPtr, bitpos, pPtr, err),
+    _ => {
+      sprintf(err, CString::new("expected factor: B0..B9 P0..P9 BP number ( ) [%c]\n").unwrap().as_ptr(), *item as c_int);
+      return 0
+    },
+  }
+}

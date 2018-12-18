@@ -89,47 +89,6 @@ float execExpression(char **str, unsigned char *bInPtr, float floatV, char *err)
     return term1;
 }
 
-float execTerm(char **str, unsigned char *bPtr, float floatV, char *err)
-{
-    float factor1, factor2;
-    int op;
-    char *item;
-    int n;
-
-    //printf("execTerm: %s\n",*str);
-
-    factor1 = execFactor(str, bPtr, floatV, err);
-    if (*err) {
-        return 0;
-    }
-
-    //printf(" F1=%f\n",factor1);
-    while (1) {
-        switch (nextToken(str, &item, &n)) {
-        case MAL:
-            op = MAL;
-            break;
-        case GETEILT:
-            op = GETEILT;
-            break;
-        default:
-            pushBack(str, n);
-            //printf("  ret(%f)\n",factor1);
-            return factor1;
-        }
-        factor2 = execFactor(str, bPtr, floatV, err);
-        //printf(" F2=%f\n",factor2);
-        if (*err) {
-            return 0;
-        }
-        if (op == MAL) {
-            factor1 *= factor2;
-        } else {
-            factor1 /= factor2;
-        }
-    }
-}
-
 int execIExpression(char **str, unsigned char *bInPtr, char bitpos, char *pPtr, char *err)
 {
     int f = 1;
@@ -209,81 +168,6 @@ int execIExpression(char **str, unsigned char *bInPtr, char bitpos, char *pPtr, 
     }
 
     return term1;
-}
-
-int execITerm(char **str, unsigned char *bPtr, char bitpos, char *pPtr, char *err)
-{
-    int factor1, factor2;
-    int op;
-    char *item;
-    int n;
-
-    //printf("execTerm: %s\n",*str);
-
-    factor1 = execIFactor(str, bPtr, bitpos, pPtr, err);
-    if (*err) {
-        return 0;
-    }
-
-    while (1) {
-        switch (nextToken(str, &item, &n)) {
-        case MAL:
-            op = MAL;
-            break;
-        case GETEILT:
-            op = GETEILT;
-            break;
-        case MODULO:
-            op = MODULO;
-            break;
-        case UND:
-            op = UND;
-            break;
-        case ODER:
-            op = ODER;
-            break;
-        case XOR:
-            op = XOR;
-            break;
-        case SHL:
-            op = SHL;
-            break;
-        case SHR:
-            op = SHR;
-            break;
-        default:
-            pushBack(str, n);
-            //printf("  ret(%f)\n",factor1);
-            return factor1;
-        }
-
-        factor2 = execIFactor(str, bPtr, bitpos, pPtr, err);
-
-        if (*err) {
-            return 0;
-        }
-
-        if (op == MAL) {
-            factor1 *= factor2;
-        } else if (op == GETEILT) {
-            factor1 /= factor2;
-        } else if (op == MODULO) {
-            factor1 %= factor2;
-        } else if (op == UND) {
-            factor1 &= factor2;
-        } else if (op == ODER) {
-            factor1 |= factor2;
-        } else if (op == XOR) {
-            factor1 ^= factor2;
-        } else if (op == SHL) {
-            factor1 <<= factor2;
-        } else if (op == SHR) {
-            factor1 >>= factor2;
-        } else {
-            sprintf(err, "Error exec ITerm: Unknown token %d", op);
-            return 0;
-        }
-    }
 }
 
 void  pushBack(char **str, int count)

@@ -1,5 +1,100 @@
 use super::*;
 
+
+#[no_mangle]
+pub unsafe extern fn execITerm(str: *mut *mut c_char, bPtr: *mut c_uchar, bitpos: c_char, pPtr: *mut c_char, err: *mut c_char) -> c_int {
+  let mut item: *mut c_char = ptr::null_mut();
+  let mut n: c_int = 0;
+
+  // println!("execITerm: {}", CStr::from_ptr(*str).to_str().unwrap());
+
+  let mut factor1 = execIFactor(str, bPtr, bitpos, pPtr, err);
+
+  if *err != 0 {
+    return 0
+  }
+
+  loop {
+    let op = match nextToken(str, &mut item, &mut n as *mut c_int) {
+      MAL => MAL,
+      GETEILT => GETEILT,
+      MODULO => MODULO,
+      UND => UND,
+      ODER => ODER,
+      XOR => XOR,
+      SHL => SHL,
+      SHR => SHR,
+      _ => {
+        pushBack(str, n);
+        //printf("  ret(%f)\n",factor1);
+        return factor1
+      },
+    };
+
+    let factor2 = execIFactor(str, bPtr, bitpos, pPtr, err);
+
+    if *err != 0 {
+      return 0
+    }
+
+    match op {
+      MAL => factor1 *= factor2,
+      GETEILT => factor1 /= factor2,
+      MODULO => factor1 %= factor2,
+      UND => factor1 &= factor2,
+      ODER => factor1 |= factor2,
+      XOR => factor1 ^= factor2,
+      SHL => factor1 <<= factor2,
+      SHR => factor1 >>= factor2,
+      _ => unreachable!(),
+    }
+  }
+}
+
+#[no_mangle]
+pub unsafe extern fn execTerm(str: *mut *mut c_char, bPtr: *mut c_uchar, floatV: c_float, err: *mut c_char) -> c_float {
+  let mut item: *mut c_char = ptr::null_mut();
+  let mut n: c_int = 0;
+
+  // println!("execTerm: {}", CStr::from_ptr(*str).to_str().unwrap());
+
+  let mut factor1: c_float = execFactor(str, bPtr, floatV, err);
+
+  if *err != 0 {
+    return 0.0
+  }
+
+  // println!("F1={}", factor1);
+
+  loop {
+    let op = match nextToken(str, &mut item, &mut n as *mut c_int) {
+      MAL => MAL,
+      GETEILT => GETEILT,
+      _ => {
+        pushBack(str, n);
+
+        // println!("ret({})", factor1);
+
+        return factor1
+      },
+    };
+
+    let factor2: c_float = execFactor(str, bPtr, floatV, err);
+
+    // println!("F2={}", factor2);
+
+    if *err != 0 {
+      return 0.0
+    }
+
+    match op {
+      MAL => factor1 *= factor2,
+      GETEILT => factor1 /= factor2,
+      _ => unreachable!(),
+    }
+  }
+}
+
 #[no_mangle]
 pub unsafe extern fn nextToken(input_string: *mut *mut c_char, c: *mut *mut c_char, count: *mut c_int) -> c_int {
   let string = CStr::from_ptr(*input_string).to_str().unwrap();

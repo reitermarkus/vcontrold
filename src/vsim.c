@@ -36,11 +36,9 @@
 #include <arpa/inet.h>
 #include <stdarg.h>
 #include "bindings.h"
-#include "vclient.h"
 
 #define SERVERPORT 6578
 int makeDaemon = 0;
-int inetversion = 0;
 short (*checkP)(char *) = NULL;
 int readCmdFile(char *filename, char *result, int *resultLen, char *device );
 int interactive(int socketfd, char *device);
@@ -155,8 +153,9 @@ int main(int argc, char *argv[])
 {
     int sockfd = -1;
     int listenfd = -1;
+    int inetversion = 0;
 
-    listenfd = openSocket(SERVERPORT);
+    listenfd = openSocket(SERVERPORT, inetversion);
     while (1) {
         sockfd = listenToSocket(listenfd, makeDaemon, checkP);
         if (signal(SIGPIPE, sigPipeHandler) == SIG_ERR) {

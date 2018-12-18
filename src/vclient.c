@@ -39,11 +39,7 @@
 #include "bindings.h"
 #include "io.h"
 #include "client.h"
-#include "vclient.h"
 #include "version.h"
-
-// global variables
-int inetversion = 0;
 
 void usage()
 {
@@ -107,6 +103,7 @@ int main(int argc, char *argv[])
     trPtr resPtr;
     FILE *filePtr;
     FILE *ofilePtr;
+    static int inetversion = 0;
 
     while (1) {
         static struct option long_options[] = {

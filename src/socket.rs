@@ -122,7 +122,7 @@ pub unsafe extern fn Readline(fd: c_int, ptr: *mut c_void, maxlen: size_t) -> ss
 }
 
 #[no_mangle]
-pub unsafe extern fn openSocket(tcpport: c_int) -> c_int {
+pub unsafe extern fn openSocket(tcpport: c_int, inetversion: c_int) -> c_int {
   let mut hints: addrinfo = mem::zeroed();
 
   match inetversion {

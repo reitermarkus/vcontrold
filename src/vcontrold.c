@@ -61,7 +61,6 @@
 char *xmlfile = XMLFILE;
 FILE *iniFD = NULL;
 int makeDaemon = 1;
-int inetversion = 0;
 
 // Defined in xmlconfig.c
 extern protocolPtr protoPtr;
@@ -649,6 +648,7 @@ int main(int argc, char *argv[])
     int tcpport = 0;
     static int simuOut = 0;
     int opt;
+    static int inetversion = 0;
 
     while (1) {
         static struct option long_options[] = {
@@ -900,7 +900,7 @@ int main(int argc, char *argv[])
             checkP = NULL;
         }
 
-        listenfd = openSocket(tcpport);
+        listenfd = openSocket(tcpport, inetversion);
 
         // Drop privileges after binding
         if (0 == getuid()) {

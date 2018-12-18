@@ -1,5 +1,57 @@
 use super::*;
 
+#[no_mangle]
+pub unsafe extern fn execExpression(str: *mut *mut c_char, bInPtr: *mut c_uchar, floatV: c_float, err: *mut c_char) -> c_float {
+  let mut bPtr: [c_uchar; 10] = mem::zeroed();
+
+  println!("execExpression: {}", CStr::from_ptr(*str).to_str().unwrap());
+
+  // Tweak bPtr Bytes 0..9 and copy them to nPtr
+  // We did not receive characters
+  for n in 0..10 {
+    bPtr[n] = *bInPtr.add(n);
+  }
+
+  let mut item: *mut c_char = ptr::null_mut();
+  let mut n: c_int = 0;
+
+  let f: c_float = match nextToken(str, &mut item, &mut n as *mut c_int) {
+    PLUS => 1.0,
+    MINUS => -1.0,
+    _ => {
+      pushBack(str, n);
+      1.0
+    },
+  };
+
+  let mut term1 = execTerm(str, &mut bPtr as *mut _ as *mut c_uchar, floatV, err) * f;
+
+  if *err != 0 {
+    return 0.0
+  }
+
+  println!("T1={}", term1);
+
+  loop {
+    let f: c_float = match nextToken(str, &mut item, &mut n as *mut c_int) {
+      PLUS => 1.0,
+      MINUS => -1.0,
+      _ => {
+        println!("Exp={}", term1);
+        pushBack(str, n);
+        return term1
+      }
+    };
+
+    let term2 = execTerm(str, &mut bPtr as *mut _ as *mut c_uchar, floatV, err);
+
+    if *err != 0 {
+      return 0.0
+    }
+
+    term1 += term2 * f;
+  }
+}
 
 #[no_mangle]
 pub unsafe extern fn execITerm(str: *mut *mut c_char, bPtr: *mut c_uchar, bitpos: c_char, pPtr: *mut c_char, err: *mut c_char) -> c_int {

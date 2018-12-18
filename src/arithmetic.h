@@ -62,6 +62,5 @@ static const int SHL = 404;
 static const int SHR = 405;
 
 void  pushBack(char **str, int n);
-int execIExpression(char **str, unsigned char *bPtr, char bitpos, char *pPtr, char *err);
 
 #endif // ARITHMETIC_H

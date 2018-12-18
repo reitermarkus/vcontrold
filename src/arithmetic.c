@@ -23,9 +23,3 @@
 
 #include "bindings.h"
 #include "arithmetic.h"
-
-void  pushBack(char **str, int count)
-{
-    (*str) -= count;
-    //printf("\t<<::%s\n",*str);
-}

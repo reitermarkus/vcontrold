@@ -1,5 +1,9 @@
 use super::*;
 
+pub unsafe extern fn pushBack(str: *mut *mut c_char, count: c_int) {
+  *str = (*str).sub(count as usize);
+}
+
 #[no_mangle]
 pub unsafe extern fn execIExpression(str: *mut *mut c_char, bInPtr: *mut c_uchar, bitpos: c_char, pPtr: *mut c_char, err: *mut c_char) -> c_int {
   let mut bPtr: [c_uchar; 10] = mem::zeroed();

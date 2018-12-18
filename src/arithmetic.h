@@ -61,6 +61,4 @@ static const int XOR = 403;
 static const int SHL = 404;
 static const int SHR = 405;
 
-void  pushBack(char **str, int n);
-
 #endif // ARITHMETIC_H

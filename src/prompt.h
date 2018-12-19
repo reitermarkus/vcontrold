@@ -20,7 +20,7 @@
 #define PROMPT_H
 
 #define PROMPT "vctrld>"
-#define BYE "good bye!\n"
+static const char BYE[] = "good bye!\n";
 #define UNKNOWN "ERR: command unknown\n"
 #define ERR "ERR:"
 

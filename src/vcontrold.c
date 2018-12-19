@@ -269,7 +269,6 @@ int interactive(int socketfd, char *device)
 {
     char readBuf[1000];
     char *readPtr;
-    char bye[] = BYE;
     char string[256];
     commandPtr cPtr;
     commandPtr pcPtr;
@@ -312,7 +311,7 @@ int interactive(int socketfd, char *device)
         if (strstr(readBuf, "help") == readBuf) {
             printHelp(socketfd);
         } else if (strstr(readBuf, "quit") == readBuf) {
-            Writen(socketfd, bye, strlen(bye));
+            Writen(socketfd, BYE, strlen(BYE));
             framer_closeDevice(fd);
             vcontrol_semrelease();
             return 1;

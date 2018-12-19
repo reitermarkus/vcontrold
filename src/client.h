@@ -29,8 +29,6 @@ typedef struct txRx *trPtr;
 
 #include <sys/types.h>
 
-void disconnectServer(int sockfd);
-size_t sendServer(int fd, char *s_buf, size_t len);
 trPtr sendCmdFile(int sockfd, const char *tmpfile);
 trPtr sendCmds(int sockfd, char *commands);
 

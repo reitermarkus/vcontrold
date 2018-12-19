@@ -82,3 +82,35 @@ pub unsafe extern fn recvSync(fd: c_int, wait: *mut c_char, recv: *mut *mut c_ch
 
   count
 }
+
+#[no_mangle]
+pub unsafe extern fn sendServer(fd: c_int, s_buf: *mut c_char, len: size_t) -> size_t {
+  let mut stream = ManuallyDrop::new(TcpStream::from_raw_fd(fd));
+
+
+  stream.borrow_mut().set_nonblocking(true).unwrap();
+
+  let string = String::with_capacity(256);
+  let c_string = CString::new(string).unwrap();
+
+  // Empty buffer
+  // As tcflush does not work correctly, we use nonblocking read
+  while readn(fd, c_string.as_ptr() as *mut c_char as *mut c_void, 256) > 0 { }
+
+  stream.borrow_mut().set_nonblocking(false).unwrap();
+
+  Writen(fd, s_buf as *mut c_void, len as usize) as size_t
+}
+
+#[no_mangle]
+pub unsafe extern fn disconnectServer(sockfd: c_int) {
+  let string = "quit\n";
+  let quit = CString::new(string).unwrap();
+  let mut ptr: *mut c_char = mem::uninitialized();
+
+  sendServer(sockfd, quit.as_ptr() as *mut c_char, string.len());
+  recvSync(sockfd, BYE.as_ptr() as *mut c_char, &mut ptr);
+
+  free(ptr as *mut c_void);
+  close(sockfd);
+}

@@ -58,30 +58,6 @@ trPtr newTrNode(trPtr ptr)
     return nptr;
 }
 
-void disconnectServer(int sockfd)
-{
-    char string[8];
-    char *ptr;
-
-    snprintf(string, sizeof(string), "quit\n");
-    sendServer(sockfd, string, strlen(string));
-    recvSync(sockfd, BYE, &ptr);
-    free(ptr);
-    close(sockfd);
-}
-
-size_t sendServer(int fd, char *s_buf, size_t len)
-{
-    char string[256];
-
-    // Empty buffer
-    // As tcflush does not work correctly, we use nonblocking read
-    fcntl(fd, F_SETFL, O_NONBLOCK);
-    while (readn(fd, string, sizeof(string)) > 0) { }
-    fcntl(fd, F_SETFL, ! O_NONBLOCK);
-    return Writen(fd, s_buf, len);
-}
-
 trPtr sendCmdFile(int sockfd, const char *filename)
 {
     FILE *filePtr;

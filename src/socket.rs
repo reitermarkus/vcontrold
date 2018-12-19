@@ -3,7 +3,7 @@ use std::net::TcpStream;
 use std::io::{BufReader, BufRead};
 use std::os::unix::io::FromRawFd;
 
-use nix::{self, errno::Errno};
+use nix::{self, errno::Errno::*, errno::*};
 
 use super::*;
 
@@ -57,9 +57,12 @@ pub unsafe extern fn readn(fd: c_int, vptr: *mut c_void, n: size_t) -> ssize_t {
       Ok(0) => break,
       Ok(nread) => nread,
       Err(err) => {
-        if err.as_errno() == Some(Errno::EINTR) {
+        if err.as_errno() == Some(EINTR) {
           0
-        } else {
+          } else if err.as_errno() == Some(EWOULDBLOCK) {
+            return -2
+
+            }else {
           return -1
         }
       },

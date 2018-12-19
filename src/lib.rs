@@ -24,6 +24,9 @@ macro_rules! log_it {
 mod arithmetic;
 pub use crate::arithmetic::*;
 
+mod client;
+pub use crate::client::*;
+
 mod common;
 pub use crate::common::*;
 

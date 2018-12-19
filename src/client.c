@@ -129,26 +129,6 @@ ssize_t recvSync(int fd, char *wait, char **recv)
     return count;
 }
 
-// port is never 0, which is a bad number for a tcp port
-int connectServer(char *host, int port)
-{
-    int sockfd;
-
-    if (host[0] != '/' ) {
-        sockfd = openCliSocket(host, port, 0);
-        if (sockfd) {
-            logIT(LOG_INFO, "Setup connection to %s port %d", host, port);
-        } else {
-            logIT(LOG_INFO, "Setting up connection to %s port %d failed", host, port);
-            return -1;
-        }
-    } else {
-        logIT(LOG_ERR, "Host format: IP|Name:Port");
-        return -1;
-    }
-    return sockfd;
-}
-
 void disconnectServer(int sockfd)
 {
     char string[8];

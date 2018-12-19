@@ -4,14 +4,19 @@ version = "0.1.0"
 authors = ["Markus Reiter <me@reitermark.us>"]
 edition = "2018"
 
+[[bin]]
+name = "vclient"
+path = "src/vclient.rs"
+
 [lib]
 name = "vcontrol"
 crate-type = ["staticlib"]
 
 [dependencies]
-libc = { version = "0.2", git = "https://github.com/reitermarkus/libc", branch = "macos-netdb" }
+libc = { version = "0.2", git = "https://github.com/rust-lang/libc", branch = "master" }
 nix = "0.12"
 itertools = "0.8"
+clap = "2.32"
 
 [build-dependencies]
 bindgen = "0.45"

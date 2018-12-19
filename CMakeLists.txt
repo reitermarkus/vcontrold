@@ -50,13 +50,6 @@ set(vcontrold_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vcontrold.c
 )
 
-set(vclient_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/common.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/io.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/client.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/vclient.c
-)
-
 set(vsim_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/vsim.c
 )
@@ -97,12 +90,6 @@ set(libvcontrol
 
 target_link_libraries(vcontrold ${libvcontrol})
 
-if(VCLIENT)
-    add_executable(vclient ${vclient_SRCS})
-    add_dependencies(vclient UpdateVersion)
-    target_link_libraries(vclient ${libvcontrol})
-endif(VCLIENT)
-
 if(VSIM)
     add_executable(vsim ${vsim_SRCS})
     add_dependencies(vsim UpdateVersion)
@@ -114,9 +101,6 @@ if(MANPAGES)
 endif(MANPAGES)
 
 install(TARGETS vcontrold DESTINATION ${CMAKE_INSTALL_PREFIX}/sbin)
-if(VCLIENT)
-    install(TARGETS vclient DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-endif(VCLIENT)
 if(VSIM)
     install(TARGETS vsim DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 endif(VSIM)

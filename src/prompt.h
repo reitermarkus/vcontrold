@@ -19,9 +19,9 @@
 #ifndef PROMPT_H
 #define PROMPT_H
 
-#define PROMPT "vctrld>"
+static const char PROMPT[] = "vctrld>";
 static const char BYE[] = "good bye!\n";
-#define UNKNOWN "ERR: command unknown\n"
-#define ERR "ERR:"
+static const char UNKNOWN[] = "ERR: command unknown\n";
+static const char ERR[] = "ERR:";
 
 #endif // PROMPT_H

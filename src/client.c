@@ -117,12 +117,10 @@ trPtr sendCmds(int sockfd, char *commands)
 int sendTrList(int sockfd, trPtr ptr)
 {
     char string[1000 + 1];
-    char prompt[] = PROMPT;
-    char errTXT[] = ERR;
     char *sptr;
     char *dumPtr;
 
-    if (recvSync(sockfd, prompt, &sptr) <= 0) {
+    if (recvSync(sockfd, PROMPT, &sptr) <= 0) {
         free(sptr);
         return 0;
     }
@@ -137,7 +135,7 @@ int sendTrList(int sockfd, trPtr ptr)
 
         //bzero(string,sizeof(string));
         logIT(LOG_INFO, "SEND:%s", ptr->cmd);
-        if (recvSync(sockfd, prompt, &sptr) <= 0) {
+        if (recvSync(sockfd, PROMPT, &sptr) <= 0) {
             free(sptr);
             return 0;
         }
@@ -153,7 +151,7 @@ int sendTrList(int sockfd, trPtr ptr)
         free(dumPtr);
 
         // We fill errors and result
-        if (strstr(ptr->raw, errTXT) == ptr->raw) {
+        if (strstr(ptr->raw, ERR) == ptr->raw) {
             ptr->err = ptr->raw;
             fprintf(stderr, "SRV %s\n", ptr->err);
         } else {

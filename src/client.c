@@ -32,9 +32,6 @@
 #include "common.h"
 #include "bindings.h"
 
-static void sig_alrm(int);
-static jmp_buf  env_alrm;
-
 int sendTrList(int sockfd, trPtr ptr);
 
 trPtr newTrNode(trPtr ptr)
@@ -172,9 +169,4 @@ int sendTrList(int sockfd, trPtr ptr)
     }
 
     return 1;
-}
-
-static void sig_alrm(int signo)
-{
-    longjmp(env_alrm, 1);
 }

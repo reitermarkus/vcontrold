@@ -37,7 +37,7 @@ pub unsafe extern fn writen(fd: c_int, vptr: *const c_void, n: size_t) -> ssize_
 
 #[no_mangle]
 pub unsafe extern fn Writen(fd: c_int, ptr: *mut c_void, nbytes: size_t) -> ssize_t {
-  if writen(fd, ptr, nbytes) != nbytes as _ {
+  if writen(fd, ptr, nbytes) != nbytes as ssize_t {
     log_it!(LOG_ERR, "Error writing to socket");
     return 0
   }

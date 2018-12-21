@@ -1,0 +1,113 @@
+commands:
+  system_type:
+    addr: [0x00, 0xF8]
+    unit: DT
+    get: getaddr
+  system_time:
+    addr: [0x08, 0x8E]
+    unit: TI
+    get: getaddr
+  boiler_temp_actual:
+    addr: [0x08, 0x02]
+    unit: TD
+    get: getaddr
+  vacationmode_state:
+    addr: [0x35, 0x35]
+    unit: B_FB
+    get: getaddr
+    set: setaddr
+units:
+  COL:
+    name: Counter Liter
+    type: int
+    calc:
+      type: float
+      get: V / 1000
+      set: V * 1000
+  TD:
+    name: Temperatur
+    type: short
+    calc:
+      type: float
+      get: V / 10
+      set: V * 10
+  B_FB:
+    name: FerienBetrieb
+    type: enum
+    calc:
+      type: int
+      get: B7 & (0x01 << BP) >> BP
+      set: V
+    mapping:
+      [0x12]: OFF
+      [0x01]: ON
+  CT:
+    name: Schaltzeit
+    type: cycletime
+  E_BA2:
+    name: Betriebsart
+    type: enum
+    mapping:
+      [0x00]: NWW
+      [0x01]: RED
+      [0x02]: NRM
+      [0x03]: HWW
+      [0x04]: HWW
+      [0x05]: OFF
+  TI:
+    name: SystemTime
+    type: systime
+  DT:
+    name: SystemKennung
+    type: enum
+    mapping:
+      # [0x20, 0x54, 0x00]: GWG_BT2
+      # [0x20, 0x53, 0x01]: GWG_VBEM
+      # [0x20, 0x53, 0x02]: GWG_VBES
+      # [0x20, 0x53, 0x10]: GWG_VBT2
+      # [0x20, 0x53, 0x08]: GWG_VWMS
+      [0x20, 0xB4]: V050HK1M
+      [0x20, 0xAC]: V050HK1S
+      [0x20, 0xAA]: V050HK1W
+      [0x20, 0xAD]: V050HK3S
+      [0x20, 0xAB]: V050HK3W
+      [0x20, 0xA0]: V100GC1
+      [0x20, 0x91]: V100KC2
+      [0x20, 0x92]: V150KB1
+      [0x20, 0xA4]: V200GW1
+      [0x20, 0x94]: V200KW1
+      [0x20, 0x98]: V200KW2
+      [0x20, 0xA5]: V300GW2
+      [0x20, 0x9C]: V300KW3
+      [0x20, 0xB8]: V333MW1
+      [0x20, 0xB9]: V333MW1S
+      [0x20, 0xBA]: V333MW2
+      [0x20, 0x33]: VBC550P
+      [0x20, 0x32]: VBC550S
+      [0x20, 0x47]: VBC700_AW
+      [0x20, 0x46]: VBC700_BW_WW
+      [0x20, 0xC0]: VDensHC1
+      [0x20, 0xC1]: VDensHC2
+      [0x20, 0xC2]: VDensHO1
+      [0x20, 0xC3]: VPendHC1
+      [0x20, 0xC4]: VPendHC2
+      [0x20, 0xC5]: VPendHO1
+      [0x20, 0xC6]: VPlusHC1
+      [0x20, 0xC7]: VPlusHC2
+      [0x20, 0xC8]: VPlusHO1
+      [0x20, 0xC9]: VScotHC1
+      [0x20, 0xCA]: VScotHC2
+      [0x20, 0xCB]: VScotHO1
+protocols:
+  KW2:
+    sync:
+      - send: [0x04]
+      - wait: [0x05]
+    getaddr:
+      - sync
+      - send: [0x01, 0xF7, $addr, $len]
+      - recv: $unit
+    setaddr:
+      - sync
+      - send: [0x01, 0xF4, $addr, $len, $bytes]
+      - wait: [0x00]

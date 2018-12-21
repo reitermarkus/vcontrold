@@ -21,23 +21,20 @@ units:
     name: Counter Liter
     type: int
     calc:
-      type: float
-      get: V / 1000
-      set: V * 1000
+      get: $v / 1000.0
+      set: $v * 1000.0
   TD:
     name: Temperatur
     type: short
     calc:
-      type: float
-      get: V / 10
-      set: V * 10
+      get: $v / 10.0
+      set: $v * 10.0
   B_FB:
     name: FerienBetrieb
     type: enum
     calc:
-      type: int
-      get: B7 & (0x01 << BP) >> BP
-      set: V
+      get: $b7 & 0x01
+      set: $v
     mapping:
       [0x12]: OFF
       [0x01]: ON

@@ -6,6 +6,8 @@ use serde_derive::*;
 use serde_yaml;
 use serde::de::{self, Deserialize, Deserializer};
 
+use crate::expression::Expression;
+
 pub const DEFAULT_CONFIG: &str = include_str!("../config/default.yml");
 
 #[derive(Debug, Clone, Deserialize)]
@@ -388,20 +390,10 @@ impl Output {
   }
 }
 
-#[derive(Debug, Clone, Deserialize)]
-#[serde(tag = "type")]
-pub enum Calc {
-  #[serde(rename = "float")]
-  Float { get: String, set: String },
-  #[serde(rename = "int")]
-  Int { get: String, set: String },
-  Raw,
-}
-
-impl Default for Calc {
-  fn default() -> Calc {
-    Calc::Raw
-  }
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct Calc {
+  get: Option<Expression>,
+  set: Option<Expression>,
 }
 
 #[cfg(test)]

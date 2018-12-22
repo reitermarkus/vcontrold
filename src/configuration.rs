@@ -7,6 +7,7 @@ use serde_yaml;
 use serde::de::{self, Deserialize, Deserializer};
 
 use crate::expression::Expression;
+use crate::types::SysTime;
 
 pub const DEFAULT_CONFIG: &str = include_str!("../config/default.yml");
 
@@ -138,6 +139,10 @@ pub struct Configuration {
 
 pub trait FromBytes {
   fn from_bytes(bytes:&[u8]) -> Self;
+}
+
+pub trait AsBytes {
+  fn as_bytes(&self) -> &[u8];
 }
 
 impl FromBytes for u8 {
@@ -312,90 +317,6 @@ impl fmt::Display for CycleTime {
   }
 }
 
-#[derive(Debug)]
-pub struct SysTime([u8; 8]);
-
-#[inline]
-fn byte_to_dec(byte: u8) -> u8 {
-  byte / 16 * 10 + byte % 16
-}
-
-#[inline]
-fn dec_to_byte(dec: u8) -> u8 {
-  dec / 10 * 16 + dec % 10
-}
-
-impl SysTime {
-  pub fn from_dec(year: u16, month: u8, day: u8, hour: u8, minute: u8, second: u8) -> SysTime {
-    assert!(year <= 9999);
-    assert!(month <= 12);
-    assert!(day <= 31);
-    assert!(hour <= 23);
-    assert!(minute <= 59);
-    assert!(second <= 59);
-
-    SysTime([
-      dec_to_byte((year / 100) as u8),
-      dec_to_byte((year % 100) as u8),
-      dec_to_byte(month),
-      dec_to_byte(day),
-      0,
-      dec_to_byte(hour),
-      dec_to_byte(minute),
-      dec_to_byte(second),
-    ])
-  }
-
-  pub fn year(&self) -> u16 {
-    byte_to_dec(self.0[0]) as u16 * 100 + byte_to_dec(self.0[1]) as u16
-  }
-
-  pub fn month(&self) -> u8 {
-    byte_to_dec(self.0[2])
-  }
-
-  pub fn day(&self) -> u8 {
-    byte_to_dec(self.0[3])
-  }
-
-  pub fn weekday(&self) -> u8 {
-    self.0[4] % 7
-  }
-
-  pub fn hour(&self) -> u8 {
-    byte_to_dec(self.0[5])
-  }
-
-  pub fn minute(&self) -> u8 {
-    byte_to_dec(self.0[6])
-  }
-
-  pub fn second(&self) -> u8 {
-    byte_to_dec(self.0[7])
-  }
-}
-
-impl FromBytes for SysTime {
-  fn from_bytes(bytes: &[u8]) -> SysTime {
-    assert_eq!(bytes.len(), std::mem::size_of::<SysTime>());
-    let mut buf = [0; std::mem::size_of::<SysTime>()];
-    buf.copy_from_slice(&bytes);
-    SysTime(buf)
-  }
-}
-
-impl fmt::Display for SysTime {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "{:04}-{:02}-{:02}T{:02}:{:02}:{:02}",
-      self.year(),
-      self.month(),
-      self.day(),
-      self.hour(),
-      self.minute(),
-      self.second(),
-    )
-  }
-}
 
 impl Unit {
   pub fn size(&self) -> usize {

@@ -78,7 +78,6 @@ fn main() {
 
   socket.set_read_timeout(Some(Duration::from_secs(10))).unwrap();
 
-  println!("Time: {}", SysTime::from_dec(2001, 7, 13, 15, 16, 31));
 
   let temp_command = config.prepare_command("KW2", "error_01", "get", &[]);
   println!("\"temp_command\": {:#?}", temp_command);

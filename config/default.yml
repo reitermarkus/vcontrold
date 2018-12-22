@@ -7,28 +7,504 @@ commands:
     addr: [0x08, 0x8E]
     unit: TI
     get: getaddr
-  boiler_temp_actual:
-    addr: [0x08, 0x02]
-    unit: TD
+    set: setaddr
+  operatingmode:
+    addr: [0x33, 0x01]
+    unit: E_BA2
     get: getaddr
+    set: setaddr
+  energysavermode_state:
+    addr: [0x33, 0x02]
+    unit: E_ST
+    get: getaddr
+    set: setaddr
+  partymode_state:
+    addr: [0x33, 0x03]
+    unit: E_ST
+    get: getaddr
+    set: setaddr
+  partymode_temp:
+    addr: [0x33, 0x08]
+    unit: T1U
+    get: getaddr
+    set: setaddr
   vacationmode_state:
     addr: [0x35, 0x35]
     unit: B_FB
     get: getaddr
     set: setaddr
+  vacationmode_date_departure:
+    addr: [0x33, 0x09]
+    unit: TI
+    get: getaddr
+    set: setaddr
+  vacationmode_date_return:
+    addr: [0x33, 0x11]
+    unit: TI
+    get: getaddr
+    set: setaddr
+  boiler_temp_state:
+    addr: [0x08, 0x3B]
+    unit: E_TS
+    get: getaddr
+  boiler_temp_actual:
+    addr: [0x08, 0x02]
+    unit: TD
+    get: getaddr
+  boiler_temp_desired:
+    addr: [0x55, 0x02]
+    unit: TD
+    get: getaddr
+  boiler_temp_lowpass:
+    addr: [0x08, 0x10]
+    unit: TD
+    get: getaddr
+  storagetank_chargingpump_state:
+    addr: [0x08, 0x45]
+    unit: E_ST
+    get: getaddr
+  storagetank_temp_lowpass:
+    addr: [0x08, 0x12]
+    unit: TD
+    get: getaddr
+  burner_state_1:
+    addr: [0x08, 0x42]
+    unit: E_ST
+    get: getaddr
+  burner_state_2:
+    addr: [0x08, 0x49]
+    unit: E_ST
+    get: getaddr
+  burner_state_error:
+    addr: [0x08, 0x83]
+    unit: E_ST
+    get: getaddr
+  burner_starts:
+    addr: [0x08, 0x8A]
+    unit: CO
+    get: getaddr
+  burner_hours_1:
+    addr: [0x08, 0xA7]
+    unit: HS
+    get: getaddr
+  outside_temp_state:
+    addr: [0x08, 0x3A]
+    unit: E_TS
+    get: getaddr
+  outside_temp_actual:
+    addr: [0x08, 0x00]
+    unit: TD
+    get: getaddr
+  outside_temp_mixed:
+    addr: [0x55, 0x27]
+    unit: TD
+    get: getaddr
+  outside_temp_lowpass:
+    addr: [0x55, 0x25]
+    unit: TD
+    get: getaddr
+  circulationpump_state:
+    addr: [0x08, 0x46]
+    unit: E_ST
+    get: getaddr
+  circulationpump_timer_mon:
+    addr: [0x22, 0x00]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  circulationpump_timer_tue:
+    addr: [0x22, 0x08]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  circulationpump_timer_wed:
+    addr: [0x22, 0x10]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  circulationpump_timer_thu:
+    addr: [0x22, 0x18]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  circulationpump_timer_fri:
+    addr: [0x22, 0x20]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  circulationpump_timer_sat:
+    addr: [0x22, 0x28]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  circulationpump_timer_sun:
+    addr: [0x22, 0x30]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  hotwater_temp_actual:
+    addr: [0x08, 0x04]
+    unit: TD
+    get: getaddr
+  hotwater_temp_desired:
+    addr: [0x63, 0x00]
+    unit: T1U
+    get: getaddr
+  hotwater_temp_desired:
+    addr: [0x63, 0x00]
+    unit: T1U
+    set: setaddr
+  hotwater_release:
+    addr: [0x35, 0x00]
+    unit: E_WWF
+    get: getaddr
+  hotwater_timer_mon:
+    addr: [0x31, 0x00]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  hotwater_timer_tue:
+    addr: [0x31, 0x08]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  hotwater_timer_wed:
+    addr: [0x31, 0x10]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  hotwater_timer_thu:
+    addr: [0x31, 0x18]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  hotwater_timer_fri:
+    addr: [0x31, 0x20]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  hotwater_timer_sat:
+    addr: [0x31, 0x28]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  hotwater_timer_sun:
+    addr: [0x31, 0x30]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  heatingcircuit_mode:
+    addr: [0x35, 0x00]
+    unit: E_BA
+    get: getaddr
+  heatingcircuit_pump_state:
+    addr: [0x39, 0x06]
+    unit: E_ST
+    get: getaddr
+  heatingcircuit_pump_command:
+    addr: [0x35, 0x00]
+    unit: E_HKP
+    get: getaddr
+  heatingcircuit_rp_temp_state:
+    addr: [0x08, 0x3F]
+    unit: E_TS
+    get: getaddr
+  heatingcircuit_rp_temp_lowpass:
+    addr: [0x08, 0x1A]
+    unit: TD
+    get: getaddr
+  heatingcircuit_fp_temp_state:
+    addr: [0x08, 0x40]
+    unit: E_TS
+    get: getaddr
+  heatingcircuit_fp_temp_actual:
+    addr: [0x39, 0x00]
+    unit: TD
+    get: getaddr
+  heatingcircuit_fp_temp_desired:
+    addr: [0x35, 0x00]
+    unit: TD
+    get: getaddr
+  heatingcircuit_fp_temp_lowpass:
+    addr: [0x08, 0x18]
+    unit: TD
+    get: getaddr
+  heatingcircuit_timer_mon:
+    addr: [0x30, 0x00]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  heatingcircuit_timer_tue:
+    addr: [0x30, 0x08]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  heatingcircuit_timer_wed:
+    addr: [0x30, 0x10]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  heatingcircuit_timer_thu:
+    addr: [0x30, 0x18]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  heatingcircuit_timer_fri:
+    addr: [0x30, 0x20]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  heatingcircuit_timer_sat:
+    addr: [0x30, 0x28]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  heatingcircuit_timer_sun:
+    addr: [0x30, 0x30]
+    unit: CT
+    get: getaddr
+    set: setaddr
+  heatingcurve_niveau:
+    addr: [0x33, 0x04]
+    unit: HKLN
+    get: getaddr
+    set: setaddr
+  heatingcurve_incline:
+    addr: [0x33, 0x05]
+    unit: HKLS
+    get: getaddr
+    set: setaddr
+  roomtemp_day_desired:
+    addr: [0x33, 0x06]
+    unit: T1U
+    get: getaddr
+    set: setaddr
+  roomtemp_night_desired:
+    addr: [0x33, 0x07]
+    unit: T1U
+    get: getaddr
+    set: setaddr
+  frostwarning_state:
+    addr: [0x35, 0x00]
+    unit: B_FW
+    get: getaddr
+  error_01:
+    addr: [0x75, 0x07]
+    unit: ES
+    get: getaddr
+  error_02:
+    addr: [0x75, 0x10]
+    unit: ES
+    get: getaddr
+  error_03:
+    addr: [0x75, 0x19]
+    unit: ES
+    get: getaddr
+  error_04:
+    addr: [0x75, 0x22]
+    unit: ES
+    get: getaddr
+  error_05:
+    addr: [0x75, 0x2B]
+    unit: ES
+    get: getaddr
+  error_06:
+    addr: [0x75, 0x34]
+    unit: ES
+    get: getaddr
+  error_07:
+    addr: [0x75, 0x3D]
+    unit: ES
+    get: getaddr
+  error_08:
+    addr: [0x75, 0x46]
+    unit: ES
+    get: getaddr
+  error_09:
+    addr: [0x75, 0x4F]
+    unit: ES
+    get: getaddr
+  error_10:
+    addr: [0x75, 0x58]
+    unit: ES
+    get: getaddr
 units:
+  ES:
+    name: ErrorStatus
+    type: errstate
+    mapping:
+      [0x00]: 'Anlage ohne Fehler'
+      [0x02]: 'Fehler Sicherheitskette'
+      [0x04]: 'Brennerstörung 04'
+      [0x05]: 'Brennerstörung 05'
+      [0x07]: 'Brennerstörung 07'
+      [0x08]: 'Brennerstörung 08'
+      [0x09]: 'Brennerstörung 09'
+      [0x0A]: 'Brennerstörung 0A'
+      [0x0B]: 'Brennerstörung 0B'
+      [0x0C]: 'Brennerstörung 0C'
+      [0x0D]: 'Brennerstörung 0D'
+      [0x0E]: 'Brennerstörung 0E'
+      [0x0F]: 'Wartung durchführen'
+      [0x10]: 'Kurzschluss Aussentemperatursensor'
+      [0x11]: 'Brennerstörung 11'
+      [0x14]: 'Brennerstörung 14'
+      [0x15]: 'Brennerstörung 15'
+      [0x18]: 'Unterbrechung Aussentemperatursensor'
+      [0x20]: 'Kurzschluss Vorlauftemperatursensor HK1/Anlage'
+      [0x21]: 'Kurzschluss Rücklauftemperatursensor HK1/Anlage'
+      [0x25]: 'SP-Betrieb'
+      [0x26]: 'Prüffunktion Reglerstop'
+      [0x28]: 'Unterbrechung Vorlauftemperatursensor (HK1)/Anlage'
+      [0x29]: 'Unterbrechung Rücklauftemperatursensor (HK1)/Anlage'
+      [0x30]: 'Kurzschluss Kesseltemperatursensor'
+      [0x35]: 'Fehler SFP-Taster'
+      [0x38]: 'Unterbrechung Kesseltemperatursensor'
+      [0x40]: 'Kurzschluss Vorlauftemperatursensor (HK2)'
+      [0x41]: 'Kurzschluss Rücklauftemperatursensor (HK2)'
+      [0x44]: 'Kurzschluss Vorlauftemperatursensor (HK3)'
+      [0x45]: 'Kurzschluss Rücklauftemperatursensor (HK3)'
+      [0x48]: 'Unterbrechung Vorlauftemperatursensor (HK2)'
+      [0x49]: 'Unterbrechung Rücklauftemperatursensor (HK2)'
+      [0x4C]: 'Unterbrechung Vorlauftemperatursensor (HK3)'
+      [0x4D]: 'Unterbrechung Rücklauftemperatursensor (HK3)'
+      [0x50]: 'Kurzschluss Speichertemperatursensor'
+      [0x51]: 'Kurzschluss Speichertemperatursensor 2'
+      [0x58]: 'Unterbrechung Speichertemperatursensor'
+      [0x59]: 'Unterbrechung Speichertemperatursensor 2'
+      [0x60]: 'Kurzschluss Rücklauftemperatursensor 17'
+      [0x61]: 'Kurzschluss Wasserdrucksensor'
+      [0x68]: 'Unterbrechung Rücklauftemperatursensor 17'
+      [0x70]: 'Kurzschluss Rück-/Vorlauftemperatursensor 17B'
+      [0x78]: 'Unterbrechung Rück-/Vorlauftemperatursensor 17B'
+      [0x92]: 'Solar: Kurzschluss Kollektortemperatursensor'
+      [0x93]: 'Solar: Kurzschluss Sensor S3'
+      [0x94]: 'Solar: Kurzschluss Speichertemperatursensor'
+      [0x9A]: 'Solar: Unterbrechung Kollektortemperatursensor'
+      [0x9B]: 'Solar: Unterbrechung Sensor S3'
+      [0x9C]: 'Solar: Unterbrechung Speichertemperatursensor'
+      [0x9F]: 'Solar: allg. Fehlermeldung'
+      [0xA7]: 'Fehler Bedienteil (Uhrenbaustein)'
+      [0xAE]: 'Interner Fehler Mischer'
+      [0xAF]: 'Interner Fehler Mischer'
+      [0xB0]: 'Kurzschluss Abgastemperatursensor'
+      [0xB1]: 'Kommunikationsfehler Bedieneinheit'
+      [0xB4]: 'Interner Fehler (Elektronik)'
+      [0xB5]: 'Interner Fehler (Elektronik)'
+      [0xB6]: 'Ungültige Hardwarekennung (Elektronik)'
+      [0xB7]: 'Interner Fehler (Kesselkodierstecker)'
+      [0xB8]: 'Unterbrechung Abgastemperatursensor'
+      [0xB9]: 'Interner Fehler (Dateneingabe wiederholen)'
+      [0xBA]: 'Kommunikationsfehler Erweiterungssatz für Mischerkreis M2'
+      [0xBC]: 'Fehler Vitotrol Heizkreis1 (KM-Bus)'
+      [0xBD]: 'Fehler Vitotrol Heizkreis2 (KM-Bus)'
+      [0xBE]: 'Fehler Vitotrol Heizkreis3 (KM-Bus)'
+      [0xBF]: 'Falsches LON Modul'
+      [0xC1]: 'Externe Sicherheitseinrichtung (Kessel kühlt aus)'
+      [0xC2]: 'Kommunikationsfehler Solarregelung'
+      [0xC5]: 'Kommunikationsfehler drehzahlgeregelte Heizkreispumpe, HK1'
+      [0xC6]: 'Kommunikationsfehler drehzahlgeregelte Heizkreispumpe, HK2'
+      [0xC7]: 'Kommunikationsfehler drehzahlgeregelte Heizkreispumpe, HK3'
+      [0xC8]: 'Fehler Wasserstandsbegrenzer'
+      [0xC9]: 'Fehler Maximaldruck'
+      [0xCA]: 'Fehler Minimaldruck/Fehler Maximaldruck 2'
+      [0xCB]: 'Fehler Maximaldruck 2'
+      [0xCC]: 'reserviert externe Peripherie'
+      [0xCD]: 'Kommunikationsfehler Vitocom 300 (KM-Bus)'
+      [0xCE]: 'Kommunikationsfehler Störmeldemodul (KM-Bus)'
+      [0xCF]: 'Kommunikationsfehler LON Modul'
+      [0xD1]: 'Brennerstörung Kessel'
+      [0xD4]: 'Sicherheitstemperaturbegrenzer hat ausgelöst oder Störmeldemodul nicht richtig gesteckt'
+      [0xD5]: 'Kaskade: Kessel meldet sich nicht'
+      [0xD6]: 'Externe Störung 1 Steckadapter'
+      [0xD7]: 'Externe Störung 2 Steckadapter'
+      [0xD8]: 'Externe Störung 3 Steckadapter'
+      [0xDA]: 'Kurzschluss Raumtemperatursensor, HK1'
+      [0xDB]: 'Kurzschluss Raumtemperatursensor, HK2'
+      [0xDC]: 'Kurzschluss Raumtemperatursensor, HK3'
+      [0xDD]: 'Unterbrechung Raumtemperatursensor, HK1'
+      [0xDE]: 'Unterbrechung Raumtemperatursensor, HK2'
+      [0xDF]: 'Unterbrechung Raumtemperatursensor, HK3'
+      [0xE0]: 'Fehler externer Teilnehmer / Gerät am LON'
+      [0xE4]: 'Fehler Versorgungsspannung'
+      [0xE5]: 'Interner Fehler (Ionisationselektrode)'
+      [0xE6]: 'Abgas- / Zuluftsystem verstopft'
+      [0xF0]: 'Kommunikationsfehler Feuerungsautomat'
+      [0xF1]: 'Abgastemperaturbegrenzer ausgelöst'
+      [0xF2]: 'Temperaturbegrenzer ausgelöst'
+      [0xF3]: 'Flammensignal beim Brennerstart bereits vorhanden'
+      [0xF4]: 'Flammensignal nicht vorhanden'
+      [0xF7]: 'Differenzdrucksensor defekt'
+      [0xF8]: 'Brennstoffventil schließt zu spät'
+      [0xF9]: 'Gebläsedrehzahl beim Brennerstart zu niedrig'
+      [0xFA]: 'Gebläsedrehzahl beim Brennerstart zu hoch'
+      [0xFD]: 'Fehler Feuerungsautomat'
+      [0xFE]: 'Starkes Störfeld (EMV) in der Nähe oder Elektronik defekt'
+      [0xFF]: 'Interner Fehler'
+  B_FW:
+    name: Frostwarnung
+    type: enum
+    mapping:
+      [0x00]: 'OFF'
+      [0x01]: 'ON'
+      [0x02]: 'OFF'
+  HKLN:
+    name: Niveau
+    type: uchar
+  HKLS:
+    name: Steigung
+    type: uchar
+    calc:
+      get: $v / 10.0
+      set: $v * 10.0
+  E_HKP:
+    name: HeizkreisPumpenBefehl
+    type: enum
+    mapping:
+      [0x00]: OFF
+      [0x01]: ON
+      [0x02]: ON
+      [0x03]: RED
+  E_BA:
+    name: Betriebsart
+    type: enum
+    mapping:
+      [0x00]: NWW
+      [0x01]: RED
+      [0x02]: NRM
+      [0x03]: HWW
+      [0x04]: HWW
+      [0x05]: OFF
+  E_WWF:
+    name: Warmwasser-Freigabe
+    type: enum
+    mapping:
+      [0x00]: Freigabe aus
+      [0x01]: Freigabe nach WW-Schaltzeiten
+      [0x02]: Freigabe durch Party/Externe Umschaltung
   COL:
     name: Counter Liter
     type: int
     calc:
       get: $v / 1000.0
       set: $v * 1000.0
+  CO:
+    name: Anzahl
+    type: int
+  HS:
+    name: Stunden
+    type: uint
+    cals:
+      get: $v / 3600.0
   TD:
     name: Temperatur
     type: short
     calc:
       get: $v / 10.0
       set: $v * 10.0
+  T1U:
+    name: Temperatur
+    type: uchar
   B_FB:
     name: FerienBetrieb
     type: enum
@@ -38,6 +514,26 @@ units:
     mapping:
       [0x12]: OFF
       [0x01]: ON
+  E_ST:
+    name: Status
+    type: enum
+    mapping:
+      [0x00]: OFF
+      [0x01]: ON
+  E_TS:
+    name: SensorStatus
+    type: enum
+    mapping:
+      [0x00]: OK
+      [0x01]: Kurzschluss
+      [0x02]: Unterbruch
+      [0x03]: Referenzfehler
+      [0x04]: Referenz unter Min
+      [0x05]: Referenz über Max
+      [0x06]: nicht vorhanden
+      [0x07]: Check
+      [0x08]: Fehler
+      [0x09]: Kom Fehler
   CT:
     name: Schaltzeit
     type: cycletime

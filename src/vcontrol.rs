@@ -1,10 +1,10 @@
-use std::io::{self, Read, Write};
+ use std::io::{self, Read, Write};
 use std::net::TcpStream;
 use std::time::Duration;
 
 use clap::{crate_version, Arg, App, ArgGroup, AppSettings::ArgRequiredElseHelp};
 
-use vcontrol::{DEFAULT_CONFIG, Configuration, PreparedProtocolCommand, FromBytes, SysTime};
+use vcontrol::{DEFAULT_CONFIG, Configuration, PreparedProtocolCommand, FromBytes, SysTime, CycleTime, ErrState};
 
 fn execute_command(socket: &mut TcpStream, commands: &[PreparedProtocolCommand]) -> Result<Option<Vec<u8>>, io::Error> {
   // socket.set_nonblocking(true)?;
@@ -71,10 +71,6 @@ fn main() {
 
   let matches = app.get_matches();
 
-
-  println!("Time: {}", SysTime::from_dec(2001, 7, 13, 15, 16, 31));
-
-
   let host = matches.value_of("host").unwrap_or("localhost");
   let port = matches.value_of("port").map(|port| port.parse().unwrap()).unwrap_or(3002);
 
@@ -82,11 +78,14 @@ fn main() {
 
   socket.set_read_timeout(Some(Duration::from_secs(10))).unwrap();
 
-  let temp_command = config.prepare_command("KW2", "system_time", "get", &[]);
+  println!("Time: {}", SysTime::from_dec(2001, 7, 13, 15, 16, 31));
+
+  let temp_command = config.prepare_command("KW2", "error_01", "get", &[]);
   println!("\"temp_command\": {:#?}", temp_command);
 
-  let res = execute_command(&mut socket, &temp_command).unwrap();
+  let res = execute_command(&mut socket, &temp_command).unwrap().unwrap();
 
-  println!("Time: {}", SysTime::from_bytes(&res.unwrap()));
+  println!("bytes: {}", res.iter().map(|byte| format!("{:02X}", byte)).collect::<Vec<String>>().join(" "));
 
+  println!("Time: {}", ErrState::from_bytes(&res));
 }

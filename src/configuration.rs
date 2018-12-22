@@ -7,7 +7,7 @@ use serde_yaml;
 use serde::de::{self, Deserialize, Deserializer};
 
 use crate::expression::Expression;
-use crate::types::{SysTime, CycleTime, ErrState};
+use crate::types::{*};
 
 pub const DEFAULT_CONFIG: &str = include_str!("../config/default.yml");
 
@@ -240,17 +240,32 @@ pub enum PreparedProtocolCommand {
   Recv(Unit),
 }
 
+#[inline(always)]
+fn f32_one() -> f32 {
+  0.0
+}
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "type")]
 pub enum Unit {
-  #[serde(rename = "int")]
-  Int { name: String, #[serde(default)] calc: Calc },
-  #[serde(rename = "uint")]
-  UInt { name: String, #[serde(default)] calc: Calc },
-  #[serde(rename = "short")]
-  Short { name: String, #[serde(default)] calc: Calc },
-  #[serde(rename = "uchar")]
-  UChar { name: String, #[serde(default)] calc: Calc },
+  #[serde(rename = "f8")]
+  F8 { name: String, #[serde(default = "f32_one")] factor: f32 },
+  #[serde(rename = "f16")]
+  F16 { name: String, #[serde(default = "f32_one")] factor: f32 },
+  #[serde(rename = "f32")]
+  F32 { name: String, #[serde(default = "f32_one")] factor: f32 },
+  #[serde(rename = "i8")]
+  I8 { name: String, #[serde(default = "f32_one")] factor: f32 },
+  #[serde(rename = "i16")]
+  I16 { name: String, #[serde(default = "f32_one")] factor: f32 },
+  #[serde(rename = "i32")]
+  I32 { name: String, #[serde(default = "f32_one")] factor: f32 },
+  #[serde(rename = "u8")]
+  U8 { name: String, #[serde(default = "f32_one")] factor: f32 },
+  #[serde(rename = "u16")]
+  U16 { name: String, #[serde(default = "f32_one")] factor: f32 },
+  #[serde(rename = "u32")]
+  U32 { name: String, #[serde(default = "f32_one")] factor: f32 },
   #[serde(rename = "enum")]
   Enum { name: String, mapping: HashMap<Vec<u8>, String> },
   #[serde(rename = "systime")]
@@ -261,17 +276,20 @@ pub enum Unit {
   CycleTime { name: String },
 }
 
-
-
 impl Unit {
   pub fn size(&self) -> usize {
     use self::Unit::*;
 
     match self {
-      Int { .. } => std::mem::size_of::<i32>(),
-      UInt { .. } => std::mem::size_of::<u32>(),
-      Short { .. } => std::mem::size_of::<i16>(),
-      UChar { .. } => std::mem::size_of::<u8>(),
+      F8 { .. } => std::mem::size_of::<Float8>(),
+      F16 { .. } => std::mem::size_of::<Float16>(),
+      F32 { .. } => std::mem::size_of::<Float32>(),
+      I8 { .. } => std::mem::size_of::<Int8>(),
+      I16 { .. } => std::mem::size_of::<Int16>(),
+      I32 { .. } => std::mem::size_of::<Int32>(),
+      U8 { .. } => std::mem::size_of::<UInt8>(),
+      U16 { .. } => std::mem::size_of::<UInt16>(),
+      U32 { .. } => std::mem::size_of::<UInt32>(),
       Enum { mapping, .. } => mapping.keys().next().unwrap().len(),
       SysTime { .. } => std::mem::size_of::<self::SysTime>(),
       ErrState { .. } => std::mem::size_of::<self::ErrState>(),
@@ -279,43 +297,25 @@ impl Unit {
     }
   }
 
-  pub fn bytes_to_output(&self, bytes: &[u8]) -> Output {
-    use self::Unit::*;
-    use self::Output::*;
-
+  pub fn bytes_to_output(&self, bytes: &[u8]) -> Box<fmt::Display> {
     assert_eq!(bytes.len(), self.size());
 
     match self {
-      Int { .. } => Float(LittleEndian::read_i32(bytes) as f32, bytes.to_vec()),
-      UInt { .. } => Float(LittleEndian::read_u32(bytes) as f32, bytes.to_vec()),
-      Short { .. } => Float(LittleEndian::read_i16(bytes) as f32, bytes.to_vec()),
-      UChar { .. } => Float(bytes[0] as f32, bytes.to_vec()),
-      Enum { mapping, .. } => String(mapping[bytes].clone(), bytes.to_vec()),
-      SysTime { .. } => String(self::SysTime::from_bytes(bytes).to_string(), bytes.to_vec()),
-      ErrState { .. } => String(self::ErrState::from_bytes(bytes).to_string(), bytes.to_vec()),
-      CycleTime { .. } => String(self::CycleTime::from_bytes(bytes).to_string(), bytes.to_vec()),
+      Unit::F8 { .. }            => Box::new(Float8::from_bytes(bytes)),
+      Unit::F16 { .. }           => Box::new(Float16::from_bytes(bytes)),
+      Unit::F32 { .. }           => Box::new(Float32::from_bytes(bytes)),
+      Unit::I8 { .. }            => Box::new(Int8::from_bytes(bytes)),
+      Unit::I16 { .. }           => Box::new(Int16::from_bytes(bytes)),
+      Unit::I32 { .. }           => Box::new(Int32::from_bytes(bytes)),
+      Unit::U8 { .. }            => Box::new(UInt8::from_bytes(bytes)),
+      Unit::U16 { .. }           => Box::new(UInt16::from_bytes(bytes)),
+      Unit::U32 { .. }           => Box::new(UInt32::from_bytes(bytes)),
+      Unit::Enum { mapping, .. } => unimplemented!(),
+      Unit::SysTime { .. }       => Box::new(SysTime::from_bytes(bytes)),
+      Unit::ErrState { .. }      => Box::new(ErrState::from_bytes(bytes)),
+      Unit::CycleTime { .. }     => Box::new(CycleTime::from_bytes(bytes)),
     }
   }
-}
-
-pub enum Output {
-  Float(f32, Vec<u8>),
-  String(String, Vec<u8>),
-}
-
-impl Output {
-  pub fn as_bytes(&self) -> &[u8] {
-    match self {
-      Output::Float(_, bytes) => bytes,
-      Output::String(_, bytes) => bytes,
-    }
-  }
-}
-
-#[derive(Debug, Default, Clone, Deserialize)]
-pub struct Calc {
-  get: Option<Expression>,
-  set: Option<Expression>,
 }
 
 #[cfg(test)]

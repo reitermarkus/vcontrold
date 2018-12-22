@@ -34,7 +34,9 @@ fn execute_command(socket: &mut TcpStream, commands: &[PreparedProtocolCommand])
         let mut buf = vec![0; len];
         socket.read_exact(&mut buf)?;
 
-        println!("Received: {:?}", buf);
+        println!("Received: {}", buf.iter().map(|byte| format!("{:02X}", byte)).collect::<Vec<String>>().join(" "));
+        let output: Box<std::fmt::Display> = unit.bytes_to_output(&buf);
+        println!("Output: {}", output.to_string());
 
         res = Some(buf);
       },
@@ -79,12 +81,8 @@ fn main() {
   socket.set_read_timeout(Some(Duration::from_secs(10))).unwrap();
 
 
-  let temp_command = config.prepare_command("KW2", "error_01", "get", &[]);
+  let temp_command = config.prepare_command("KW2", "outside_temp_actual", "get", &[]);
   println!("\"temp_command\": {:#?}", temp_command);
 
   let res = execute_command(&mut socket, &temp_command).unwrap().unwrap();
-
-  println!("bytes: {}", res.iter().map(|byte| format!("{:02X}", byte)).collect::<Vec<String>>().join(" "));
-
-  println!("Time: {}", ErrState::from_bytes(&res));
 }

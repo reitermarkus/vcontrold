@@ -450,13 +450,11 @@ units:
       [0x02]: 'OFF'
   HKLN:
     name: Niveau
-    type: uchar
+    type: f8
   HKLS:
     name: Steigung
-    type: uchar
-    calc:
-      get: $v / 10.0
-      set: $v * 10.0
+    type: f8
+    factor: 10
   E_HKP:
     name: HeizkreisPumpenBefehl
     type: enum
@@ -484,33 +482,25 @@ units:
       [0x02]: Freigabe durch Party/Externe Umschaltung
   COL:
     name: Counter Liter
-    type: int
-    calc:
-      get: $v / 1000.0
-      set: $v * 1000.0
+    type: u32
+    factor: 1000
   CO:
     name: Anzahl
-    type: int
+    type: u32
   HS:
     name: Stunden
-    type: uint
-    cals:
-      get: $v / 3600.0
+    type: u32
+    factor: 3600
   TD:
     name: Temperatur
-    type: short
-    calc:
-      get: $v / 10.0
-      set: $v * 10.0
+    type: f16
+    factor: 10
   T1U:
     name: Temperatur
-    type: uchar
+    type: u8
   B_FB:
     name: FerienBetrieb
     type: enum
-    calc:
-      get: $b7 & 0x01
-      set: $v
     mapping:
       [0x12]: OFF
       [0x01]: ON

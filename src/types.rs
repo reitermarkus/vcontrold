@@ -5,7 +5,6 @@ macro_rules! byte_type {
 
     impl FromBytes for $t {
       fn from_bytes(bytes: &[u8]) -> $t {
-        assert_eq!(bytes.len(), std::mem::size_of::<$t>());
         let mut buf = [0; std::mem::size_of::<$t>()];
         buf.copy_from_slice(&bytes);
         $t(buf)

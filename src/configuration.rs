@@ -272,7 +272,7 @@ pub enum Unit {
   #[serde(rename = "systime")]
   SysTime { name: String },
   #[serde(rename = "errstate")]
-  ErrState { name: String },
+  ErrState { name: String, mapping: HashMap<Vec<u8>, String> },
   #[serde(rename = "cycletime")]
   CycleTime { name: String },
 }
@@ -313,7 +313,10 @@ impl Unit {
       Unit::U32 { factor, .. }   => Box::new(u32::from(UInt32::from_bytes(bytes)) as f32 / factor),
       Unit::Enum { mapping, .. } => Box::new(mapping[&bytes.to_vec()].to_owned()),
       Unit::SysTime { .. }       => Box::new(SysTime::from_bytes(bytes)),
-      Unit::ErrState { .. }      => Box::new(ErrState::from_bytes(bytes)),
+      Unit::ErrState { mapping, .. } => {
+        let errstate = ErrState::from_bytes(bytes);
+        Box::new(format!("{} ({})", mapping[&errstate.id().to_vec()], errstate.time()))
+      },
       Unit::CycleTime { .. }     => Box::new(CycleTime::from_bytes(bytes)),
     }
   }

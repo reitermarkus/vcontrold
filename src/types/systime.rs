@@ -35,7 +35,7 @@ impl SysTime {
   }
 
   pub fn weekday(&self) -> u8 {
-    self.0[4] % 7
+    self.0[4]
   }
 
   pub fn hour(&self) -> u8 {
@@ -72,7 +72,7 @@ impl From<NaiveDateTime> for SysTime {
       dec_to_byte((datetime.year() % 100) as u8),
       dec_to_byte(datetime.month() as u8),
       dec_to_byte(datetime.day() as u8),
-      datetime.weekday().num_days_from_sunday() as u8,
+      datetime.weekday().number_from_monday() as u8,
       dec_to_byte(datetime.hour() as u8),
       dec_to_byte(datetime.minute() as u8),
       dec_to_byte(datetime.second() as u8),
@@ -107,12 +107,12 @@ mod tests {
 
   #[test]
   fn new() {
-    let time = SysTime::new(2018, 12, 22, 17, 49, 31);
+    let time = SysTime::new(2018, 12, 23, 17, 49, 31);
 
     assert_eq!(time.year(), 2018);
     assert_eq!(time.month(), 12);
-    assert_eq!(time.day(), 22);
-    assert_eq!(time.weekday(), 6);
+    assert_eq!(time.day(), 23);
+    assert_eq!(time.weekday(), 7);
     assert_eq!(time.hour(), 17);
     assert_eq!(time.minute(), 49);
     assert_eq!(time.second(), 31);
@@ -120,12 +120,12 @@ mod tests {
 
   #[test]
   fn from_str() {
-    let time = SysTime::from_str("2018-12-22T17:49:31").unwrap();
+    let time = SysTime::from_str("2018-12-23T17:49:31").unwrap();
 
     assert_eq!(time.year(), 2018);
     assert_eq!(time.month(), 12);
-    assert_eq!(time.day(), 22);
-    assert_eq!(time.weekday(), 6);
+    assert_eq!(time.day(), 23);
+    assert_eq!(time.weekday(), 7);
     assert_eq!(time.hour(), 17);
     assert_eq!(time.minute(), 49);
     assert_eq!(time.second(), 31);
@@ -133,12 +133,12 @@ mod tests {
 
   #[test]
   fn from_bytes() {
-    let time = SysTime::from_bytes(&[0x20, 0x18, 0x12, 0x22, 0x06, 0x17, 0x49, 0x31]);
+    let time = SysTime::from_bytes(&[0x20, 0x18, 0x12, 0x23, 0x07, 0x17, 0x49, 0x31]);
 
     assert_eq!(time.year(), 2018);
     assert_eq!(time.month(), 12);
-    assert_eq!(time.day(), 22);
-    assert_eq!(time.weekday(), 6);
+    assert_eq!(time.day(), 23);
+    assert_eq!(time.weekday(), 7);
     assert_eq!(time.hour(), 17);
     assert_eq!(time.minute(), 49);
     assert_eq!(time.second(), 31);
@@ -146,7 +146,7 @@ mod tests {
 
   #[test]
   fn as_bytes() {
-    let time = SysTime::new(2018, 12, 22, 17, 49, 31);
-    assert_eq!(time.as_bytes(), &[0x20, 0x18, 0x12, 0x22, 0x06, 0x17, 0x49, 0x31]);
+    let time = SysTime::new(2018, 12, 23, 17, 49, 31);
+    assert_eq!(time.as_bytes(), &[0x20, 0x18, 0x12, 0x23, 0x07, 0x17, 0x49, 0x31]);
   }
 }

@@ -2,7 +2,7 @@
 use std::net::TcpStream;
 use std::time::Duration;
 
-use clap::{crate_version, Arg, App, ArgGroup, AppSettings::ArgRequiredElseHelp};
+use clap::{crate_version, Arg, App, ArgGroup, SubCommand, AppSettings::ArgRequiredElseHelp};
 
 use vcontrol::{DEFAULT_CONFIG, Configuration, PreparedProtocolCommand, FromBytes, SysTime, CycleTime, ErrState};
 
@@ -56,20 +56,36 @@ fn main() {
               .setting(ArgRequiredElseHelp)
               .help_short("?")
               .arg(Arg::with_name("device")
-                 .short("d")
-                 .long("device")
-                 .takes_value(true)
-                 .help("path of the device"))
+                .short("d")
+                .long("device")
+                .takes_value(true)
+                .conflicts_with_all(&["host", "port"])
+                .help("path of the device"))
               .arg(Arg::with_name("host")
-                 .short("h")
-                 .long("host")
-                 .takes_value(true)
-                 .help("hostname or IP address of the device"))
+                .short("h")
+                .long("host")
+                .takes_value(true)
+                .conflicts_with("device")
+                .help("hostname or IP address of the device"))
               .arg(Arg::with_name("port")
-                 .short("p")
-                 .long("port")
-                 .takes_value(true)
-                 .help("port of the device"));
+                .short("p")
+                .long("port")
+                .takes_value(true)
+                .conflicts_with("device")
+                .help("port of the device"))
+              .subcommand(SubCommand::with_name("get")
+                .about("get value")
+                .arg(Arg::with_name("command")
+                  .help("name of the command")
+                  .required(true)))
+              .subcommand(SubCommand::with_name("set")
+                .about("set value")
+                .arg(Arg::with_name("command")
+                  .help("name of the command")
+                  .required(true))
+                .arg(Arg::with_name("value")
+                  .help("value")
+                  .required(true)));
 
   let matches = app.get_matches();
 
@@ -80,9 +96,16 @@ fn main() {
 
   socket.set_read_timeout(Some(Duration::from_secs(10))).unwrap();
 
+  if let Some(matches) = matches.subcommand_matches("get") {
+    let command = matches.value_of("command").unwrap();
+    let command = config.prepare_command("KW2", command, "get", &[]);
+    execute_command(&mut socket, &command).unwrap().unwrap();
+  }
 
-  let temp_command = config.prepare_command("KW2", "outside_temp_actual", "get", &[]);
-  println!("\"temp_command\": {:#?}", temp_command);
-
-  let res = execute_command(&mut socket, &temp_command).unwrap().unwrap();
+  if let Some(matches) = matches.subcommand_matches("set") {
+    let command = matches.value_of("command").unwrap();
+    let value = matches.value_of("value").unwrap();
+    let command = config.prepare_command("KW2", command, "set", &[]);
+    execute_command(&mut socket, &command).unwrap().unwrap();
+  }
 }

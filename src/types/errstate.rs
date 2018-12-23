@@ -4,12 +4,11 @@ use std::str::FromStr;
 use crate::{FromBytes, AsBytes};
 use crate::types::SysTime;
 
-#[derive(Debug)]
-pub struct ErrState([u8; 9]);
+byte_type!(ErrState, 9);
 
 impl ErrState {
-  pub fn id(&self) -> u8 {
-    self.0[0]
+  pub fn id(&self) -> &[u8] {
+    &self.0[0..1]
   }
 
   pub fn time(&self) -> SysTime {
@@ -22,21 +21,6 @@ impl FromStr for ErrState {
 
   fn from_str(s: &str) -> Result<ErrState, Self::Err> {
     unimplemented!("ErrState::from_str")
-  }
-}
-
-impl FromBytes for ErrState {
-  fn from_bytes(bytes: &[u8]) -> ErrState {
-    assert_eq!(bytes.len(), std::mem::size_of::<ErrState>());
-    let mut buf = [0; std::mem::size_of::<ErrState>()];
-    buf.copy_from_slice(&bytes);
-    ErrState(buf)
-  }
-}
-
-impl AsBytes for ErrState {
-  fn as_bytes(&self) -> &[u8] {
-    &self.0
   }
 }
 

@@ -3,8 +3,7 @@ use std::str::FromStr;
 
 use crate::{FromBytes, AsBytes};
 
-#[derive(Debug)]
-pub struct CycleTime([u8; 8]);
+byte_type!(CycleTime, 8);
 
 impl CycleTime {
   fn byte_to_time(&self, i: usize) -> Option<(u8, u8)> {
@@ -29,21 +28,6 @@ impl FromStr for CycleTime {
 
   fn from_str(s: &str) -> Result<CycleTime, Self::Err> {
     unimplemented!("CycleTime::from_str")
-  }
-}
-
-impl FromBytes for CycleTime {
-  fn from_bytes(bytes: &[u8]) -> CycleTime {
-    assert_eq!(bytes.len(), std::mem::size_of::<CycleTime>());
-    let mut buf = [0; std::mem::size_of::<CycleTime>()];
-    buf.copy_from_slice(&bytes);
-    CycleTime(buf)
-  }
-}
-
-impl AsBytes for CycleTime {
-  fn as_bytes(&self) -> &[u8] {
-    &self.0
   }
 }
 

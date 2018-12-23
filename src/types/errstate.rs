@@ -1,4 +1,5 @@
 use std::fmt;
+use std::str::FromStr;
 
 use crate::{FromBytes, AsBytes};
 use crate::types::SysTime;
@@ -13,6 +14,14 @@ impl ErrState {
 
   pub fn time(&self) -> SysTime {
     SysTime::from_bytes(&self.0[1..9])
+  }
+}
+
+impl FromStr for ErrState {
+  type Err = String;
+
+  fn from_str(s: &str) -> Result<ErrState, Self::Err> {
+    unimplemented!("ErrState::from_str")
   }
 }
 

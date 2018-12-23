@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fmt;
+use std::str::FromStr;
 
 use byteorder::{ByteOrder, LittleEndian};
 use serde_derive::*;
@@ -301,20 +302,44 @@ impl Unit {
     assert_eq!(bytes.len(), self.size());
 
     match self {
-      Unit::F8 { .. }            => Box::new(Float8::from_bytes(bytes)),
-      Unit::F16 { .. }           => Box::new(Float16::from_bytes(bytes)),
-      Unit::F32 { .. }           => Box::new(Float32::from_bytes(bytes)),
-      Unit::I8 { .. }            => Box::new(Int8::from_bytes(bytes)),
-      Unit::I16 { .. }           => Box::new(Int16::from_bytes(bytes)),
-      Unit::I32 { .. }           => Box::new(Int32::from_bytes(bytes)),
-      Unit::U8 { .. }            => Box::new(UInt8::from_bytes(bytes)),
-      Unit::U16 { .. }           => Box::new(UInt16::from_bytes(bytes)),
-      Unit::U32 { .. }           => Box::new(UInt32::from_bytes(bytes)),
-      Unit::Enum { mapping, .. } => unimplemented!(),
+      Unit::F8 { factor, .. }    => Box::new(f32::from(Float8::from_bytes(bytes)) as f32 / factor),
+      Unit::F16 { factor, .. }   => Box::new(f32::from(Float16::from_bytes(bytes)) as f32 / factor),
+      Unit::F32 { factor, .. }   => Box::new(f32::from(Float32::from_bytes(bytes)) as f32 / factor),
+      Unit::I8 { factor, .. }    => Box::new(i32::from(Int8::from_bytes(bytes)) as f32 / factor),
+      Unit::I16 { factor, .. }   => Box::new(i32::from(Int16::from_bytes(bytes)) as f32 / factor),
+      Unit::I32 { factor, .. }   => Box::new(i32::from(Int32::from_bytes(bytes)) as f32 / factor),
+      Unit::U8 { factor, .. }    => Box::new(u32::from(UInt8::from_bytes(bytes)) as f32 / factor),
+      Unit::U16 { factor, .. }   => Box::new(u32::from(UInt16::from_bytes(bytes)) as f32 / factor),
+      Unit::U32 { factor, .. }   => Box::new(u32::from(UInt32::from_bytes(bytes)) as f32 / factor),
+      Unit::Enum { mapping, .. } => Box::new(mapping[&bytes.to_vec()].to_owned()),
       Unit::SysTime { .. }       => Box::new(SysTime::from_bytes(bytes)),
       Unit::ErrState { .. }      => Box::new(ErrState::from_bytes(bytes)),
       Unit::CycleTime { .. }     => Box::new(CycleTime::from_bytes(bytes)),
     }
+  }
+
+  pub fn input_to_bytes(&self, input: &str) -> Result<Box<AsBytes>, String> {
+    Ok(match self {
+      Unit::F8 { factor, .. }    => Box::new(Float8::from(input.parse::<f32>().map(|f| f * factor).map_err(|err| err.to_string())?)),
+      Unit::F16 { factor, .. }   => Box::new(Float16::from(input.parse::<f32>().map(|f| f * factor).map_err(|err| err.to_string())?)),
+      Unit::F32 { factor, .. }   => Box::new(Float32::from(input.parse::<f32>().map(|f| f * factor).map_err(|err| err.to_string())?)),
+      Unit::I8 { factor, .. }    => Box::new(Int8::from(input.parse::<i32>().map(|f| (f as f32 * factor) as i32).map_err(|err| err.to_string())?)),
+      Unit::I16 { factor, .. }   => Box::new(Int16::from(input.parse::<i32>().map(|f| (f as f32 * factor) as i32).map_err(|err| err.to_string())?)),
+      Unit::I32 { factor, .. }   => Box::new(Int32::from(input.parse::<i32>().map(|f| (f as f32 * factor) as i32).map_err(|err| err.to_string())?)),
+      Unit::U8 { factor, .. }    => Box::new(UInt8::from(input.parse::<u32>().map(|f| (f as f32 * factor) as u32).map_err(|err| err.to_string())?)),
+      Unit::U16 { factor, .. }   => Box::new(UInt16::from(input.parse::<u32>().map(|f| (f as f32 * factor) as u32).map_err(|err| err.to_string())?)),
+      Unit::U32 { factor, .. }   => Box::new(UInt32::from(input.parse::<u32>().map(|f| (f as f32 * factor) as u32).map_err(|err| err.to_string())?)),
+      Unit::Enum { mapping, .. } => Box::new(mapping.iter().find(|(_, value)| value == &input).map(|(key, _)| key.clone()).unwrap()),
+      Unit::SysTime { .. }       => Box::new(SysTime::from_str(input)?),
+      Unit::ErrState { .. }      => Box::new(ErrState::from_str(input)?),
+      Unit::CycleTime { .. }     => Box::new(CycleTime::from_str(input)?),
+    })
+  }
+}
+
+impl AsBytes for Vec<u8> {
+  fn as_bytes(&self) -> &[u8] {
+    &self
   }
 }
 

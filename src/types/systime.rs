@@ -15,8 +15,7 @@ fn dec_to_byte(dec: u8) -> u8 {
   dec / 10 * 16 + dec % 10
 }
 
-#[derive(Debug)]
-pub struct SysTime([u8; 8]);
+byte_type!(SysTime, 8);
 
 impl SysTime {
   pub fn new(year: u16, month: u8, day: u8, hour: u8, minute: u8, second: u8) -> SysTime {
@@ -86,21 +85,6 @@ impl FromStr for SysTime {
 
   fn from_str(s: &str) -> Result<SysTime, Self::Err> {
     NaiveDateTime::from_str(s).map(Into::into).map_err(|err| err.to_string())
-  }
-}
-
-impl FromBytes for SysTime {
-  fn from_bytes(bytes: &[u8]) -> SysTime {
-    assert_eq!(bytes.len(), std::mem::size_of::<SysTime>());
-    let mut buf = [0; std::mem::size_of::<SysTime>()];
-    buf.copy_from_slice(&bytes);
-    SysTime(buf)
-  }
-}
-
-impl AsBytes for SysTime {
-  fn as_bytes(&self) -> &[u8] {
-    &self.0
   }
 }
 

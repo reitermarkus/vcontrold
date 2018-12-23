@@ -35,7 +35,7 @@ fn execute_command(socket: &mut TcpStream, commands: &[PreparedProtocolCommand])
         socket.read_exact(&mut buf)?;
 
         println!("Received: {}", buf.iter().map(|byte| format!("{:02X}", byte)).collect::<Vec<String>>().join(" "));
-        let output: Box<std::fmt::Display> = unit.bytes_to_output(&buf);
+        let output = unit.bytes_to_output(&buf);
         println!("Output: {}", output.to_string());
 
         res = Some(buf);

@@ -1,16 +1,18 @@
- use std::io::{self, Read, Write};
-use std::net::TcpStream;
-use std::time::Duration;
+use std::io::{self, Read, Write};
+use std::process::exit;
 
-use clap::{crate_version, Arg, App, ArgGroup, SubCommand, AppSettings::ArgRequiredElseHelp};
+use clap::{crate_version, Arg, App, SubCommand, AppSettings::ArgRequiredElseHelp};
 
-use vcontrol::{Configuration, PreparedProtocolCommand, FromBytes, SysTime, CycleTime, ErrState};
+use vcontrol::{Configuration, PreparedProtocolCommand, OptoLink};
 
 fn pretty_bytes(bytes: &[u8]) -> String {
   bytes.iter().map(|byte| format!("{:02X}", byte)).collect::<Vec<_>>().join(" ")
 }
 
-fn execute_command(socket: &mut TcpStream, commands: &[PreparedProtocolCommand]) -> Result<Option<Box<std::fmt::Display>>, io::Error> {
+trait ReadWrite: Read + Write {}
+impl<T> ReadWrite for T where T: Read + Write {}
+
+fn execute_command(socket: &mut ReadWrite, commands: &[PreparedProtocolCommand]) -> Result<Option<Box<std::fmt::Display>>, io::Error> {
   // socket.set_nonblocking(true)?;
   //
   // let mut vec = Vec::new();
@@ -69,7 +71,8 @@ fn main() {
                 .long("host")
                 .takes_value(true)
                 .conflicts_with("device")
-                .help("hostname or IP address of the device"))
+                .requires("port")
+                .help("hostname or IP address of the device (default: localhost)"))
               .arg(Arg::with_name("port")
                 .short("p")
                 .long("port")
@@ -92,21 +95,30 @@ fn main() {
 
   let matches = app.get_matches();
 
-  let host = matches.value_of("host").unwrap_or("localhost");
-  let port = matches.value_of("port").map(|port| port.parse().unwrap()).unwrap_or(3002);
 
   println!("Connecting ...");
-  let mut socket = TcpStream::connect((host, port)).unwrap();
 
-  println!("Connected to {}:{}.", host, port);
+  let mut device: Box<ReadWrite> = if let Some(device) = matches.value_of("device") {
+    Box::new(OptoLink::open(device).unwrap())
+  } else {
+    let host = matches.value_of("host").unwrap_or("localhost");
+    let port = matches.value_of("port")
+                 .map(|port| {
+                   port.parse().unwrap_or_else(|_| {
+                     eprintln!("Error: Could not parse port from “{}”.", port);
+                     exit(1);
+                   })
+                 })
+                 .unwrap();
 
-  socket.set_read_timeout(Some(Duration::from_secs(10))).unwrap();
+    Box::new(OptoLink::connect((host, port)).unwrap())
+  };
 
   if let Some(matches) = matches.subcommand_matches("get") {
     let command = matches.value_of("command").unwrap();
     let command = config.prepare_command("KW2", command, "get", &[]);
 
-    match execute_command(&mut socket, &command) {
+    match execute_command(&mut device, &command) {
       Ok(res) => {
         if let Some(output) = res {
           println!("{}", output);
@@ -114,7 +126,7 @@ fn main() {
       },
       Err(err) => {
         eprintln!("Error: {}", err);
-        std::process::exit(1);
+        exit(1);
       }
     }
   }
@@ -124,7 +136,7 @@ fn main() {
     let value = matches.value_of("value").unwrap();
     let command = config.prepare_command("KW2", command, "set", &[]);
 
-    match execute_command(&mut socket, &command) {
+    match execute_command(&mut device, &command) {
       Ok(res) => {
         if let Some(output) = res {
           println!("{}", output);
@@ -132,7 +144,7 @@ fn main() {
       },
       Err(err) => {
         eprintln!("Error: {}", err);
-        std::process::exit(1);
+        exit(1);
       }
     }
   }

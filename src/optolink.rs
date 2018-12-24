@@ -4,17 +4,21 @@ use std::net::{TcpStream, ToSocketAddrs};
 use std::time::Duration;
 
 use serial_core::{SerialDevice, SerialPortSettings, BaudRate::Baud4800, Parity::ParityEven, StopBits::Stop2, CharSize::Bits8};
-use serial::{self, SystemPort};
-pub struct OptoLink<T> {
-  pub device: T,
+use serial;
+
+trait ReadWrite: Read + Write {}
+impl<T> ReadWrite for T where T: Read + Write {}
+
+pub struct OptoLink {
+  device: Box<ReadWrite>,
 }
 
-impl<T> OptoLink<T> {
+impl OptoLink {
   const TIMEOUT: Duration = Duration::from_secs(10);
 }
 
-impl OptoLink<SystemPort> {
-  pub fn open(port: impl AsRef<OsStr>) -> Result<OptoLink<SystemPort>, io::Error> {
+impl OptoLink {
+  pub fn open(port: impl AsRef<OsStr>) -> Result<OptoLink, io::Error> {
     let mut tty = serial::open(&port)?;
 
     tty.set_timeout(Self::TIMEOUT)?;
@@ -28,19 +32,17 @@ impl OptoLink<SystemPort> {
 
     tty.write_settings(&tty_settings)?;
 
-    Ok(OptoLink { device: tty })
+    Ok(OptoLink { device: Box::new(tty) })
   }
-}
 
-impl OptoLink<TcpStream> {
-  pub fn connect(addr: impl ToSocketAddrs) -> Result<OptoLink<TcpStream>, io::Error> {
+  pub fn connect(addr: impl ToSocketAddrs) -> Result<OptoLink, io::Error> {
     let stream = TcpStream::connect(addr)?;
     stream.set_read_timeout(Some(Self::TIMEOUT))?;
-    Ok(OptoLink { device: stream })
+    Ok(OptoLink { device: Box::new(stream) })
   }
 }
 
-impl<T> Write for OptoLink<T> where T: Write {
+impl Write for OptoLink {
   fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
     self.device.write(buf)
   }
@@ -50,7 +52,7 @@ impl<T> Write for OptoLink<T> where T: Write {
   }
 }
 
-impl<T> Read for OptoLink<T> where T: Read {
+impl Read for OptoLink {
   fn read(&mut self, buf: &mut [u8]) -> Result<usize, io::Error> {
     self.device.read(buf)
   }

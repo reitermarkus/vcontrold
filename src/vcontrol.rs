@@ -1,57 +1,8 @@
-use std::io::{self, Read, Write};
 use std::process::exit;
 
 use clap::{crate_version, Arg, App, SubCommand, AppSettings::ArgRequiredElseHelp};
 
-use vcontrol::{Configuration, PreparedProtocolCommand, OptoLink};
-
-fn pretty_bytes(bytes: &[u8]) -> String {
-  bytes.iter().map(|byte| format!("{:02X}", byte)).collect::<Vec<_>>().join(" ")
-}
-
-trait ReadWrite: Read + Write {}
-impl<T> ReadWrite for T where T: Read + Write {}
-
-fn execute_command(socket: &mut ReadWrite, commands: &[PreparedProtocolCommand]) -> Result<Option<Box<std::fmt::Display>>, io::Error> {
-  // socket.set_nonblocking(true)?;
-  //
-  // let mut vec = Vec::new();
-  // let _ = socket.read_to_end(&mut vec);
-  //
-  // socket.set_nonblocking(false)?;
-
-  let mut res = None;
-
-  for command in commands {
-    match command {
-      PreparedProtocolCommand::Send(bytes) => {
-        socket.write(&bytes)?;
-      },
-      PreparedProtocolCommand::Wait(bytes) => {
-        let mut buf = vec![0; bytes.len()];
-        socket.read_exact(&mut buf)?;
-
-        if &buf != bytes {
-          return Err(io::Error::new(io::ErrorKind::Other, format!("failed to wait for {}, received {}", pretty_bytes(bytes), pretty_bytes(&buf))))
-        }
-      },
-      PreparedProtocolCommand::Recv(unit) => {
-        let len = unit.size();
-        socket.write(&[len as u8])?;
-        socket.flush().unwrap();
-
-        let mut buf = vec![0; len];
-        socket.read_exact(&mut buf)?;
-
-        println!("Received: {}", pretty_bytes(&buf));
-
-        res = Some(unit.bytes_to_output(&buf));
-      },
-    }
-  }
-
-  Ok(res)
-}
+use vcontrol::{Configuration, OptoLink, Kw2};
 
 fn main() {
   let config = Configuration::default();
@@ -98,8 +49,8 @@ fn main() {
 
   println!("Connecting ...");
 
-  let mut device: Box<ReadWrite> = if let Some(device) = matches.value_of("device") {
-    Box::new(OptoLink::open(device).unwrap())
+  let mut device = if let Some(device) = matches.value_of("device") {
+    OptoLink::open(device).unwrap()
   } else {
     let host = matches.value_of("host").unwrap_or("localhost");
     let port = matches.value_of("port")
@@ -111,18 +62,15 @@ fn main() {
                  })
                  .unwrap();
 
-    Box::new(OptoLink::connect((host, port)).unwrap())
+    OptoLink::connect((host, port)).unwrap()
   };
 
   if let Some(matches) = matches.subcommand_matches("get") {
     let command = matches.value_of("command").unwrap();
-    let command = config.prepare_command("KW2", command, "get", "");
 
-    match execute_command(&mut device, &command) {
-      Ok(res) => {
-        if let Some(output) = res {
-          println!("{}", output);
-        };
+    match config.get_command::<Kw2>(&mut device, command) {
+      Ok(output) => {
+        println!("{}", output);
       },
       Err(err) => {
         eprintln!("Error: {}", err);
@@ -134,14 +82,9 @@ fn main() {
   if let Some(matches) = matches.subcommand_matches("set") {
     let command = matches.value_of("command").unwrap();
     let value = matches.value_of("value").unwrap();
-    let command = config.prepare_command("KW2", command, "set", value);
 
-    match execute_command(&mut device, &command) {
-      Ok(res) => {
-        if let Some(output) = res {
-          println!("{}", output);
-        };
-      },
+    match config.set_command::<Kw2>(&mut device, command, value) {
+      Ok(()) => {},
       Err(err) => {
         eprintln!("Error: {}", err);
         exit(1);

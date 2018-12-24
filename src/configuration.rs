@@ -1,14 +1,13 @@
+use std::io;
 use std::collections::HashMap;
 use std::fmt;
-use std::str::FromStr;
 
-use byteorder::{ByteOrder, LittleEndian};
 use serde_derive::*;
 use serde_yaml;
 use serde::de::{self, Deserialize, Deserializer};
 
-use crate::expression::Expression;
 use crate::types::{*};
+use crate::{OptoLink, Protocol};
 
 pub const DEFAULT_CONFIG: &str = include_str!("../config/default.yml");
 
@@ -63,79 +62,10 @@ impl fmt::Debug for Scalar {
   }
 }
 
-#[derive(Clone)]
-pub enum ProtocolCommand {
-  Command(String),
-  Send(Vec<Scalar>),
-  Wait(Vec<u8>),
-  Recv(String),
-}
-
-impl<'de> Deserialize<'de> for ProtocolCommand {
-  fn deserialize<D>(deserializer: D) -> Result<ProtocolCommand, D::Error>
-  where
-      D: Deserializer<'de>,
-  {
-    #[derive(Deserialize)]
-    enum Operation {
-      #[serde(rename = "send")]
-      Send(Vec<Scalar>),
-      #[serde(rename = "wait")]
-      Wait(Vec<u8>),
-      #[serde(rename = "recv")]
-      Recv(String),
-    }
-
-    #[derive(Deserialize)]
-    #[serde(untagged)]
-    enum OperationOrReference {
-      Operation(Operation),
-      Reference(String),
-    }
-
-    match OperationOrReference::deserialize(deserializer)? {
-      OperationOrReference::Operation(operation) => match operation {
-        Operation::Send(scalars) => Ok(ProtocolCommand::Send(scalars)),
-        Operation::Wait(bytes) => Ok(ProtocolCommand::Wait(bytes)),
-        Operation::Recv(string) => Ok(ProtocolCommand::Recv(string)),
-      },
-      OperationOrReference::Reference(reference) => Ok(ProtocolCommand::Command(reference)),
-    }
-  }
-}
-
-impl fmt::Debug for ProtocolCommand {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    match self {
-      ProtocolCommand::Command(command) => write!(f, "{}", command)?,
-      ProtocolCommand::Send(scalars) => {
-        write!(f, "send")?;
-
-        for s in scalars {
-          write!(f, " {:?}", s)?;
-        }
-      },
-      ProtocolCommand::Wait(bytes) => {
-        write!(f, "wait")?;
-
-        for b in bytes {
-          write!(f, " {:02X}", b)?;
-        }
-      },
-      ProtocolCommand::Recv(unit) => {
-        write!(f, "recv {}", unit)?;
-      }
-    }
-
-    Ok(())
-  }
-}
-
 #[derive(Debug, Deserialize)]
 pub struct Configuration {
   pub commands: HashMap<String, Command>,
   pub units: HashMap<String, Unit>,
-  pub protocols: HashMap<String, HashMap<String, Vec<ProtocolCommand>>>,
 }
 
 pub trait FromBytes {
@@ -207,85 +137,30 @@ impl Default for Configuration {
 
 impl Configuration {
   pub fn from_str(string: &str) -> Result<Configuration, serde_yaml::Error> {
-    let mut config: Configuration = serde_yaml::from_str(&string)?;
-    config.canonicalize_protocols();
-    Ok(config)
+    serde_yaml::from_str(&string)
   }
 
-  fn canonicalize_protocols(&mut self) {
-    self.protocols = self.protocols.clone().into_iter().map(|(protocol_name, commands)| {
-      (
-        protocol_name,
-        commands.clone().into_iter().map(|(command_name, command)| {
-          (
-            command_name,
-            command.into_iter().flat_map(|operation| {
-              match operation {
-                ProtocolCommand::Command(alias_name) => commands[&alias_name].clone(),
-                operation => vec![operation],
-              }
-            }).collect(),
-          )
-        }).collect(),
-      )
-    }).collect();
-  }
-
-  pub fn prepare_command(&self, protocol: &str, command: &str, action: &str, input: &str) -> Vec<PreparedProtocolCommand> {
-    let procol_command_name = if action == "get" {
-      &self.commands[command].get
-    } else {
-      &self.commands[command].set
-    };
-
+  pub fn get_command<P: Protocol>(&self, o: &mut OptoLink, command: &str) -> Result<Box<fmt::Display>, io::Error> {
     let addr = &self.commands[command].addr;
-
     let unit = self.unit_for_command(&command);
 
-    let bytes = if action == "set" {
-      unit.input_to_bytes(input).unwrap().to_bytes()
-    } else {
-      Vec::new()
-    };
-
-    let protocol_command = &self.protocols[protocol][&procol_command_name.clone().unwrap()];
-    self.prepare_command_raw(&protocol_command, &addr, &bytes, &unit)
+    let mut buf = vec![0; unit.size()];
+    P::get(o, &addr, &mut buf)?;
+    Ok(unit.bytes_to_output(&buf))
   }
 
-  pub fn prepare_command_raw(&self, command: &[ProtocolCommand], addr: &[u8], bytes: &[u8], unit: &Unit) -> Vec<PreparedProtocolCommand> {
-    let len = unit.size();
+  pub fn set_command<P: Protocol>(&self, o: &mut OptoLink, command: &str, input: &str) -> Result<(), io::Error> {
+    let addr = &self.commands[command].addr;
+    let unit = self.unit_for_command(&command);
 
-    command.to_vec().into_iter().map(|protocol_operation| {
-      match protocol_operation {
-        ProtocolCommand::Send(scalars) => PreparedProtocolCommand::Send(scalars.into_iter().flat_map(|scalar| {
-            match scalar {
-              Scalar::Addr => addr.to_vec(),
-              Scalar::Bytes => {
-                assert_eq!(bytes.len(), len, "length of $bytes must match $len");
-                bytes.to_vec()
-              },
-              Scalar::Byte(byte) => vec![byte],
-              Scalar::Len => vec![unit.size() as u8],
-            }
-        }).collect()),
-        ProtocolCommand::Wait(bytes) => PreparedProtocolCommand::Wait(bytes),
-        ProtocolCommand::Recv(_) => PreparedProtocolCommand::Recv(unit.clone()),
-        _ => panic!("canonicalize_protocols was not called"),
-      }
-    }).collect()
+    P::set(o, &addr, &unit.input_to_bytes(input).unwrap().to_bytes())?;
+    Ok(())
   }
 
   fn unit_for_command(&self, command: &str) -> &Unit {
     let unit = &self.commands[command].unit;
     &self.units[unit]
   }
-}
-
-#[derive(Debug, Clone)]
-pub enum PreparedProtocolCommand {
-  Send(Vec<u8>),
-  Wait(Vec<u8>),
-  Recv(Unit),
 }
 
 #[inline(always)]

@@ -12,7 +12,7 @@ use libc::{AI_PASSIVE, AI_ALL, AI_V4MAPPED, TCP_NODELAY, LOG_INFO, LOG_NOTICE, L
 use libc::getaddrinfo;
 use libc::exit;
 
-include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+// include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 macro_rules! log_it {
   ($level:expr, $($arg:tt)*) => {{
@@ -21,25 +21,28 @@ macro_rules! log_it {
   }}
 }
 
-mod arithmetic;
-pub use crate::arithmetic::*;
+// mod arithmetic;
+// pub use crate::arithmetic::*;
 
-mod common;
-pub use crate::common::*;
+// mod common;
+// pub use crate::common::*;
 
-mod io;
-pub use crate::io::*;
+// mod io;
+// pub use crate::io::*;
 
-mod socket;
-pub use crate::socket::*;
+// mod socket;
+// pub use crate::socket::*;
 
 mod configuration;
 pub use crate::configuration::*;
 
-mod expression;
+// mod expression;
 
 mod types;
 pub use crate::types::*;
 
 mod optolink;
 pub use crate::optolink::*;
+
+mod protocol;
+pub use crate::protocol::*;

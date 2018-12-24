@@ -2,332 +2,295 @@ commands:
   system_type:
     addr: [0x00, 0xF8]
     unit: DT
-    get: getaddr
+    type: get
   system_time:
     addr: [0x08, 0x8E]
     unit: TI
-    get: getaddr
-    set: setaddr
+    type: both
   operatingmode:
     addr: [0x33, 0x01]
     unit: E_BA2
-    get: getaddr
-    set: setaddr
+    type: both
   energysavermode_state:
     addr: [0x33, 0x02]
     unit: E_ST
-    get: getaddr
-    set: setaddr
+    type: both
   partymode_state:
     addr: [0x33, 0x03]
     unit: E_ST
-    get: getaddr
-    set: setaddr
+    type: both
   partymode_temp:
     addr: [0x33, 0x08]
     unit: T1U
-    get: getaddr
-    set: setaddr
+    type: both
   vacationmode_state:
     addr: [0x35, 0x35]
     unit: B_FB
-    get: getaddr
-    set: setaddr
+    type: both
   vacationmode_date_departure:
     addr: [0x33, 0x09]
     unit: TI
-    get: getaddr
-    set: setaddr
+    type: both
   vacationmode_date_return:
     addr: [0x33, 0x11]
     unit: TI
-    get: getaddr
-    set: setaddr
+    type: both
   boiler_temp_state:
     addr: [0x08, 0x3B]
     unit: E_TS
-    get: getaddr
+    type: get
   boiler_temp_actual:
     addr: [0x08, 0x02]
     unit: TD
-    get: getaddr
+    type: get
   boiler_temp_desired:
     addr: [0x55, 0x02]
     unit: TD
-    get: getaddr
+    type: get
   boiler_temp_lowpass:
     addr: [0x08, 0x10]
     unit: TD
-    get: getaddr
+    type: get
   storagetank_chargingpump_state:
     addr: [0x08, 0x45]
     unit: E_ST
-    get: getaddr
+    type: get
   storagetank_temp_lowpass:
     addr: [0x08, 0x12]
     unit: TD
-    get: getaddr
+    type: get
   burner_state_1:
     addr: [0x08, 0x42]
     unit: E_ST
-    get: getaddr
+    type: get
   burner_state_2:
     addr: [0x08, 0x49]
     unit: E_ST
-    get: getaddr
+    type: get
   burner_state_error:
     addr: [0x08, 0x83]
     unit: E_ST
-    get: getaddr
+    type: get
   burner_starts:
     addr: [0x08, 0x8A]
     unit: CO
-    get: getaddr
+    type: get
   burner_hours_1:
     addr: [0x08, 0xA7]
     unit: HS
-    get: getaddr
+    type: get
   outside_temp_state:
     addr: [0x08, 0x3A]
     unit: E_TS
-    get: getaddr
+    type: get
   outside_temp_actual:
     addr: [0x08, 0x00]
     unit: TD
-    get: getaddr
+    type: get
   outside_temp_mixed:
     addr: [0x55, 0x27]
     unit: TD
-    get: getaddr
+    type: get
   outside_temp_lowpass:
     addr: [0x55, 0x25]
     unit: TD
-    get: getaddr
+    type: get
   circulationpump_state:
     addr: [0x08, 0x46]
     unit: E_ST
-    get: getaddr
+    type: get
   circulationpump_timer_mon:
     addr: [0x22, 0x00]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   circulationpump_timer_tue:
     addr: [0x22, 0x08]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   circulationpump_timer_wed:
     addr: [0x22, 0x10]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   circulationpump_timer_thu:
     addr: [0x22, 0x18]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   circulationpump_timer_fri:
     addr: [0x22, 0x20]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   circulationpump_timer_sat:
     addr: [0x22, 0x28]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   circulationpump_timer_sun:
     addr: [0x22, 0x30]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   hotwater_temp_actual:
     addr: [0x08, 0x04]
     unit: TD
-    get: getaddr
+    type: get
   hotwater_temp_desired:
     addr: [0x63, 0x00]
     unit: T1U
-    get: getaddr
-  hotwater_temp_desired:
-    addr: [0x63, 0x00]
-    unit: T1U
-    set: setaddr
+    type: both
   hotwater_release:
     addr: [0x35, 0x00]
     unit: E_WWF
-    get: getaddr
+    type: get
   hotwater_timer_mon:
     addr: [0x31, 0x00]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   hotwater_timer_tue:
     addr: [0x31, 0x08]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   hotwater_timer_wed:
     addr: [0x31, 0x10]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   hotwater_timer_thu:
     addr: [0x31, 0x18]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   hotwater_timer_fri:
     addr: [0x31, 0x20]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   hotwater_timer_sat:
     addr: [0x31, 0x28]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   hotwater_timer_sun:
     addr: [0x31, 0x30]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   heatingcircuit_mode:
     addr: [0x35, 0x00]
     unit: E_BA
-    get: getaddr
+    type: get
   heatingcircuit_pump_state:
     addr: [0x39, 0x06]
     unit: E_ST
-    get: getaddr
+    type: get
   heatingcircuit_pump_command:
     addr: [0x35, 0x00]
     unit: E_HKP
-    get: getaddr
+    type: get
   heatingcircuit_rp_temp_state:
     addr: [0x08, 0x3F]
     unit: E_TS
-    get: getaddr
+    type: get
   heatingcircuit_rp_temp_lowpass:
     addr: [0x08, 0x1A]
     unit: TD
-    get: getaddr
+    type: get
   heatingcircuit_fp_temp_state:
     addr: [0x08, 0x40]
     unit: E_TS
-    get: getaddr
+    type: get
   heatingcircuit_fp_temp_actual:
     addr: [0x39, 0x00]
     unit: TD
-    get: getaddr
+    type: get
   heatingcircuit_fp_temp_desired:
     addr: [0x35, 0x00]
     unit: TD
-    get: getaddr
+    type: get
   heatingcircuit_fp_temp_lowpass:
     addr: [0x08, 0x18]
     unit: TD
-    get: getaddr
+    type: get
   heatingcircuit_timer_mon:
     addr: [0x30, 0x00]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   heatingcircuit_timer_tue:
     addr: [0x30, 0x08]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   heatingcircuit_timer_wed:
     addr: [0x30, 0x10]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   heatingcircuit_timer_thu:
     addr: [0x30, 0x18]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   heatingcircuit_timer_fri:
     addr: [0x30, 0x20]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   heatingcircuit_timer_sat:
     addr: [0x30, 0x28]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   heatingcircuit_timer_sun:
     addr: [0x30, 0x30]
     unit: CT
-    get: getaddr
-    set: setaddr
+    type: both
   heatingcurve_niveau:
     addr: [0x33, 0x04]
     unit: HKLN
-    get: getaddr
-    set: setaddr
+    type: both
   heatingcurve_incline:
     addr: [0x33, 0x05]
     unit: HKLS
-    get: getaddr
-    set: setaddr
+    type: both
   roomtemp_day_desired:
     addr: [0x33, 0x06]
     unit: T1U
-    get: getaddr
-    set: setaddr
+    type: both
   roomtemp_night_desired:
     addr: [0x33, 0x07]
     unit: T1U
-    get: getaddr
-    set: setaddr
+    type: both
   frostwarning_state:
     addr: [0x35, 0x00]
     unit: B_FW
-    get: getaddr
+    type: get
   error_01:
     addr: [0x75, 0x07]
     unit: ES
-    get: getaddr
+    type: get
   error_02:
     addr: [0x75, 0x10]
     unit: ES
-    get: getaddr
+    type: get
   error_03:
     addr: [0x75, 0x19]
     unit: ES
-    get: getaddr
+    type: get
   error_04:
     addr: [0x75, 0x22]
     unit: ES
-    get: getaddr
+    type: get
   error_05:
     addr: [0x75, 0x2B]
     unit: ES
-    get: getaddr
+    type: get
   error_06:
     addr: [0x75, 0x34]
     unit: ES
-    get: getaddr
+    type: get
   error_07:
     addr: [0x75, 0x3D]
     unit: ES
-    get: getaddr
+    type: get
   error_08:
     addr: [0x75, 0x46]
     unit: ES
-    get: getaddr
+    type: get
   error_09:
     addr: [0x75, 0x4F]
     unit: ES
-    get: getaddr
+    type: get
   error_10:
     addr: [0x75, 0x58]
     unit: ES
-    get: getaddr
+    type: get
 units:
   ES:
     name: ErrorStatus
@@ -581,16 +544,3 @@ units:
       [0x20, 0xC9]: VScotHC1
       [0x20, 0xCA]: VScotHC2
       [0x20, 0xCB]: VScotHO1
-protocols:
-  KW2:
-    sync:
-      - send: [0x04]
-      - wait: [0x05]
-    getaddr:
-      - sync
-      - send: [0x01, 0xF7, $addr, $len]
-      - recv: $unit
-    setaddr:
-      - sync
-      - send: [0x01, 0xF4, $addr, $len, $bytes]
-      - wait: [0x00]

@@ -139,25 +139,65 @@ pub struct Configuration {
 }
 
 pub trait FromBytes {
-  fn from_bytes(bytes:&[u8]) -> Self;
+  fn from_bytes(bytes: &[u8]) -> Self;
 }
 
-pub trait AsBytes {
-  fn as_bytes(&self) -> &[u8];
+pub trait ToBytes {
+  fn to_bytes(&self) -> Vec<u8>;
 }
 
-impl FromBytes for u8 {
-  fn from_bytes(bytes: &[u8]) -> u8 {
-    assert_eq!(bytes.len(), 1);
-    bytes[0]
+impl FromBytes for Vec<u8> {
+  fn from_bytes(bytes: &[u8]) -> Vec<u8> {
+    bytes.to_vec()
   }
 }
 
-impl FromBytes for i16 {
-  fn from_bytes(bytes: &[u8]) -> i16 {
-    LittleEndian::read_i16(&bytes)
+impl ToBytes for Vec<u8> {
+  fn to_bytes(&self) -> Vec<u8> {
+    self.clone()
   }
 }
+
+macro_rules! from_bytes_le {
+  ($($t:ty),+) => {
+    $(
+      impl FromBytes for $t {
+        fn from_bytes(bytes: &[u8]) -> Self {
+          let mut buf = [0; std::mem::size_of::<Self>()];
+          buf.copy_from_slice(&bytes);
+          Self::from_le(unsafe { std::mem::transmute(buf) })
+        }
+      }
+    )+
+  };
+}
+
+macro_rules! to_bytes_le {
+  ($t:ty, [u8; 1]) => {
+    impl ToBytes for $t {
+      fn to_bytes(&self) -> Vec<u8> {
+        vec![*self as u8]
+      }
+    }
+  };
+  ($t:ty, $n:ty) => {
+    impl ToBytes for $t {
+      fn to_bytes(&self) -> Vec<u8> {
+        unsafe { std::mem::transmute::<$t, $n>(self.to_le()) }.to_vec()
+      }
+    }
+  };
+}
+
+from_bytes_le!(i8, i16, i32);
+to_bytes_le!(i8,  [u8; 1]);
+to_bytes_le!(i16, [u8; 2]);
+to_bytes_le!(i32, [u8; 4]);
+
+from_bytes_le!(u8, u16, u32);
+to_bytes_le!(u8,  [u8; 1]);
+to_bytes_le!(u16, [u8; 2]);
+to_bytes_le!(u32, [u8; 4]);
 
 impl Default for Configuration {
   fn default() -> Configuration {
@@ -191,7 +231,7 @@ impl Configuration {
     }).collect();
   }
 
-  pub fn prepare_command(&self, protocol: &str, command: &str, action: &str, bytes: &[u8]) -> Vec<PreparedProtocolCommand> {
+  pub fn prepare_command(&self, protocol: &str, command: &str, action: &str, input: &str) -> Vec<PreparedProtocolCommand> {
     let procol_command_name = if action == "get" {
       &self.commands[command].get
     } else {
@@ -201,6 +241,13 @@ impl Configuration {
     let addr = &self.commands[command].addr;
 
     let unit = self.unit_for_command(&command);
+
+    let bytes = if action == "set" {
+      unit.input_to_bytes(input).unwrap().to_bytes()
+    } else {
+      Vec::new()
+    };
+
     let protocol_command = &self.protocols[protocol][&procol_command_name.clone().unwrap()];
     self.prepare_command_raw(&protocol_command, &addr, &bytes, &unit)
   }
@@ -243,18 +290,12 @@ pub enum PreparedProtocolCommand {
 
 #[inline(always)]
 fn f32_one() -> f32 {
-  0.0
+  1.0
 }
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "type")]
 pub enum Unit {
-  #[serde(rename = "f8")]
-  F8 { name: String, #[serde(default = "f32_one")] factor: f32 },
-  #[serde(rename = "f16")]
-  F16 { name: String, #[serde(default = "f32_one")] factor: f32 },
-  #[serde(rename = "f32")]
-  F32 { name: String, #[serde(default = "f32_one")] factor: f32 },
   #[serde(rename = "i8")]
   I8 { name: String, #[serde(default = "f32_one")] factor: f32 },
   #[serde(rename = "i16")]
@@ -282,15 +323,12 @@ impl Unit {
     use self::Unit::*;
 
     match self {
-      F8 { .. } => std::mem::size_of::<Float8>(),
-      F16 { .. } => std::mem::size_of::<Float16>(),
-      F32 { .. } => std::mem::size_of::<Float32>(),
-      I8 { .. } => std::mem::size_of::<Int8>(),
-      I16 { .. } => std::mem::size_of::<Int16>(),
-      I32 { .. } => std::mem::size_of::<Int32>(),
-      U8 { .. } => std::mem::size_of::<UInt8>(),
-      U16 { .. } => std::mem::size_of::<UInt16>(),
-      U32 { .. } => std::mem::size_of::<UInt32>(),
+      I8 { .. } => std::mem::size_of::<i8>(),
+      I16 { .. } => std::mem::size_of::<i16>(),
+      I32 { .. } => std::mem::size_of::<i32>(),
+      U8 { .. } => std::mem::size_of::<u8>(),
+      U16 { .. } => std::mem::size_of::<u16>(),
+      U32 { .. } => std::mem::size_of::<u32>(),
       Enum { mapping, .. } => mapping.keys().next().unwrap().len(),
       SysTime { .. } => std::mem::size_of::<self::SysTime>(),
       ErrState { .. } => std::mem::size_of::<self::ErrState>(),
@@ -299,18 +337,13 @@ impl Unit {
   }
 
   pub fn bytes_to_output(&self, bytes: &[u8]) -> Box<fmt::Display> {
-    assert_eq!(bytes.len(), self.size());
-
     match self {
-      Unit::F8 { factor, .. }    => Box::new(f32::from(Float8::from_bytes(bytes)) as f32 / factor),
-      Unit::F16 { factor, .. }   => Box::new(f32::from(Float16::from_bytes(bytes)) as f32 / factor),
-      Unit::F32 { factor, .. }   => Box::new(f32::from(Float32::from_bytes(bytes)) as f32 / factor),
-      Unit::I8 { factor, .. }    => Box::new(i32::from(Int8::from_bytes(bytes)) as f32 / factor),
-      Unit::I16 { factor, .. }   => Box::new(i32::from(Int16::from_bytes(bytes)) as f32 / factor),
-      Unit::I32 { factor, .. }   => Box::new(i32::from(Int32::from_bytes(bytes)) as f32 / factor),
-      Unit::U8 { factor, .. }    => Box::new(u32::from(UInt8::from_bytes(bytes)) as f32 / factor),
-      Unit::U16 { factor, .. }   => Box::new(u32::from(UInt16::from_bytes(bytes)) as f32 / factor),
-      Unit::U32 { factor, .. }   => Box::new(u32::from(UInt32::from_bytes(bytes)) as f32 / factor),
+      Unit::I8 { factor, .. }    => Box::new(i8::from_bytes(bytes) as f32 / factor),
+      Unit::I16 { factor, .. }   => Box::new(i16::from_bytes(bytes) as f32 / factor),
+      Unit::I32 { factor, .. }   => Box::new(i32::from_bytes(bytes) as f32 / factor),
+      Unit::U8 { factor, .. }    => Box::new(u8::from_bytes(bytes) as f32 / factor),
+      Unit::U16 { factor, .. }   => Box::new(u16::from_bytes(bytes) as f32 / factor),
+      Unit::U32 { factor, .. }   => Box::new(u32::from_bytes(bytes) as f32 / factor),
       Unit::Enum { mapping, .. } => Box::new(mapping[&bytes.to_vec()].to_owned()),
       Unit::SysTime { .. }       => Box::new(SysTime::from_bytes(bytes)),
       Unit::ErrState { mapping, .. } => {
@@ -321,28 +354,19 @@ impl Unit {
     }
   }
 
-  pub fn input_to_bytes(&self, input: &str) -> Result<Box<AsBytes>, String> {
+  pub fn input_to_bytes(&self, input: &str) -> Result<Box<ToBytes>, String> {
     Ok(match self {
-      Unit::F8 { factor, .. }    => Box::new(Float8::from(input.parse::<f32>().map(|f| f * factor).map_err(|err| err.to_string())?)),
-      Unit::F16 { factor, .. }   => Box::new(Float16::from(input.parse::<f32>().map(|f| f * factor).map_err(|err| err.to_string())?)),
-      Unit::F32 { factor, .. }   => Box::new(Float32::from(input.parse::<f32>().map(|f| f * factor).map_err(|err| err.to_string())?)),
-      Unit::I8 { factor, .. }    => Box::new(Int8::from(input.parse::<i32>().map(|f| (f as f32 * factor) as i32).map_err(|err| err.to_string())?)),
-      Unit::I16 { factor, .. }   => Box::new(Int16::from(input.parse::<i32>().map(|f| (f as f32 * factor) as i32).map_err(|err| err.to_string())?)),
-      Unit::I32 { factor, .. }   => Box::new(Int32::from(input.parse::<i32>().map(|f| (f as f32 * factor) as i32).map_err(|err| err.to_string())?)),
-      Unit::U8 { factor, .. }    => Box::new(UInt8::from(input.parse::<u32>().map(|f| (f as f32 * factor) as u32).map_err(|err| err.to_string())?)),
-      Unit::U16 { factor, .. }   => Box::new(UInt16::from(input.parse::<u32>().map(|f| (f as f32 * factor) as u32).map_err(|err| err.to_string())?)),
-      Unit::U32 { factor, .. }   => Box::new(UInt32::from(input.parse::<u32>().map(|f| (f as f32 * factor) as u32).map_err(|err| err.to_string())?)),
+      Unit::I8 { factor, .. }    => Box::new(input.parse::<f32>().map(|v| (v * factor) as i8).map_err(|err| err.to_string())?),
+      Unit::I16 { factor, .. }   => Box::new(input.parse::<f32>().map(|v| (v * factor) as i16).map_err(|err| err.to_string())?),
+      Unit::I32 { factor, .. }   => Box::new(input.parse::<f32>().map(|v| (v * factor) as i32).map_err(|err| err.to_string())?),
+      Unit::U8 { factor, .. }    => Box::new(input.parse::<f32>().map(|v| (v * factor) as u8).map_err(|err| err.to_string())?),
+      Unit::U16 { factor, .. }   => Box::new(input.parse::<f32>().map(|v| (v * factor) as u16).map_err(|err| err.to_string())?),
+      Unit::U32 { factor, .. }   => Box::new(input.parse::<f32>().map(|v| (v * factor) as u32).map_err(|err| err.to_string())?),
       Unit::Enum { mapping, .. } => Box::new(mapping.iter().find(|(_, value)| value == &input).map(|(key, _)| key.clone()).unwrap()),
-      Unit::SysTime { .. }       => Box::new(SysTime::from_str(input)?),
-      Unit::ErrState { .. }      => Box::new(ErrState::from_str(input)?),
-      Unit::CycleTime { .. }     => Box::new(CycleTime::from_str(input)?),
+      Unit::SysTime { .. }       => Box::new(input.parse::<SysTime>()?),
+      Unit::ErrState { .. }      => Box::new(input.parse::<ErrState>()?),
+      Unit::CycleTime { .. }     => Box::new(input.parse::<CycleTime>()?),
     })
-  }
-}
-
-impl AsBytes for Vec<u8> {
-  fn as_bytes(&self) -> &[u8] {
-    &self
   }
 }
 

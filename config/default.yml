@@ -450,10 +450,10 @@ units:
       [0x02]: 'OFF'
   HKLN:
     name: Niveau
-    type: f8
+    type: i8
   HKLS:
     name: Steigung
-    type: f8
+    type: i8
     factor: 10
   E_HKP:
     name: HeizkreisPumpenBefehl
@@ -493,7 +493,7 @@ units:
     factor: 3600
   TD:
     name: Temperatur
-    type: f16
+    type: i16
     factor: 10
   T1U:
     name: Temperatur

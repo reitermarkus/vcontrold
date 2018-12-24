@@ -1,7 +1,7 @@
 use std::fmt;
 use std::str::FromStr;
 
-use crate::{FromBytes, AsBytes};
+use crate::{FromBytes, ToBytes};
 use crate::types::SysTime;
 
 byte_type!(ErrState, 9);
@@ -19,8 +19,8 @@ impl ErrState {
 impl FromStr for ErrState {
   type Err = String;
 
-  fn from_str(s: &str) -> Result<ErrState, Self::Err> {
-    unimplemented!("ErrState::from_str")
+  fn from_str(_: &str) -> Result<ErrState, Self::Err> {
+    Err("parsing ErrState is not supported")?
   }
 }
 

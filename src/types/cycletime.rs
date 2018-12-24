@@ -1,8 +1,6 @@
 use std::fmt;
 use std::str::FromStr;
 
-use crate::{FromBytes, AsBytes};
-
 byte_type!(CycleTime, 8);
 
 impl CycleTime {

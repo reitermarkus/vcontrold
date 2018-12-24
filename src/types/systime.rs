@@ -3,8 +3,6 @@ use std::str::FromStr;
 
 use chrono::{NaiveDate, NaiveDateTime, Datelike, Timelike};
 
-use crate::{FromBytes, AsBytes};
-
 #[inline]
 fn byte_to_dec(byte: u8) -> u8 {
   byte / 16 * 10 + byte % 16
@@ -145,8 +143,8 @@ mod tests {
   }
 
   #[test]
-  fn as_bytes() {
+  fn to_bytes() {
     let time = SysTime::new(2018, 12, 23, 17, 49, 31);
-    assert_eq!(time.as_bytes(), &[0x20, 0x18, 0x12, 0x23, 0x07, 0x17, 0x49, 0x31]);
+    assert_eq!(time.to_bytes(), [0x20, 0x18, 0x12, 0x23, 0x07, 0x17, 0x49, 0x31]);
   }
 }

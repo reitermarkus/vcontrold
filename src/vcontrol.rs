@@ -116,7 +116,7 @@ fn main() {
 
   if let Some(matches) = matches.subcommand_matches("get") {
     let command = matches.value_of("command").unwrap();
-    let command = config.prepare_command("KW2", command, "get", &[]);
+    let command = config.prepare_command("KW2", command, "get", "");
 
     match execute_command(&mut device, &command) {
       Ok(res) => {
@@ -134,7 +134,7 @@ fn main() {
   if let Some(matches) = matches.subcommand_matches("set") {
     let command = matches.value_of("command").unwrap();
     let value = matches.value_of("value").unwrap();
-    let command = config.prepare_command("KW2", command, "set", &[]);
+    let command = config.prepare_command("KW2", command, "set", value);
 
     match execute_command(&mut device, &command) {
       Ok(res) => {

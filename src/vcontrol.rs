@@ -46,9 +46,6 @@ fn main() {
 
   let matches = app.get_matches();
 
-
-  println!("Connecting ...");
-
   let mut device = if let Some(device) = matches.value_of("device") {
     Optolink::open(device).unwrap()
   } else {

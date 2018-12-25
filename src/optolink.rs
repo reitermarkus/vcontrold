@@ -41,16 +41,22 @@ impl Optolink {
 
   pub fn purge(&mut self) -> Result<(), io::Error> {
     match &mut self.device {
-      Device::Tty(tty) => { tty.set_timeout(Duration::new(0, 0))?; }
-      Device::Stream(stream) => { stream.set_nonblocking(true)?; },
-    }
+      Device::Tty(tty) => {
+        tty.set_timeout(Duration::new(0, 0))?;
 
-    let mut buf = [0];
-    while self.read_exact(&mut buf).is_ok() { }
+        let mut buf = [0];
+        while tty.read_exact(&mut buf).is_ok() { }
 
-    match &mut self.device {
-      Device::Tty(tty) => { tty.set_timeout(Self::TIMEOUT)?; },
-      Device::Stream(stream) => { stream.set_nonblocking(false)?; },
+        tty.set_timeout(Self::TIMEOUT)?;
+      }
+      Device::Stream(stream) => {
+        stream.set_nonblocking(true)?;
+
+        let mut buf = [0];
+        while stream.read_exact(&mut buf).is_ok() { }
+
+        stream.set_nonblocking(false)?;
+      },
     }
 
     Ok(())

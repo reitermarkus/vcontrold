@@ -20,20 +20,34 @@ impl Kw2 {
       return Err(std::io::Error::new(std::io::ErrorKind::Other, "sync failed"))
     }
 
+    o.purge()?;
+
     Ok(())
   }
 }
 
 impl Protocol for Kw2 {
   fn get(o: &mut Optolink, addr: &[u8], buf: &mut [u8]) -> Result<(), io::Error> {
-    Self::sync(o)?;
+    for _ in 0..2 {
+      Self::sync(o)?;
 
-    o.write(&[0x01, 0xf7])?;
-    o.write(addr)?;
-    o.write(&[buf.len() as u8])?;
-    o.flush()?;
+      o.write(&[0x01, 0xf7])?;
+      o.write(addr)?;
+      o.purge()?;
+      o.write(&[buf.len() as u8])?;
+      o.flush()?;
 
-    o.read_exact(buf)?;
+      o.read_exact(buf)?;
+
+      // Retry once if the response only contains `0x05`,
+      // since these could be synchronization bytes.
+      if buf.iter().all(|byte| *byte == 0x05) {
+        eprintln!("{:?} -> retrying", buf);
+        continue
+      } else {
+        break
+      }
+    }
 
     Ok(())
   }
@@ -44,6 +58,7 @@ impl Protocol for Kw2 {
     o.write(&[0x01, 0xf4])?;
     o.write(addr)?;
     o.write(&[value.len() as u8])?;
+    o.purge()?;
     o.write(value)?;
     o.flush()?;
 

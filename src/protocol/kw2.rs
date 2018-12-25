@@ -6,6 +6,8 @@ pub struct Kw2;
 
 impl Kw2 {
   fn sync(o: &mut OptoLink) -> Result<(), std::io::Error> {
+    o.purge()?;
+
     o.write(&[0x04])?;
     o.flush()?;
 

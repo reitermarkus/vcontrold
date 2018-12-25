@@ -1,11 +1,13 @@
 use std::io::{self, Read, Write};
 
-use crate::{OptoLink, Protocol};
+use crate::Optolink;
+
+use super::Protocol;
 
 pub struct Kw2;
 
 impl Kw2 {
-  fn sync(o: &mut OptoLink) -> Result<(), std::io::Error> {
+  fn sync(o: &mut Optolink) -> Result<(), std::io::Error> {
     o.purge()?;
 
     o.write(&[0x04])?;
@@ -23,7 +25,7 @@ impl Kw2 {
 }
 
 impl Protocol for Kw2 {
-  fn get(o: &mut OptoLink, addr: &[u8], buf: &mut [u8]) -> Result<(), io::Error> {
+  fn get(o: &mut Optolink, addr: &[u8], buf: &mut [u8]) -> Result<(), io::Error> {
     Self::sync(o)?;
 
     o.write(&[0x01, 0xf7])?;
@@ -36,7 +38,7 @@ impl Protocol for Kw2 {
     Ok(())
   }
 
-  fn set(o: &mut OptoLink, addr: &[u8], value: &[u8]) -> Result<(), io::Error> {
+  fn set(o: &mut Optolink, addr: &[u8], value: &[u8]) -> Result<(), io::Error> {
     Self::sync(o)?;
 
     o.write(&[0x01, 0xf4])?;

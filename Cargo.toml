@@ -20,7 +20,6 @@ crate-type = ["staticlib", "rlib"]
 libc = { version = "0.2", git = "https://github.com/rust-lang/libc", branch = "master" }
 nix = "0.12"
 itertools = "0.8"
-byteorder = "1"
 clap = "2.32"
 chrono = "0.4"
 serial = "0.4"

@@ -1,7 +1,9 @@
 use std::fmt;
 use std::str::FromStr;
 
-use crate::{SysTime, FromBytes};
+use crate::FromBytes;
+
+use super::SysTime;
 
 byte_type!(ErrState, 9);
 

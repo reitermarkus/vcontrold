@@ -38,11 +38,12 @@ pub use crate::configuration::*;
 
 // mod expression;
 
-mod types;
-pub use crate::types::*;
+mod traits;
+pub use crate::traits::{FromBytes, ToBytes};
+
+pub mod types;
 
 mod optolink;
 pub use crate::optolink::*;
 
-mod protocol;
-pub use crate::protocol::*;
+pub mod protocol;

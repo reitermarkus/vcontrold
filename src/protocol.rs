@@ -1,10 +1,10 @@
 use std::io;
 
-use crate::OptoLink;
+use crate::Optolink;
 
 pub trait Protocol {
-  fn get(o: &mut OptoLink, addr: &[u8], buf: &mut [u8]) -> Result<(), io::Error>;
-  fn set(o: &mut OptoLink, addr: &[u8], value: &[u8]) -> Result<(), io::Error>;
+  fn get(o: &mut Optolink, addr: &[u8], buf: &mut [u8]) -> Result<(), io::Error>;
+  fn set(o: &mut Optolink, addr: &[u8], value: &[u8]) -> Result<(), io::Error>;
 }
 
 mod kw2;

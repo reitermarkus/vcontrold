@@ -11,14 +11,14 @@ enum Device {
   Stream(TcpStream),
 }
 
-pub struct OptoLink {
+pub struct Optolink {
   device: Device,
 }
 
-impl OptoLink {
+impl Optolink {
   const TIMEOUT: Duration = Duration::from_secs(10);
 
-  pub fn open(port: impl AsRef<OsStr>) -> Result<OptoLink, io::Error> {
+  pub fn open(port: impl AsRef<OsStr>) -> Result<Optolink, io::Error> {
     let mut tty = serial::open(&port)?;
 
     tty.set_timeout(Self::TIMEOUT)?;
@@ -30,13 +30,13 @@ impl OptoLink {
       settings.set_baud_rate(Baud4800)
     })?;
 
-    Ok(OptoLink { device: Device::Tty(tty) })
+    Ok(Optolink { device: Device::Tty(tty) })
   }
 
-  pub fn connect(addr: impl ToSocketAddrs) -> Result<OptoLink, io::Error> {
+  pub fn connect(addr: impl ToSocketAddrs) -> Result<Optolink, io::Error> {
     let stream = TcpStream::connect(addr)?;
     stream.set_read_timeout(Some(Self::TIMEOUT))?;
-    Ok(OptoLink { device: Device::Stream(stream) })
+    Ok(Optolink { device: Device::Stream(stream) })
   }
 
   pub fn purge(&mut self) -> Result<(), io::Error> {
@@ -57,7 +57,7 @@ impl OptoLink {
   }
 }
 
-impl Write for OptoLink {
+impl Write for Optolink {
   fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
     match &mut self.device {
       Device::Tty(tty) => tty.write(buf),
@@ -73,7 +73,7 @@ impl Write for OptoLink {
   }
 }
 
-impl Read for OptoLink {
+impl Read for Optolink {
   fn read(&mut self, buf: &mut [u8]) -> Result<usize, io::Error> {
     match &mut self.device {
       Device::Tty(tty) => tty.read(buf),

@@ -1,15 +1,15 @@
 use std::io;
 use std::collections::HashMap;
 use std::fmt;
+use std::str::FromStr;
 
 use serde_derive::*;
 use serde_yaml;
-use serde::de::{self, Deserialize, Deserializer};
 
 use crate::types::{*};
-use crate::{OptoLink, Protocol};
+use crate::{Optolink, protocol::Protocol, FromBytes, ToBytes};
 
-pub const DEFAULT_CONFIG: &str = include_str!("../config/default.yml");
+const DEFAULT_CONFIG: &str = include_str!("../config/default.yml");
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Command {
@@ -19,128 +19,28 @@ pub struct Command {
   set: Option<String>,
 }
 
-#[derive(Clone)]
-pub enum Scalar {
-  Byte(u8),
-  Addr,
-  Bytes,
-  Len,
-}
-
-impl<'de> Deserialize<'de> for Scalar {
-  fn deserialize<D>(deserializer: D) -> Result<Scalar, D::Error>
-  where
-      D: Deserializer<'de>,
-  {
-    #[derive(Deserialize)]
-    #[serde(untagged)]
-    enum ByteOrVariable {
-      Byte(u8),
-      Variable(String),
-    }
-
-    match ByteOrVariable::deserialize(deserializer)? {
-      ByteOrVariable::Byte(byte) => Ok(Scalar::Byte(byte)),
-      ByteOrVariable::Variable(variable) => match variable.as_str() {
-        "$addr" => Ok(Scalar::Addr),
-        "$bytes" => Ok(Scalar::Bytes),
-        "$len" => Ok(Scalar::Len),
-        variant => Err(de::Error::unknown_variant(&variant, &["$addr", "$bytes", "$len"])),
-      },
-    }
-  }
-}
-
-impl fmt::Debug for Scalar {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    match self {
-      Scalar::Byte(b) => write!(f, "{:02X}", b),
-      Scalar::Addr => write!(f, "$addr"),
-      Scalar::Bytes => write!(f, "$bytes"),
-      Scalar::Len => write!(f, "$len"),
-    }
-  }
-}
-
 #[derive(Debug, Deserialize)]
 pub struct Configuration {
   pub commands: HashMap<String, Command>,
   pub units: HashMap<String, Unit>,
 }
 
-pub trait FromBytes {
-  fn from_bytes(bytes: &[u8]) -> Self;
-}
-
-pub trait ToBytes {
-  fn to_bytes(&self) -> Vec<u8>;
-}
-
-impl FromBytes for Vec<u8> {
-  fn from_bytes(bytes: &[u8]) -> Vec<u8> {
-    bytes.to_vec()
-  }
-}
-
-impl ToBytes for Vec<u8> {
-  fn to_bytes(&self) -> Vec<u8> {
-    self.clone()
-  }
-}
-
-macro_rules! from_bytes_le {
-  ($($t:ty),+) => {
-    $(
-      impl FromBytes for $t {
-        fn from_bytes(bytes: &[u8]) -> Self {
-          let mut buf = [0; std::mem::size_of::<Self>()];
-          buf.copy_from_slice(&bytes);
-          Self::from_le(unsafe { std::mem::transmute(buf) })
-        }
-      }
-    )+
-  };
-}
-
-macro_rules! to_bytes_le {
-  ($t:ty, [u8; 1]) => {
-    impl ToBytes for $t {
-      fn to_bytes(&self) -> Vec<u8> {
-        vec![*self as u8]
-      }
-    }
-  };
-  ($t:ty, $n:ty) => {
-    impl ToBytes for $t {
-      fn to_bytes(&self) -> Vec<u8> {
-        unsafe { std::mem::transmute::<$t, $n>(self.to_le()) }.to_vec()
-      }
-    }
-  };
-}
-
-from_bytes_le!(i8, i16, i32);
-to_bytes_le!(i8,  [u8; 1]);
-to_bytes_le!(i16, [u8; 2]);
-to_bytes_le!(i32, [u8; 4]);
-
-from_bytes_le!(u8, u16, u32);
-to_bytes_le!(u8,  [u8; 1]);
-to_bytes_le!(u16, [u8; 2]);
-to_bytes_le!(u32, [u8; 4]);
-
 impl Default for Configuration {
   fn default() -> Configuration {
-    Configuration::from_str(&DEFAULT_CONFIG).unwrap()
+    DEFAULT_CONFIG.parse().unwrap()
+  }
+}
+
+impl FromStr for Configuration {
+  type Err = serde_yaml::Error;
+
+  fn from_str(s: &str) -> Result<Configuration, Self::Err> {
+    serde_yaml::from_str(&s)
   }
 }
 
 impl Configuration {
-  pub fn from_str(string: &str) -> Result<Configuration, serde_yaml::Error> {
-    serde_yaml::from_str(&string)
-  }
-
-  pub fn get_command<P: Protocol>(&self, o: &mut OptoLink, command: &str) -> Result<Box<fmt::Display>, io::Error> {
+  pub fn get_command<P: Protocol>(&self, o: &mut Optolink, command: &str) -> Result<Box<fmt::Display>, io::Error> {
     let addr = &self.commands[command].addr;
     let unit = self.unit_for_command(&command);
 
@@ -149,7 +49,7 @@ impl Configuration {
     Ok(unit.bytes_to_output(&buf))
   }
 
-  pub fn set_command<P: Protocol>(&self, o: &mut OptoLink, command: &str, input: &str) -> Result<(), io::Error> {
+  pub fn set_command<P: Protocol>(&self, o: &mut Optolink, command: &str, input: &str) -> Result<(), io::Error> {
     let addr = &self.commands[command].addr;
     let unit = self.unit_for_command(&command);
 

@@ -2,7 +2,7 @@ use std::process::exit;
 
 use clap::{crate_version, Arg, App, SubCommand, AppSettings::ArgRequiredElseHelp};
 
-use vcontrol::{Configuration, OptoLink, Kw2};
+use vcontrol::{Configuration, Optolink, protocol::Kw2};
 
 fn main() {
   let config = Configuration::default();
@@ -50,7 +50,7 @@ fn main() {
   println!("Connecting ...");
 
   let mut device = if let Some(device) = matches.value_of("device") {
-    OptoLink::open(device).unwrap()
+    Optolink::open(device).unwrap()
   } else {
     let host = matches.value_of("host").unwrap_or("localhost");
     let port = matches.value_of("port")
@@ -62,7 +62,7 @@ fn main() {
                  })
                  .unwrap();
 
-    OptoLink::connect((host, port)).unwrap()
+    Optolink::connect((host, port)).unwrap()
   };
 
   if let Some(matches) = matches.subcommand_matches("get") {

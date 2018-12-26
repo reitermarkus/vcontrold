@@ -1,8 +1,8 @@
-pub trait FromBytes {
+pub(crate) trait FromBytes {
   fn from_bytes(bytes: &[u8]) -> Self;
 }
 
-pub trait ToBytes {
+pub(crate) trait ToBytes {
   fn to_bytes(&self) -> Vec<u8>;
 }
 

@@ -65,7 +65,7 @@ fn main() {
   if let Some(matches) = matches.subcommand_matches("get") {
     let command = matches.value_of("command").unwrap();
 
-    match config.get_command::<Kw2>(&mut device, command) {
+    match config.command(command).get::<Kw2>(&mut device) {
       Ok(output) => {
         println!("{}", output);
       },
@@ -80,7 +80,7 @@ fn main() {
     let command = matches.value_of("command").unwrap();
     let value = matches.value_of("value").unwrap();
 
-    match config.set_command::<Kw2>(&mut device, command, value) {
+    match config.command(command).set::<Kw2>(&mut device, value) {
       Ok(()) => {},
       Err(err) => {
         eprintln!("Error: {}", err);

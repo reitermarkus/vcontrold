@@ -1,182 +1,176 @@
 device: V200KW2_6
 
 temp_i16: &temp_i16
-  unit:
-    type: i16
-    factor: 10
-temp_u8: &temp_u8
-  unit:
-    type: u8
+  unit: i16
+  factor: 10
 state: &state
-  unit:
-    type: enum
-    mapping:
-      [0x00]: OFF
-      [0x01]: ON
+  unit: u8
+  mapping:
+    [0x00]: OFF
+    [0x01]: ON
 temp_error_state: &temp_error_state
-  unit:
-    type: enum
-    mapping:
-      [0x00]: 'OK'
-      [0x01]: 'Kurzschluss'
-      [0x02]: 'nicht vorhanden'
-      [0x03]: 'Referenzfehler'
-      [0x04]: 'Referenzfehler'
-      [0x05]: 'Referenzfehler'
-      [0x06]: 'nicht vorhanden'
+  unit: u8
+  mapping:
+    [0x00]: 'OK'
+    [0x01]: 'Kurzschluss'
+    [0x02]: 'nicht vorhanden'
+    [0x03]: 'Referenzfehler'
+    [0x04]: 'Referenzfehler'
+    [0x05]: 'Referenzfehler'
+    [0x06]: 'nicht vorhanden'
 cycletime: &cycletime
-  unit:
-    type: cycletime
+  unit: cycletime
 systime: &systime
-  unit:
-    type: systime
+  unit: systime
+error_time: &error_time
+  <<: *systime
+  len: 9
+  pos: 1
 error_state: &error_state
-  unit:
-    type: errstate
-    mapping:
-      [0x00]: 'Normalbetrieb'
-      [0x0F]: 'Normalbetrieb-Wartung'
-      [0x10]: 'Notbetrieb-Außentemp'
-      [0x18]: 'Notbetrieb-Außentemp'
-      [0x20]: 'Ausfall HK M2-Vorlauftemp'
-      [0x21]: 'Notbetrieb HK M2- Rücklauft'
-      [0x28]: 'Ausfall HK M2-Vorlauftemp'
-      [0x29]: 'Notbetrieb HK M2- Rücklauft'
-      [0x30]: 'Notbetrieb-Kesseltemp'
-      [0x38]: 'Notbetrieb-Kesseltemp'
-      [0x40]: 'Ausfall HK M3-Vorlauftemp'
-      [0x41]: 'Notbetrieb HK M3-Rücklauft'
-      [0x48]: 'Ausfall HK M3-Vorlauftemp'
-      [0x49]: 'Notbetrieb HK M3-Rücklauft'
-      [0x50]: 'Notbetrieb-Speichertemp'
-      [0x51]: 'Notbetrieb-Speichertemp'
-      [0x58]: 'Notbetrieb-Speichertemp'
-      [0x59]: 'Notbetrieb-Speichertemp'
-      [0x92]: 'Notbetrieb-Kollektortemp'
-      [0x93]: 'Notbetrieb-Speichertemp.Sol'
-      [0x94]: 'Notbetrieb-Speichertemp.Sol'
-      [0x9A]: 'Notbetrieb-Kollektortemp'
-      [0x9B]: 'Notbetrieb-Speichertemp.Sol'
-      [0x9C]: 'Notbetrieb-Speichertemp.Sol'
-      [0x9F]: 'Notbetrieb-Solarregelung'
-      [0xB0]: 'Normalbetrieb-Abgastemp'
-      [0xB1]: 'Notbetrieb-Komm-Bedienteil'
-      [0xB4]: 'Notbetrieb-Störung Intern'
-      [0xB5]: 'Notbetrieb-Störung Intern'
-      [0xB6]: 'Notbetrieb-Störung Intern'
-      [0xB7]: 'Notbetrieb-Codierstecker'
-      [0xB8]: 'Normalbetrieb-Abgastemp'
-      [0xB9]: 'Notbetrieb-Störung Interner'
-      [0xBA]: 'Notbetrieb-HK Mischer M2'
-      [0xBB]: 'Notbetrieb-HK Mischer M3'
-      [0xBC]: 'Notbetrieb-Fernbedien.HK A1'
-      [0xBD]: 'Notbetrieb-Fernbedien.HK M2'
-      [0xBE]: 'Notbetrieb-Fernbedien.HK.M3'
-      [0xC1]: 'Ausfall Anlage-ExtSIcherheit'
-      [0xC2]: 'Notbetrieb-Komm. Solar'
-      [0xC4]: 'Notbetrieb-Kommunikation'
-      [0xC5]: 'Notbetrieb-Pumpe HK A1'
-      [0xC6]: 'Notbetrieb-Pumpe HK M2'
-      [0xC7]: 'Notbetrieb-Pumpe HK M3'
-      [0xC9]: 'Notbetrieb-ext. Gerät'
-      [0xCD]: 'Ausfall Anlagenüberwachung'
-      [0xCE]: 'Notbetrieb-Schaltmodule V'
-      [0xCF]: 'Notbetrieb-Komm.2Draht-Bus'
-      [0xD1]: 'Ausfall Anlage: Brennerstörung'
-      [0xD4]: 'Ausfall Anlage-Temp.Begrenz.'
-      [0xDA]: 'Notbetrieb-Raumtemp HK A1'
-      [0xDB]: 'Notbetrieb-Raumtemp HK M2'
-      [0xDC]: 'Notbetrieb-Raumtemp HK M3'
-      [0xDD]: 'Notbetrieb-Raumtemp HK A1'
-      [0xDE]: 'Notbetrieb-Raumtemp HK M2'
-      [0xDF]: 'Notbetrieb-Raumtemp HK M3'
-      [0xE0]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xE1]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xE2]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xE3]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xE4]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xE5]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xE6]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xE7]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xE8]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xE9]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xEA]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xEB]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xEC]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xED]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xEE]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xEF]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xF0]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xF1]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xF2]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xF3]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xF4]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xF5]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xF6]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xF7]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xF8]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xF9]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xFA]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xFB]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xFC]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xFD]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xFE]: 'Ausfall Anlage-2 Draht-Bus'
-      [0xFF]: 'Ausfall Anlage-2 Draht-Bus'
+  len: 9
+  unit: u8
+  mapping:
+    [0x00]: 'Normalbetrieb'
+    [0x0F]: 'Normalbetrieb-Wartung'
+    [0x10]: 'Notbetrieb-Außentemp'
+    [0x18]: 'Notbetrieb-Außentemp'
+    [0x20]: 'Ausfall HK M2-Vorlauftemp'
+    [0x21]: 'Notbetrieb HK M2- Rücklauft'
+    [0x28]: 'Ausfall HK M2-Vorlauftemp'
+    [0x29]: 'Notbetrieb HK M2- Rücklauft'
+    [0x30]: 'Notbetrieb-Kesseltemp'
+    [0x38]: 'Notbetrieb-Kesseltemp'
+    [0x40]: 'Ausfall HK M3-Vorlauftemp'
+    [0x41]: 'Notbetrieb HK M3-Rücklauft'
+    [0x48]: 'Ausfall HK M3-Vorlauftemp'
+    [0x49]: 'Notbetrieb HK M3-Rücklauft'
+    [0x50]: 'Notbetrieb-Speichertemp'
+    [0x51]: 'Notbetrieb-Speichertemp'
+    [0x58]: 'Notbetrieb-Speichertemp'
+    [0x59]: 'Notbetrieb-Speichertemp'
+    [0x92]: 'Notbetrieb-Kollektortemp'
+    [0x93]: 'Notbetrieb-Speichertemp.Sol'
+    [0x94]: 'Notbetrieb-Speichertemp.Sol'
+    [0x9A]: 'Notbetrieb-Kollektortemp'
+    [0x9B]: 'Notbetrieb-Speichertemp.Sol'
+    [0x9C]: 'Notbetrieb-Speichertemp.Sol'
+    [0x9F]: 'Notbetrieb-Solarregelung'
+    [0xB0]: 'Normalbetrieb-Abgastemp'
+    [0xB1]: 'Notbetrieb-Komm-Bedienteil'
+    [0xB4]: 'Notbetrieb-Störung Intern'
+    [0xB5]: 'Notbetrieb-Störung Intern'
+    [0xB6]: 'Notbetrieb-Störung Intern'
+    [0xB7]: 'Notbetrieb-Codierstecker'
+    [0xB8]: 'Normalbetrieb-Abgastemp'
+    [0xB9]: 'Notbetrieb-Störung Interner'
+    [0xBA]: 'Notbetrieb-HK Mischer M2'
+    [0xBB]: 'Notbetrieb-HK Mischer M3'
+    [0xBC]: 'Notbetrieb-Fernbedien.HK A1'
+    [0xBD]: 'Notbetrieb-Fernbedien.HK M2'
+    [0xBE]: 'Notbetrieb-Fernbedien.HK.M3'
+    [0xC1]: 'Ausfall Anlage-ExtSIcherheit'
+    [0xC2]: 'Notbetrieb-Komm. Solar'
+    [0xC4]: 'Notbetrieb-Kommunikation'
+    [0xC5]: 'Notbetrieb-Pumpe HK A1'
+    [0xC6]: 'Notbetrieb-Pumpe HK M2'
+    [0xC7]: 'Notbetrieb-Pumpe HK M3'
+    [0xC9]: 'Notbetrieb-ext. Gerät'
+    [0xCD]: 'Ausfall Anlagenüberwachung'
+    [0xCE]: 'Notbetrieb-Schaltmodule V'
+    [0xCF]: 'Notbetrieb-Komm.2Draht-Bus'
+    [0xD1]: 'Ausfall Anlage: Brennerstörung'
+    [0xD4]: 'Ausfall Anlage-Temp.Begrenz.'
+    [0xDA]: 'Notbetrieb-Raumtemp HK A1'
+    [0xDB]: 'Notbetrieb-Raumtemp HK M2'
+    [0xDC]: 'Notbetrieb-Raumtemp HK M3'
+    [0xDD]: 'Notbetrieb-Raumtemp HK A1'
+    [0xDE]: 'Notbetrieb-Raumtemp HK M2'
+    [0xDF]: 'Notbetrieb-Raumtemp HK M3'
+    [0xE0]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xE1]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xE2]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xE3]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xE4]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xE5]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xE6]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xE7]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xE8]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xE9]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xEA]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xEB]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xEC]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xED]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xEE]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xEF]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xF0]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xF1]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xF2]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xF3]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xF4]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xF5]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xF6]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xF7]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xF8]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xF9]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xFA]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xFB]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xFC]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xFD]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xFE]: 'Ausfall Anlage-2 Draht-Bus'
+    [0xFF]: 'Ausfall Anlage-2 Draht-Bus'
 
 commands:
   system_type:
     addr: 0x00F8
     mode: read
-    unit:
-      type: enum
-      mapping:
-        [0x20, 0xB4]: V050HK1M
-        [0x20, 0xAC]: V050HK1S
-        [0x20, 0xAA]: V050HK1W
-        [0x20, 0xAD]: V050HK3S
-        [0x20, 0xAB]: V050HK3W
-        [0x20, 0xA0]: V100GC1
-        [0x20, 0x91]: V100KC2
-        [0x20, 0x92]: V150KB1
-        [0x20, 0xA4]: V200GW1
-        [0x20, 0x94]: V200KW1
-        [0x20, 0x98]: V200KW2
-        [0x20, 0xA5]: V300GW2
-        [0x20, 0x9C]: V300KW3
-        [0x20, 0xB8]: V333MW1
-        [0x20, 0xB9]: V333MW1S
-        [0x20, 0xBA]: V333MW2
-        [0x20, 0x33]: VBC550P
-        [0x20, 0x32]: VBC550S
-        [0x20, 0x47]: VBC700_AW
-        [0x20, 0x46]: VBC700_BW_WW
-        [0x20, 0xC0]: VDensHC1
-        [0x20, 0xC1]: VDensHC2
-        [0x20, 0xC2]: VDensHO1
-        [0x20, 0xC3]: VPendHC1
-        [0x20, 0xC4]: VPendHC2
-        [0x20, 0xC5]: VPendHO1
-        [0x20, 0xC6]: VPlusHC1
-        [0x20, 0xC7]: VPlusHC2
-        [0x20, 0xC8]: VPlusHO1
-        [0x20, 0xC9]: VScotHC1
-        [0x20, 0xCA]: VScotHC2
-        [0x20, 0xCB]: VScotHO1
+    unit: u16
+    mapping:
+      [0x20, 0xB4]: V050HK1M
+      [0x20, 0xAC]: V050HK1S
+      [0x20, 0xAA]: V050HK1W
+      [0x20, 0xAD]: V050HK3S
+      [0x20, 0xAB]: V050HK3W
+      [0x20, 0xA0]: V100GC1
+      [0x20, 0x91]: V100KC2
+      [0x20, 0x92]: V150KB1
+      [0x20, 0xA4]: V200GW1
+      [0x20, 0x94]: V200KW1
+      [0x20, 0x98]: V200KW2
+      [0x20, 0xA5]: V300GW2
+      [0x20, 0x9C]: V300KW3
+      [0x20, 0xB8]: V333MW1
+      [0x20, 0xB9]: V333MW1S
+      [0x20, 0xBA]: V333MW2
+      [0x20, 0x33]: VBC550P
+      [0x20, 0x32]: VBC550S
+      [0x20, 0x47]: VBC700_AW
+      [0x20, 0x46]: VBC700_BW_WW
+      [0x20, 0xC0]: VDensHC1
+      [0x20, 0xC1]: VDensHC2
+      [0x20, 0xC2]: VDensHO1
+      [0x20, 0xC3]: VPendHC1
+      [0x20, 0xC4]: VPendHC2
+      [0x20, 0xC5]: VPendHO1
+      [0x20, 0xC6]: VPlusHC1
+      [0x20, 0xC7]: VPlusHC2
+      [0x20, 0xC8]: VPlusHO1
+      [0x20, 0xC9]: VScotHC1
+      [0x20, 0xCA]: VScotHC2
+      [0x20, 0xCB]: VScotHO1
   system_time:
     <<: *systime
     addr: 0x088E
     mode: read_write
   operatingmode:
     addr: 0x3301
-    unit:
-      type: enum
-      mapping:
-        [0x00]: NWW
-        [0x01]: RED
-        [0x02]: NRM
-        [0x03]: HWW
-        [0x04]: HWW
-        [0x05]: OFF
+    unit: u8
+    mapping:
+      [0x00]: NWW
+      [0x01]: RED
+      [0x02]: NRM
+      [0x03]: HWW
+      [0x04]: HWW
+      [0x05]: OFF
     mode: read_write
   energysavermode_state:
     <<: *state
@@ -187,16 +181,15 @@ commands:
     addr: 0x3303
     mode: read_write
   partymode_temp:
-    <<: *temp_u8
     addr: 0x3308
+    unit: u8
     mode: read_write
   vacationmode_state:
     addr: 0x3535
-    unit:
-      type: enum
-      mapping:
-        [0x12]: OFF
-        [0x01]: ON
+    unit: u8
+    mapping:
+      [0x12]: OFF
+      [0x01]: ON
     mode: read_write
   vacationmode_date_departure:
     <<: *systime
@@ -244,14 +237,12 @@ commands:
     mode: read
   burner_starts:
     addr: 0x088A
-    unit:
-      type: u32
+    unit: u32
     mode: read
   burner_hours_1:
     addr: 0x08A7
-    unit:
-      type: u32
-      factor: 3600
+    unit: u32
+    factor: 3600
     mode: read
   outside_temp_state:
     <<: *temp_error_state
@@ -306,19 +297,18 @@ commands:
     addr: 0x0804
     mode: read
   hotwater_temp_desired:
-    <<: *temp_u8
     addr: 0x6300
+    unit: u8
     mode: read_write
   hotwater_release:
     addr: 0x3500
     len: 22
     pos: 8
-    unit:
-      type: enum
-      mapping:
-        [0x00]: Freigabe aus
-        [0x01]: Freigabe nach WW-Schaltzeiten
-        [0x02]: Freigabe durch Party/Externe Umschaltung
+    unit: u8
+    mapping:
+      [0x00]: Freigabe aus
+      [0x01]: Freigabe nach WW-Schaltzeiten
+      [0x02]: Freigabe durch Party/Externe Umschaltung
     mode: read
   hotwater_timer_mon:
     <<: *cycletime
@@ -352,23 +342,21 @@ commands:
     addr: 0x3500
     len: 22
     pos: 1
-    unit:
-      type: enum
-      mapping:
-        [0x00]: NWW # Nur WW
-        [0x01]: RED # Dauernd Reduziert
-        [0x02]: NRM # Dauernd Normal
-        [0x03]: HWW # Heizen + WW
-        [0x04]: HWW # Heizen + WW
-        [0x05]: OFF # Abschalt
+    unit: u8
+    mapping:
+      [0x00]: NWW # Nur WW
+      [0x01]: RED # Dauernd Reduziert
+      [0x02]: NRM # Dauernd Normal
+      [0x03]: HWW # Heizen + WW
+      [0x04]: HWW # Heizen + WW
+      [0x05]: OFF # Abschalt
     mode: read
   heatingcircuit_timer:
     addr: 0x3500
     len: 22
     pos: 2
-    unit:
-      type: u32
-      factor: 10
+    unit: u32
+    factor: 10
     mode: read
   heatingcircuit_pump_state:
     <<: *state
@@ -378,13 +366,12 @@ commands:
     addr: 0x3500
     len: 22
     pos: 10
-    unit:
-      type: enum
-      mapping:
-        [0x00]: OFF
-        [0x01]: ON
-        [0x02]: ON
-        [0x03]: RED
+    unit: u8
+    mapping:
+      [0x00]: OFF
+      [0x01]: ON
+      [0x02]: ON
+      [0x03]: RED
     mode: read
   heatingcircuit_rp_temp_state:
     <<: *temp_error_state
@@ -442,30 +429,24 @@ commands:
     mode: read_write
   heatingcurve_niveau:
     addr: 0x3304
-    unit:
-      type: i8
+    unit: i8
     mode: read_write
   heatingcurve_incline:
     addr: 0x3305
-    unit:
-      type: i8
-      factor: 10
+    unit: i8
+    factor: 10
     mode: read_write
   roomtemp_day_desired:
-    <<: *temp_u8
     addr: 0x3306
+    unit: u8
     mode: read_write
   roomtemp_night_desired:
-    <<: *temp_u8
     addr: 0x3307
+    unit: u8
     mode: read_write
   frostwarning_state:
+    <<: *state
     addr: 0x3500
-    unit:
-      type: enum
-      mapping:
-        [0x01]: 'ON'
-        [0x00]: 'OFF'
     len: 22
     pos: 16
     mode: read
@@ -473,40 +454,79 @@ commands:
     <<: *error_state
     addr: 0x7507
     mode: read
+  error_01_time:
+    <<: *error_time
+    addr: 0x7507
+    mode: read
   error_02:
     <<: *error_state
+    addr: 0x7510
+    mode: read
+  error_02_time:
+    <<: *error_time
     addr: 0x7510
     mode: read
   error_03:
     <<: *error_state
     addr: 0x7519
     mode: read
+  error_03_time:
+    <<: *error_time
+    addr: 0x7519
+    mode: read
   error_04:
     <<: *error_state
+    addr: 0x7522
+    mode: read
+  error_04_time:
+    <<: *error_time
     addr: 0x7522
     mode: read
   error_05:
     <<: *error_state
     addr: 0x752B
     mode: read
+  error_05_time:
+    <<: *error_time
+    addr: 0x752B
+    mode: read
   error_06:
     <<: *error_state
+    addr: 0x7534
+    mode: read
+  error_06_time:
+    <<: *error_time
     addr: 0x7534
     mode: read
   error_07:
     <<: *error_state
     addr: 0x753D
     mode: read
+  error_07_time:
+    <<: *error_time
+    addr: 0x753D
+    mode: read
   error_08:
     <<: *error_state
+    addr: 0x7546
+    mode: read
+  error_08_time:
+    <<: *error_time
     addr: 0x7546
     mode: read
   error_09:
     <<: *error_state
     addr: 0x754F
     mode: read
+  error_09_time:
+    <<: *error_time
+    addr: 0x754F
+    mode: read
   error_10:
     <<: *error_state
     addr: 0x7558
     mode: read
-
+  error_10_time:
+    <<: *error_time
+    addr: 0x7558
+    mode: read

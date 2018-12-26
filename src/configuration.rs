@@ -39,10 +39,33 @@ pub struct Command {
   addr: u16,
   unit: Unit,
   len: Option<usize>,
-  pos: Option<usize>,
-  get: Option<String>,
-  set: Option<String>,
+  #[serde(default)]
+  pos: usize,
   mode: AccessMode,
+  factor: Option<f32>,
+  mapping: Option<HashMap<Vec<u8>, String>>,
+}
+
+impl Command {
+  #[inline]
+  fn len(&self) -> usize {
+    self.len.unwrap_or(self.unit.size())
+  }
+
+  #[inline]
+  fn addr(&self) -> Vec<u8> {
+    self.addr.to_be().to_bytes()
+  }
+
+  pub fn get<P: Protocol>(&self, o: &mut Optolink) -> Result<Box<fmt::Display>, io::Error> {
+    let mut buf = vec![0; self.len()];
+    P::get(o, &self.addr(), &mut buf)?;
+    Ok(self.unit.bytes_to_output(&buf[self.pos..(self.pos + self.unit.size())], self.factor, &self.mapping))
+  }
+
+  pub fn set<P: Protocol>(&self, o: &mut Optolink, input: &str) -> Result<(), io::Error> {
+    P::set(o, &self.addr(), &self.unit.input_to_bytes(input, self.factor).unwrap().to_bytes())
+  }
 }
 
 #[derive(Debug, Deserialize)]
@@ -69,25 +92,8 @@ impl FromStr for Configuration {
 }
 
 impl Configuration {
-  pub fn get_command<P: Protocol>(&self, o: &mut Optolink, command: &str) -> Result<Box<fmt::Display>, io::Error> {
-    let unit = self.commands[command].unit.clone();
-
-    let addr = &self.commands[command].addr.to_be().to_bytes();
-    let len = self.commands[command].len.unwrap_or(unit.size());
-    let pos = self.commands[command].pos.unwrap_or(0);
-
-    let mut buf = vec![0; len];
-    P::get(o, &addr, &mut buf)?;
-
-    Ok(unit.bytes_to_output(&buf[pos..(pos + unit.size())]))
-  }
-
-  pub fn set_command<P: Protocol>(&self, o: &mut Optolink, command: &str, input: &str) -> Result<(), io::Error> {
-    let addr = &self.commands[command].addr.to_be().to_bytes();
-    let unit = self.commands[command].unit.clone();
-
-    P::set(o, &addr, &unit.input_to_bytes(input).unwrap().to_bytes())?;
-    Ok(())
+  pub fn command(&self, command: &str) -> &Command {
+    &self.commands[command]
   }
 }
 
@@ -96,29 +102,35 @@ fn f32_one() -> f32 {
   1.0
 }
 
-#[derive(Debug, Clone, Deserialize)]
-#[serde(tag = "type")]
+#[derive(Debug, Clone)]
 pub enum Unit {
-  #[serde(rename = "i8")]
-  I8 { #[serde(default = "f32_one")] factor: f32 },
-  #[serde(rename = "i16")]
-  I16 { #[serde(default = "f32_one")] factor: f32 },
-  #[serde(rename = "i32")]
-  I32 { #[serde(default = "f32_one")] factor: f32 },
-  #[serde(rename = "u8")]
-  U8 { #[serde(default = "f32_one")] factor: f32 },
-  #[serde(rename = "u16")]
-  U16 { #[serde(default = "f32_one")] factor: f32 },
-  #[serde(rename = "u32")]
-  U32 { #[serde(default = "f32_one")] factor: f32 },
-  #[serde(rename = "enum")]
-  Enum { mapping: HashMap<Vec<u8>, String> },
-  #[serde(rename = "systime")]
+  I8,
+  I16,
+  I32,
+  U8,
+  U16,
+  U32,
   SysTime,
-  #[serde(rename = "errstate")]
-  ErrState { mapping: HashMap<Vec<u8>, String> },
-  #[serde(rename = "cycletime")]
   CycleTime,
+}
+
+impl<'de> Deserialize<'de> for Unit {
+  fn deserialize<D>(deserializer: D) -> Result<Unit, D::Error>
+  where
+      D: Deserializer<'de>,
+  {
+    match String::deserialize(deserializer)?.as_str() {
+      "i8" => Ok(Unit::I8),
+      "i16" => Ok(Unit::I16),
+      "i32" => Ok(Unit::I32),
+      "u8" => Ok(Unit::U8),
+      "u16" => Ok(Unit::U16),
+      "u32" => Ok(Unit::U32),
+      "systime" => Ok(Unit::SysTime),
+      "cycletime" => Ok(Unit::CycleTime),
+      variant => Err(de::Error::unknown_variant(&variant, &["i8", "i16", "i32", "u8", "u16", "u32", "systime", "cycletime"])),
+    }
+  }
 }
 
 impl Unit {
@@ -126,49 +138,53 @@ impl Unit {
     use self::Unit::*;
 
     match self {
-      I8 { .. } => std::mem::size_of::<i8>(),
-      I16 { .. } => std::mem::size_of::<i16>(),
-      I32 { .. } => std::mem::size_of::<i32>(),
-      U8 { .. } => std::mem::size_of::<u8>(),
-      U16 { .. } => std::mem::size_of::<u16>(),
-      U32 { .. } => std::mem::size_of::<u32>(),
-      Enum { mapping, .. } => mapping.keys().next().unwrap().len(),
-      SysTime { .. } => std::mem::size_of::<self::SysTime>(),
-      ErrState { .. } => std::mem::size_of::<self::ErrState>(),
-      CycleTime { .. } => std::mem::size_of::<self::CycleTime>(),
+      I8 => std::mem::size_of::<i8>(),
+      I16 => std::mem::size_of::<i16>(),
+      I32 => std::mem::size_of::<i32>(),
+      U8 => std::mem::size_of::<u8>(),
+      U16 => std::mem::size_of::<u16>(),
+      U32 => std::mem::size_of::<u32>(),
+      SysTime => std::mem::size_of::<self::SysTime>(),
+      ErrState => std::mem::size_of::<self::ErrState>(),
+      CycleTime => std::mem::size_of::<self::CycleTime>(),
     }
   }
 
-  pub fn bytes_to_output(&self, bytes: &[u8]) -> Box<fmt::Display> {
-    match self {
-      Unit::I8 { factor, .. }    => Box::new(i8::from_bytes(bytes) as f32 / factor),
-      Unit::I16 { factor, .. }   => Box::new(i16::from_bytes(bytes) as f32 / factor),
-      Unit::I32 { factor, .. }   => Box::new(i32::from_bytes(bytes) as f32 / factor),
-      Unit::U8 { factor, .. }    => Box::new(u8::from_bytes(bytes) as f32 / factor),
-      Unit::U16 { factor, .. }   => Box::new(u16::from_bytes(bytes) as f32 / factor),
-      Unit::U32 { factor, .. }   => Box::new(u32::from_bytes(bytes) as f32 / factor),
-      Unit::Enum { mapping, .. } => Box::new(mapping[&bytes.to_vec()].to_owned()),
-      Unit::SysTime { .. }       => Box::new(SysTime::from_bytes(bytes)),
-      Unit::ErrState { mapping, .. } => {
-        let errstate = ErrState::from_bytes(bytes);
-        Box::new(format!("{} ({})", mapping[&errstate.id().to_vec()], errstate.time()))
-      },
-      Unit::CycleTime { .. }     => Box::new(CycleTime::from_bytes(bytes)),
+  pub fn bytes_to_output(&self, bytes: &[u8], factor: Option<f32>, mapping: &Option<HashMap<Vec<u8>, String>>) -> Box<fmt::Display> {
+    if let Some(mapping) = mapping {
+      return Box::new(mapping[bytes].to_owned())
     }
+
+    let n = match self {
+      Unit::SysTime => return Box::new(SysTime::from_bytes(bytes)),
+      Unit::CycleTime => return Box::new(CycleTime::from_bytes(bytes)),
+      Unit::I8 => i8::from_bytes(bytes).to_le() as i64,
+      Unit::I16 => i16::from_bytes(bytes).to_le() as i64,
+      Unit::I32 => i32::from_bytes(bytes).to_le() as i64,
+      Unit::U8 => u8::from_bytes(bytes).to_le() as i64,
+      Unit::U16 => u16::from_bytes(bytes).to_le() as i64,
+      Unit::U32 => u32::from_bytes(bytes).to_le() as i64,
+    };
+
+    if let Some(factor) = factor {
+      return Box::new(n as f32 / factor)
+    }
+
+    Box::new(n)
   }
 
-  pub fn input_to_bytes(&self, input: &str) -> Result<Box<ToBytes>, String> {
+  pub fn input_to_bytes(&self, input: &str, factor: Option<f32>) -> Result<Box<ToBytes>, String> {
+    let factor = factor.unwrap_or(1.0);
+
     Ok(match self {
-      Unit::I8 { factor, .. }    => Box::new(input.parse::<f32>().map(|v| (v * factor) as i8).map_err(|err| err.to_string())?),
-      Unit::I16 { factor, .. }   => Box::new(input.parse::<f32>().map(|v| (v * factor) as i16).map_err(|err| err.to_string())?),
-      Unit::I32 { factor, .. }   => Box::new(input.parse::<f32>().map(|v| (v * factor) as i32).map_err(|err| err.to_string())?),
-      Unit::U8 { factor, .. }    => Box::new(input.parse::<f32>().map(|v| (v * factor) as u8).map_err(|err| err.to_string())?),
-      Unit::U16 { factor, .. }   => Box::new(input.parse::<f32>().map(|v| (v * factor) as u16).map_err(|err| err.to_string())?),
-      Unit::U32 { factor, .. }   => Box::new(input.parse::<f32>().map(|v| (v * factor) as u32).map_err(|err| err.to_string())?),
-      Unit::Enum { mapping, .. } => Box::new(mapping.iter().find(|(_, value)| value == &input).map(|(key, _)| key.clone()).unwrap()),
-      Unit::SysTime { .. }       => Box::new(input.parse::<SysTime>()?),
-      Unit::ErrState { .. }      => Box::new(input.parse::<ErrState>()?),
-      Unit::CycleTime { .. }     => Box::new(input.parse::<CycleTime>()?),
+      Unit::I8 => Box::new(input.parse::<f32>().map(|v| (v * factor) as i8).map_err(|err| err.to_string())?),
+      Unit::I16 => Box::new(input.parse::<f32>().map(|v| (v * factor) as i16).map_err(|err| err.to_string())?),
+      Unit::I32 => Box::new(input.parse::<f32>().map(|v| (v * factor) as i32).map_err(|err| err.to_string())?),
+      Unit::U8 => Box::new(input.parse::<f32>().map(|v| (v * factor) as u8).map_err(|err| err.to_string())?),
+      Unit::U16 => Box::new(input.parse::<f32>().map(|v| (v * factor) as u16).map_err(|err| err.to_string())?),
+      Unit::U32 => Box::new(input.parse::<f32>().map(|v| (v * factor) as u32).map_err(|err| err.to_string())?),
+      Unit::SysTime => Box::new(input.parse::<SysTime>()?),
+      Unit::CycleTime => Box::new(input.parse::<CycleTime>()?),
     })
   }
 }

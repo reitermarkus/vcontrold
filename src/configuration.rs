@@ -4,6 +4,7 @@ use std::fmt;
 use std::str::FromStr;
 
 use serde_derive::*;
+use serde::de::{self, Deserialize, Deserializer};
 use serde_yaml;
 
 use crate::types::{*};
@@ -11,14 +12,36 @@ use crate::{Optolink, protocol::Protocol, FromBytes, ToBytes};
 
 const DEFAULT_CONFIG: &str = include_str!("../config/default.yml");
 
+#[derive(Debug, Clone, Copy)]
+pub enum AccessMode {
+  Read,
+  Write,
+  ReadWrite,
+}
+
+impl<'de> Deserialize<'de> for AccessMode {
+  fn deserialize<D>(deserializer: D) -> Result<AccessMode, D::Error>
+  where
+      D: Deserializer<'de>,
+  {
+    match String::deserialize(deserializer)?.as_str() {
+      "read" => Ok(AccessMode::Read),
+      "write" => Ok(AccessMode::Write),
+      "read_write" => Ok(AccessMode::ReadWrite),
+      variant => Err(de::Error::unknown_variant(&variant, &["read", "write", "read_write"])),
+    }
+  }
+}
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct Command {
-  addr: Vec<u8>,
+  addr: u16,
   unit: String,
   len: Option<usize>,
   pos: Option<usize>,
   get: Option<String>,
   set: Option<String>,
+  mode: AccessMode,
 }
 
 #[derive(Debug, Deserialize)]
@@ -45,7 +68,7 @@ impl Configuration {
   pub fn get_command<P: Protocol>(&self, o: &mut Optolink, command: &str) -> Result<Box<fmt::Display>, io::Error> {
     let unit = self.unit_for_command(&command);
 
-    let addr = &self.commands[command].addr;
+    let addr = &self.commands[command].addr.to_be().to_bytes();
     let len = self.commands[command].len.unwrap_or(unit.size());
     let pos = self.commands[command].pos.unwrap_or(0);
 
@@ -56,7 +79,7 @@ impl Configuration {
   }
 
   pub fn set_command<P: Protocol>(&self, o: &mut Optolink, command: &str, input: &str) -> Result<(), io::Error> {
-    let addr = &self.commands[command].addr;
+    let addr = &self.commands[command].addr.to_be().to_bytes();
     let unit = self.unit_for_command(&command);
 
     P::set(o, &addr, &unit.input_to_bytes(input).unwrap().to_bytes())?;

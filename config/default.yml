@@ -1,312 +1,313 @@
+device: V200KW2_6
 commands:
   system_type:
-    addr: [0x00, 0xF8]
+    addr: 0x00F8
     unit: DT
-    type: get
+    mode: read
   system_time:
-    addr: [0x08, 0x8E]
+    addr: 0x088E
     unit: TI
-    type: both
+    mode: read_write
   operatingmode:
-    addr: [0x33, 0x01]
+    addr: 0x3301
     unit: E_BA2
-    type: both
+    mode: read_write
   energysavermode_state:
-    addr: [0x33, 0x02]
+    addr: 0x3302
     unit: E_ST
-    type: both
+    mode: read_write
   partymode_state:
-    addr: [0x33, 0x03]
+    addr: 0x3303
     unit: E_ST
-    type: both
+    mode: read_write
   partymode_temp:
-    addr: [0x33, 0x08]
+    addr: 0x3308
     unit: T1U
-    type: both
+    mode: read_write
   vacationmode_state:
-    addr: [0x35, 0x35]
+    addr: 0x3535
     unit: B_FB
-    type: both
+    mode: read_write
   vacationmode_date_departure:
-    addr: [0x33, 0x09]
+    addr: 0x3309
     unit: TI
-    type: both
+    mode: read_write
   vacationmode_date_return:
-    addr: [0x33, 0x11]
+    addr: 0x3311
     unit: TI
-    type: both
+    mode: read_write
   boiler_temp_state:
-    addr: [0x08, 0x3B]
+    addr: 0x083B
     unit: E_TS
-    type: get
+    mode: read
   boiler_temp_actual:
-    addr: [0x08, 0x02]
+    addr: 0x0802
     unit: TD
-    type: get
+    mode: read
   boiler_temp_desired:
-    addr: [0x55, 0x02]
+    addr: 0x5502
     unit: TD
-    type: get
+    mode: read
   boiler_temp_lowpass:
-    addr: [0x08, 0x10]
+    addr: 0x0810
     unit: TD
-    type: get
+    mode: read
   storagetank_chargingpump_state:
-    addr: [0x08, 0x45]
+    addr: 0x0845
     unit: E_ST
-    type: get
+    mode: read
   storagetank_temp_lowpass:
-    addr: [0x08, 0x12]
+    addr: 0x0812
     unit: TD
-    type: get
+    mode: read
   burner_state_1:
-    addr: [0x08, 0x42]
+    addr: 0x0842
     unit: E_ST
-    type: get
+    mode: read
   burner_state_2:
-    addr: [0x08, 0x49]
+    addr: 0x0849
     unit: E_ST
-    type: get
+    mode: read
   burner_state_error:
-    addr: [0x08, 0x83]
+    addr: 0x0883
     unit: E_ST
-    type: get
+    mode: read
   burner_starts:
-    addr: [0x08, 0x8A]
+    addr: 0x088A
     unit: CO
-    type: get
+    mode: read
   burner_hours_1:
-    addr: [0x08, 0xA7]
+    addr: 0x08A7
     unit: HS
-    type: get
+    mode: read
   outside_temp_state:
-    addr: [0x08, 0x3A]
+    addr: 0x083A
     unit: E_TS
-    type: get
+    mode: read
   outside_temp_actual:
-    addr: [0x08, 0x00]
+    addr: 0x0800
     unit: TD
-    type: get
+    mode: read
   outside_temp_mixed:
-    addr: [0x55, 0x27]
+    addr: 0x5527
     unit: TD
-    type: get
+    mode: read
   outside_temp_lowpass:
-    addr: [0x55, 0x25]
+    addr: 0x5525
     unit: TD
-    type: get
+    mode: read
   circulationpump_state:
-    addr: [0x08, 0x46]
+    addr: 0x0846
     unit: E_ST
-    type: get
+    mode: read
   circulationpump_timer_mon:
-    addr: [0x22, 0x00]
+    addr: 0x2200
     unit: CT
-    type: both
+    mode: read_write
   circulationpump_timer_tue:
-    addr: [0x22, 0x08]
+    addr: 0x2208
     unit: CT
-    type: both
+    mode: read_write
   circulationpump_timer_wed:
-    addr: [0x22, 0x10]
+    addr: 0x2210
     unit: CT
-    type: both
+    mode: read_write
   circulationpump_timer_thu:
-    addr: [0x22, 0x18]
+    addr: 0x2218
     unit: CT
-    type: both
+    mode: read_write
   circulationpump_timer_fri:
-    addr: [0x22, 0x20]
+    addr: 0x2220
     unit: CT
-    type: both
+    mode: read_write
   circulationpump_timer_sat:
-    addr: [0x22, 0x28]
+    addr: 0x2228
     unit: CT
-    type: both
+    mode: read_write
   circulationpump_timer_sun:
-    addr: [0x22, 0x30]
+    addr: 0x2230
     unit: CT
-    type: both
+    mode: read_write
   hotwater_temp_actual:
-    addr: [0x08, 0x04]
+    addr: 0x0804
     unit: TD
-    type: get
+    mode: read
   hotwater_temp_desired:
-    addr: [0x63, 0x00]
+    addr: 0x6300
     unit: T1U
-    type: both
+    mode: read_write
   hotwater_release:
-    addr: [0x35, 0x00]
+    addr: 0x3500
     len: 22
     pos: 8
     unit: E_WWF
-    type: get
+    mode: read
   hotwater_timer_mon:
-    addr: [0x31, 0x00]
+    addr: 0x3100
     unit: CT
-    type: both
+    mode: read_write
   hotwater_timer_tue:
-    addr: [0x31, 0x08]
+    addr: 0x3108
     unit: CT
-    type: both
+    mode: read_write
   hotwater_timer_wed:
-    addr: [0x31, 0x10]
+    addr: 0x3110
     unit: CT
-    type: both
+    mode: read_write
   hotwater_timer_thu:
-    addr: [0x31, 0x18]
+    addr: 0x3118
     unit: CT
-    type: both
+    mode: read_write
   hotwater_timer_fri:
-    addr: [0x31, 0x20]
+    addr: 0x3120
     unit: CT
-    type: both
+    mode: read_write
   hotwater_timer_sat:
-    addr: [0x31, 0x28]
+    addr: 0x3128
     unit: CT
-    type: both
+    mode: read_write
   hotwater_timer_sun:
-    addr: [0x31, 0x30]
+    addr: 0x3130
     unit: CT
-    type: both
+    mode: read_write
   heatingcircuit_mode:
-    addr: [0x35, 0x00]
+    addr: 0x3500
     len: 22
     pos: 1
     unit: E_BA
-    type: get
+    mode: read
   heatingcircuit_timer:
-    addr: [0x35, 0x00]
+    addr: 0x3500
     len: 22
     pos: 2
     unit: E_TIMER
-    type: get
+    mode: read
   heatingcircuit_pump_state:
-    addr: [0x39, 0x06]
+    addr: 0x3906
     unit: E_ST
-    type: get
+    mode: read
   heatingcircuit_pump_command:
-    addr: [0x35, 0x00]
+    addr: 0x3500
     len: 22
     pos: 10
     unit: E_HKP
-    type: get
+    mode: read
   heatingcircuit_rp_temp_state:
-    addr: [0x08, 0x3F]
+    addr: 0x083F
     unit: E_TS
-    type: get
+    mode: read
   heatingcircuit_rp_temp_lowpass:
-    addr: [0x08, 0x1A]
+    addr: 0x081A
     unit: TD
-    type: get
+    mode: read
   heatingcircuit_fp_temp_state:
-    addr: [0x08, 0x40]
+    addr: 0x0840
     unit: E_TS
-    type: get
+    mode: read
   heatingcircuit_fp_temp_actual:
-    addr: [0x39, 0x00]
+    addr: 0x3900
     unit: TD
-    type: get
+    mode: read
   heatingcircuit_fp_temp_desired:
-    addr: [0x35, 0x00]
+    addr: 0x3500
     len: 22
     pos: 12
     unit: TD
-    type: get
+    mode: read
   heatingcircuit_fp_temp_lowpass:
-    addr: [0x08, 0x18]
+    addr: 0x0818
     unit: TD
-    type: get
+    mode: read
   heatingcircuit_timer_mon:
-    addr: [0x30, 0x00]
+    addr: 0x3000
     unit: CT
-    type: both
+    mode: read_write
   heatingcircuit_timer_tue:
-    addr: [0x30, 0x08]
+    addr: 0x3008
     unit: CT
-    type: both
+    mode: read_write
   heatingcircuit_timer_wed:
-    addr: [0x30, 0x10]
+    addr: 0x3010
     unit: CT
-    type: both
+    mode: read_write
   heatingcircuit_timer_thu:
-    addr: [0x30, 0x18]
+    addr: 0x3018
     unit: CT
-    type: both
+    mode: read_write
   heatingcircuit_timer_fri:
-    addr: [0x30, 0x20]
+    addr: 0x3020
     unit: CT
-    type: both
+    mode: read_write
   heatingcircuit_timer_sat:
-    addr: [0x30, 0x28]
+    addr: 0x3028
     unit: CT
-    type: both
+    mode: read_write
   heatingcircuit_timer_sun:
-    addr: [0x30, 0x30]
+    addr: 0x3030
     unit: CT
-    type: both
+    mode: read_write
   heatingcurve_niveau:
-    addr: [0x33, 0x04]
+    addr: 0x3304
     unit: HKLN
-    type: both
+    mode: read_write
   heatingcurve_incline:
-    addr: [0x33, 0x05]
+    addr: 0x3305
     unit: HKLS
-    type: both
+    mode: read_write
   roomtemp_day_desired:
-    addr: [0x33, 0x06]
+    addr: 0x3306
     unit: T1U
-    type: both
+    mode: read_write
   roomtemp_night_desired:
-    addr: [0x33, 0x07]
+    addr: 0x3307
     unit: T1U
-    type: both
+    mode: read_write
   frostwarning_state:
-    addr: [0x35, 0x00]
+    addr: 0x3500
     unit: B_FW
     len: 22
     pos: 16
-    type: get
+    mode: read
   error_01:
-    addr: [0x75, 0x07]
+    addr: 0x7507
     unit: ES
-    type: get
+    mode: read
   error_02:
-    addr: [0x75, 0x10]
+    addr: 0x7510
     unit: ES
-    type: get
+    mode: read
   error_03:
-    addr: [0x75, 0x19]
+    addr: 0x7519
     unit: ES
-    type: get
+    mode: read
   error_04:
-    addr: [0x75, 0x22]
+    addr: 0x7522
     unit: ES
-    type: get
+    mode: read
   error_05:
-    addr: [0x75, 0x2B]
+    addr: 0x752B
     unit: ES
-    type: get
+    mode: read
   error_06:
-    addr: [0x75, 0x34]
+    addr: 0x7534
     unit: ES
-    type: get
+    mode: read
   error_07:
-    addr: [0x75, 0x3D]
+    addr: 0x753D
     unit: ES
-    type: get
+    mode: read
   error_08:
-    addr: [0x75, 0x46]
+    addr: 0x7546
     unit: ES
-    type: get
+    mode: read
   error_09:
-    addr: [0x75, 0x4F]
+    addr: 0x754F
     unit: ES
-    type: get
+    mode: read
   error_10:
-    addr: [0x75, 0x58]
+    addr: 0x7558
     unit: ES
-    type: get
+    mode: read
 units:
   E_TIMER:
     name: AufheizTimerSekunden
@@ -316,114 +317,94 @@ units:
     name: ErrorStatus
     type: errstate
     mapping:
-      [0x00]: 'Anlage ohne Fehler'
-      [0x02]: 'Fehler Sicherheitskette'
-      [0x04]: 'Brennerstörung 04'
-      [0x05]: 'Brennerstörung 05'
-      [0x07]: 'Brennerstörung 07'
-      [0x08]: 'Brennerstörung 08'
-      [0x09]: 'Brennerstörung 09'
-      [0x0A]: 'Brennerstörung 0A'
-      [0x0B]: 'Brennerstörung 0B'
-      [0x0C]: 'Brennerstörung 0C'
-      [0x0D]: 'Brennerstörung 0D'
-      [0x0E]: 'Brennerstörung 0E'
-      [0x0F]: 'Wartung durchführen'
-      [0x10]: 'Kurzschluss Aussentemperatursensor'
-      [0x11]: 'Brennerstörung 11'
-      [0x14]: 'Brennerstörung 14'
-      [0x15]: 'Brennerstörung 15'
-      [0x18]: 'Unterbrechung Aussentemperatursensor'
-      [0x20]: 'Kurzschluss Vorlauftemperatursensor HK1/Anlage'
-      [0x21]: 'Kurzschluss Rücklauftemperatursensor HK1/Anlage'
-      [0x25]: 'SP-Betrieb'
-      [0x26]: 'Prüffunktion Reglerstop'
-      [0x28]: 'Unterbrechung Vorlauftemperatursensor (HK1)/Anlage'
-      [0x29]: 'Unterbrechung Rücklauftemperatursensor (HK1)/Anlage'
-      [0x30]: 'Kurzschluss Kesseltemperatursensor'
-      [0x35]: 'Fehler SFP-Taster'
-      [0x38]: 'Unterbrechung Kesseltemperatursensor'
-      [0x40]: 'Kurzschluss Vorlauftemperatursensor (HK2)'
-      [0x41]: 'Kurzschluss Rücklauftemperatursensor (HK2)'
-      [0x44]: 'Kurzschluss Vorlauftemperatursensor (HK3)'
-      [0x45]: 'Kurzschluss Rücklauftemperatursensor (HK3)'
-      [0x48]: 'Unterbrechung Vorlauftemperatursensor (HK2)'
-      [0x49]: 'Unterbrechung Rücklauftemperatursensor (HK2)'
-      [0x4C]: 'Unterbrechung Vorlauftemperatursensor (HK3)'
-      [0x4D]: 'Unterbrechung Rücklauftemperatursensor (HK3)'
-      [0x50]: 'Kurzschluss Speichertemperatursensor'
-      [0x51]: 'Kurzschluss Speichertemperatursensor 2'
-      [0x58]: 'Unterbrechung Speichertemperatursensor'
-      [0x59]: 'Unterbrechung Speichertemperatursensor 2'
-      [0x60]: 'Kurzschluss Rücklauftemperatursensor 17'
-      [0x61]: 'Kurzschluss Wasserdrucksensor'
-      [0x68]: 'Unterbrechung Rücklauftemperatursensor 17'
-      [0x70]: 'Kurzschluss Rück-/Vorlauftemperatursensor 17B'
-      [0x78]: 'Unterbrechung Rück-/Vorlauftemperatursensor 17B'
-      [0x92]: 'Solar: Kurzschluss Kollektortemperatursensor'
-      [0x93]: 'Solar: Kurzschluss Sensor S3'
-      [0x94]: 'Solar: Kurzschluss Speichertemperatursensor'
-      [0x9A]: 'Solar: Unterbrechung Kollektortemperatursensor'
-      [0x9B]: 'Solar: Unterbrechung Sensor S3'
-      [0x9C]: 'Solar: Unterbrechung Speichertemperatursensor'
-      [0x9F]: 'Solar: allg. Fehlermeldung'
-      [0xA7]: 'Fehler Bedienteil (Uhrenbaustein)'
-      [0xAE]: 'Interner Fehler Mischer'
-      [0xAF]: 'Interner Fehler Mischer'
-      [0xB0]: 'Kurzschluss Abgastemperatursensor'
-      [0xB1]: 'Kommunikationsfehler Bedieneinheit'
-      [0xB4]: 'Interner Fehler (Elektronik)'
-      [0xB5]: 'Interner Fehler (Elektronik)'
-      [0xB6]: 'Ungültige Hardwarekennung (Elektronik)'
-      [0xB7]: 'Interner Fehler (Kesselkodierstecker)'
-      [0xB8]: 'Unterbrechung Abgastemperatursensor'
-      [0xB9]: 'Interner Fehler (Dateneingabe wiederholen)'
-      [0xBA]: 'Kommunikationsfehler Erweiterungssatz für Mischerkreis M2'
-      [0xBC]: 'Fehler Vitotrol Heizkreis1 (KM-Bus)'
-      [0xBD]: 'Fehler Vitotrol Heizkreis2 (KM-Bus)'
-      [0xBE]: 'Fehler Vitotrol Heizkreis3 (KM-Bus)'
-      [0xBF]: 'Falsches LON Modul'
-      [0xC1]: 'Externe Sicherheitseinrichtung (Kessel kühlt aus)'
-      [0xC2]: 'Kommunikationsfehler Solarregelung'
-      [0xC5]: 'Kommunikationsfehler drehzahlgeregelte Heizkreispumpe, HK1'
-      [0xC6]: 'Kommunikationsfehler drehzahlgeregelte Heizkreispumpe, HK2'
-      [0xC7]: 'Kommunikationsfehler drehzahlgeregelte Heizkreispumpe, HK3'
-      [0xC8]: 'Fehler Wasserstandsbegrenzer'
-      [0xC9]: 'Fehler Maximaldruck'
-      [0xCA]: 'Fehler Minimaldruck/Fehler Maximaldruck 2'
-      [0xCB]: 'Fehler Maximaldruck 2'
-      [0xCC]: 'reserviert externe Peripherie'
-      [0xCD]: 'Kommunikationsfehler Vitocom 300 (KM-Bus)'
-      [0xCE]: 'Kommunikationsfehler Störmeldemodul (KM-Bus)'
-      [0xCF]: 'Kommunikationsfehler LON Modul'
-      [0xD1]: 'Brennerstörung Kessel'
-      [0xD4]: 'Sicherheitstemperaturbegrenzer hat ausgelöst oder Störmeldemodul nicht richtig gesteckt'
-      [0xD5]: 'Kaskade: Kessel meldet sich nicht'
-      [0xD6]: 'Externe Störung 1 Steckadapter'
-      [0xD7]: 'Externe Störung 2 Steckadapter'
-      [0xD8]: 'Externe Störung 3 Steckadapter'
-      [0xDA]: 'Kurzschluss Raumtemperatursensor, HK1'
-      [0xDB]: 'Kurzschluss Raumtemperatursensor, HK2'
-      [0xDC]: 'Kurzschluss Raumtemperatursensor, HK3'
-      [0xDD]: 'Unterbrechung Raumtemperatursensor, HK1'
-      [0xDE]: 'Unterbrechung Raumtemperatursensor, HK2'
-      [0xDF]: 'Unterbrechung Raumtemperatursensor, HK3'
-      [0xE0]: 'Fehler externer Teilnehmer / Gerät am LON'
-      [0xE4]: 'Fehler Versorgungsspannung'
-      [0xE5]: 'Interner Fehler (Ionisationselektrode)'
-      [0xE6]: 'Abgas- / Zuluftsystem verstopft'
-      [0xF0]: 'Kommunikationsfehler Feuerungsautomat'
-      [0xF1]: 'Abgastemperaturbegrenzer ausgelöst'
-      [0xF2]: 'Temperaturbegrenzer ausgelöst'
-      [0xF3]: 'Flammensignal beim Brennerstart bereits vorhanden'
-      [0xF4]: 'Flammensignal nicht vorhanden'
-      [0xF7]: 'Differenzdrucksensor defekt'
-      [0xF8]: 'Brennstoffventil schließt zu spät'
-      [0xF9]: 'Gebläsedrehzahl beim Brennerstart zu niedrig'
-      [0xFA]: 'Gebläsedrehzahl beim Brennerstart zu hoch'
-      [0xFD]: 'Fehler Feuerungsautomat'
-      [0xFE]: 'Starkes Störfeld (EMV) in der Nähe oder Elektronik defekt'
-      [0xFF]: 'Interner Fehler'
+      [0x00]: 'Normalbetrieb'
+      [0x0F]: 'Normalbetrieb-Wartung'
+      [0x10]: 'Notbetrieb-Außentemp'
+      [0x18]: 'Notbetrieb-Außentemp'
+      [0x20]: 'Ausfall HK M2-Vorlauftemp'
+      [0x21]: 'Notbetrieb HK M2- Rücklauft'
+      [0x28]: 'Ausfall HK M2-Vorlauftemp'
+      [0x29]: 'Notbetrieb HK M2- Rücklauft'
+      [0x30]: 'Notbetrieb-Kesseltemp'
+      [0x38]: 'Notbetrieb-Kesseltemp'
+      [0x40]: 'Ausfall HK M3-Vorlauftemp'
+      [0x41]: 'Notbetrieb HK M3-Rücklauft'
+      [0x48]: 'Ausfall HK M3-Vorlauftemp'
+      [0x49]: 'Notbetrieb HK M3-Rücklauft'
+      [0x50]: 'Notbetrieb-Speichertemp'
+      [0x51]: 'Notbetrieb-Speichertemp'
+      [0x58]: 'Notbetrieb-Speichertemp'
+      [0x59]: 'Notbetrieb-Speichertemp'
+      [0x92]: 'Notbetrieb-Kollektortemp'
+      [0x93]: 'Notbetrieb-Speichertemp.Sol'
+      [0x94]: 'Notbetrieb-Speichertemp.Sol'
+      [0x9A]: 'Notbetrieb-Kollektortemp'
+      [0x9B]: 'Notbetrieb-Speichertemp.Sol'
+      [0x9C]: 'Notbetrieb-Speichertemp.Sol'
+      [0x9F]: 'Notbetrieb-Solarregelung'
+      [0xB0]: 'Normalbetrieb-Abgastemp'
+      [0xB1]: 'Notbetrieb-Komm-Bedienteil'
+      [0xB4]: 'Notbetrieb-Störung Intern'
+      [0xB5]: 'Notbetrieb-Störung Intern'
+      [0xB6]: 'Notbetrieb-Störung Intern'
+      [0xB7]: 'Notbetrieb-Codierstecker'
+      [0xB8]: 'Normalbetrieb-Abgastemp'
+      [0xB9]: 'Notbetrieb-Störung Interner'
+      [0xBA]: 'Notbetrieb-HK Mischer M2'
+      [0xBB]: 'Notbetrieb-HK Mischer M3'
+      [0xBC]: 'Notbetrieb-Fernbedien.HK A1'
+      [0xBD]: 'Notbetrieb-Fernbedien.HK M2'
+      [0xBE]: 'Notbetrieb-Fernbedien.HK.M3'
+      [0xC1]: 'Ausfall Anlage-ExtSIcherheit'
+      [0xC2]: 'Notbetrieb-Komm. Solar'
+      [0xC4]: 'Notbetrieb-Kommunikation'
+      [0xC5]: 'Notbetrieb-Pumpe HK A1'
+      [0xC6]: 'Notbetrieb-Pumpe HK M2'
+      [0xC7]: 'Notbetrieb-Pumpe HK M3'
+      [0xC9]: 'Notbetrieb-ext. Gerät'
+      [0xCD]: 'Ausfall Anlagenüberwachung'
+      [0xCE]: 'Notbetrieb-Schaltmodule V'
+      [0xCF]: 'Notbetrieb-Komm.2Draht-Bus'
+      [0xD1]: 'Ausfall Anlage: Brennerstörung'
+      [0xD4]: 'Ausfall Anlage-Temp.Begrenz.'
+      [0xDA]: 'Notbetrieb-Raumtemp HK A1'
+      [0xDB]: 'Notbetrieb-Raumtemp HK M2'
+      [0xDC]: 'Notbetrieb-Raumtemp HK M3'
+      [0xDD]: 'Notbetrieb-Raumtemp HK A1'
+      [0xDE]: 'Notbetrieb-Raumtemp HK M2'
+      [0xDF]: 'Notbetrieb-Raumtemp HK M3'
+      [0xE0]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xE1]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xE2]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xE3]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xE4]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xE5]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xE6]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xE7]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xE8]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xE9]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xEA]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xEB]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xEC]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xED]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xEE]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xEF]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xF0]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xF1]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xF2]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xF3]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xF4]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xF5]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xF6]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xF7]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xF8]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xF9]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xFA]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xFB]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xFC]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xFD]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xFE]: 'Ausfall Anlage-2 Draht-Bus'
+      [0xFF]: 'Ausfall Anlage-2 Draht-Bus'
   B_FW:
     name: Frostwarnung
     type: enum
@@ -449,12 +430,12 @@ units:
     name: Betriebsart
     type: enum
     mapping:
-      [0x00]: NWW
-      [0x01]: RED
-      [0x02]: NRM
-      [0x03]: HWW
-      [0x04]: HWW
-      [0x05]: OFF
+      [0x00]: NWW # Nur WW
+      [0x01]: RED # Dauernd Reduziert
+      [0x02]: NRM # Dauernd Normal
+      [0x03]: HWW # Heizen + WW
+      [0x04]: HWW # Heizen + WW
+      [0x05]: OFF # Abschalt
   E_WWF:
     name: Warmwasser-Freigabe
     type: enum

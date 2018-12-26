@@ -103,6 +103,8 @@ impl fmt::Display for SysTime {
 mod tests {
   use super::*;
 
+  use crate::traits::{FromBytes, ToBytes};
+
   #[test]
   fn new() {
     let time = SysTime::new(2018, 12, 23, 17, 49, 31);

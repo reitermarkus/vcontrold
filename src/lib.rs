@@ -12,8 +12,6 @@ use libc::{AI_PASSIVE, AI_ALL, AI_V4MAPPED, TCP_NODELAY, LOG_INFO, LOG_NOTICE, L
 use libc::getaddrinfo;
 use libc::exit;
 
-// include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
-
 macro_rules! log_it {
   ($level:expr, $($arg:tt)*) => {{
     let string = format!($($arg)*);
@@ -21,22 +19,8 @@ macro_rules! log_it {
   }}
 }
 
-// mod arithmetic;
-// pub use crate::arithmetic::*;
-
-// mod common;
-// pub use crate::common::*;
-
-// mod io;
-// pub use crate::io::*;
-
-// mod socket;
-// pub use crate::socket::*;
-
 mod configuration;
 pub use crate::configuration::*;
-
-// mod expression;
 
 mod traits;
 pub use crate::traits::{FromBytes, ToBytes};

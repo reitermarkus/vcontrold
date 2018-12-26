@@ -4,6 +4,7 @@ use std::fmt;
 use std::str::FromStr;
 
 use serde_derive::*;
+use serde::ser::{Serialize, Serializer};
 use serde::de::{self, Deserialize, Deserializer};
 use serde_yaml;
 use yaml_merge_keys;
@@ -38,33 +39,41 @@ impl<'de> Deserialize<'de> for AccessMode {
 pub struct Command {
   addr: u16,
   unit: Unit,
-  len: Option<usize>,
+  byte_len: Option<usize>,
   #[serde(default)]
-  pos: usize,
+  byte_pos: usize,
   mode: AccessMode,
+  bit_pos: Option<usize>,
+  bit_len: Option<usize>,
   factor: Option<f32>,
   mapping: Option<HashMap<Vec<u8>, String>>,
 }
 
 impl Command {
   #[inline]
-  fn len(&self) -> usize {
-    self.len.unwrap_or(self.unit.size())
-  }
-
-  #[inline]
   fn addr(&self) -> Vec<u8> {
     self.addr.to_be().to_bytes()
   }
 
   pub fn get<P: Protocol>(&self, o: &mut Optolink) -> Result<Box<fmt::Display>, io::Error> {
-    let mut buf = vec![0; self.len()];
+    let byte_len = self.byte_len.unwrap_or(self.unit.size());
+
+    let mut buf = vec![0; byte_len];
     P::get(o, &self.addr(), &mut buf)?;
-    Ok(self.unit.bytes_to_output(&buf[self.pos..(self.pos + self.unit.size())], self.factor, &self.mapping))
+
+    if let Some(bit_pos) = self.bit_pos {
+      let byte = buf[bit_pos / 8];
+      let bit_len = self.bit_len.unwrap_or(1);
+
+      buf.clear();
+      buf.push((byte << (bit_pos % 8)) >> (8 - bit_len));
+    }
+
+    Ok(self.unit.bytes_to_output(&buf[self.byte_pos..(self.byte_pos + self.unit.size())], self.factor, &self.mapping))
   }
 
   pub fn set<P: Protocol>(&self, o: &mut Optolink, input: &str) -> Result<(), io::Error> {
-    P::set(o, &self.addr(), &self.unit.input_to_bytes(input, self.factor).unwrap().to_bytes())
+    P::set(o, &self.addr(), &self.unit.input_to_bytes(input, self.factor)?)
   }
 }
 
@@ -103,7 +112,7 @@ fn f32_one() -> f32 {
 }
 
 #[derive(Debug, Clone)]
-pub enum Unit {
+enum Unit {
   I8,
   I16,
   I32,
@@ -173,19 +182,23 @@ impl Unit {
     Box::new(n)
   }
 
-  pub fn input_to_bytes(&self, input: &str, factor: Option<f32>) -> Result<Box<ToBytes>, String> {
+  pub fn input_to_bytes(&self, input: &str, factor: Option<f32>) -> Result<Vec<u8>, io::Error> {
     let factor = factor.unwrap_or(1.0);
 
-    Ok(match self {
-      Unit::I8 => Box::new(input.parse::<f32>().map(|v| (v * factor) as i8).map_err(|err| err.to_string())?),
-      Unit::I16 => Box::new(input.parse::<f32>().map(|v| (v * factor) as i16).map_err(|err| err.to_string())?),
-      Unit::I32 => Box::new(input.parse::<f32>().map(|v| (v * factor) as i32).map_err(|err| err.to_string())?),
-      Unit::U8 => Box::new(input.parse::<f32>().map(|v| (v * factor) as u8).map_err(|err| err.to_string())?),
-      Unit::U16 => Box::new(input.parse::<f32>().map(|v| (v * factor) as u16).map_err(|err| err.to_string())?),
-      Unit::U32 => Box::new(input.parse::<f32>().map(|v| (v * factor) as u32).map_err(|err| err.to_string())?),
-      Unit::SysTime => Box::new(input.parse::<SysTime>()?),
-      Unit::CycleTime => Box::new(input.parse::<CycleTime>()?),
-    })
+    fn invalid_input(err: impl fmt::Display) -> io::Error {
+      io::Error::new(std::io::ErrorKind::InvalidInput, err.to_string())
+    }
+
+    match self {
+      Unit::I8 => input.parse::<f32>().map(|v| ((v * factor) as i8).to_bytes()).map_err(invalid_input),
+      Unit::I16 => input.parse::<f32>().map(|v| ((v * factor) as i16).to_bytes()).map_err(invalid_input),
+      Unit::I32 => input.parse::<f32>().map(|v| ((v * factor) as i32).to_bytes()).map_err(invalid_input),
+      Unit::U8 => input.parse::<f32>().map(|v| ((v * factor) as u8).to_bytes()).map_err(invalid_input),
+      Unit::U16 => input.parse::<f32>().map(|v| ((v * factor) as u16).to_bytes()).map_err(invalid_input),
+      Unit::U32 => input.parse::<f32>().map(|v| ((v * factor) as u32).to_bytes()).map_err(invalid_input),
+      Unit::SysTime => input.parse::<SysTime>().map(|v| v.to_bytes()).map_err(invalid_input),
+      Unit::CycleTime => input.parse::<CycleTime>().map(|v| v.to_bytes()).map_err(invalid_input),
+    }
   }
 }
 

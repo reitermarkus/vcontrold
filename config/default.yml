@@ -24,10 +24,10 @@ systime: &systime
   unit: systime
 error_time: &error_time
   <<: *systime
-  len: 9
-  pos: 1
+  byte_len: 9
+  byte_pos: 1
 error_state: &error_state
-  len: 9
+  byte_len: 9
   unit: u8
   mapping:
     [0x00]: 'Normalbetrieb'
@@ -187,10 +187,11 @@ commands:
   vacationmode_state:
     addr: 0x3535
     unit: u8
+    bit_pos: 7
     mapping:
-      [0x12]: OFF
+      [0x00]: OFF
       [0x01]: ON
-    mode: read_write
+    mode: read
   vacationmode_date_departure:
     <<: *systime
     addr: 0x3309
@@ -302,8 +303,8 @@ commands:
     mode: read_write
   hotwater_release:
     addr: 0x3500
-    len: 22
-    pos: 8
+    byte_len: 22
+    byte_pos: 8
     unit: u8
     mapping:
       [0x00]: Freigabe aus
@@ -340,8 +341,8 @@ commands:
     mode: read_write
   heatingcircuit_mode:
     addr: 0x3500
-    len: 22
-    pos: 1
+    byte_len: 22
+    byte_pos: 1
     unit: u8
     mapping:
       [0x00]: NWW # Nur WW
@@ -353,8 +354,8 @@ commands:
     mode: read
   heatingcircuit_timer:
     addr: 0x3500
-    len: 22
-    pos: 2
+    byte_len: 22
+    byte_pos: 2
     unit: u32
     factor: 10
     mode: read
@@ -364,8 +365,8 @@ commands:
     mode: read
   heatingcircuit_pump_command:
     addr: 0x3500
-    len: 22
-    pos: 10
+    byte_len: 22
+    byte_pos: 10
     unit: u8
     mapping:
       [0x00]: OFF
@@ -392,8 +393,8 @@ commands:
   heatingcircuit_fp_temp_desired:
     <<: *temp_i16
     addr: 0x3500
-    len: 22
-    pos: 12
+    byte_len: 22
+    byte_pos: 12
     mode: read
   heatingcircuit_fp_temp_lowpass:
     <<: *temp_i16
@@ -447,8 +448,8 @@ commands:
   frostwarning_state:
     <<: *state
     addr: 0x3500
-    len: 22
-    pos: 16
+    byte_len: 22
+    byte_pos: 16
     mode: read
   error_01:
     <<: *error_state

@@ -79,10 +79,10 @@ impl From<NaiveDateTime> for SysTime {
 }
 
 impl FromStr for SysTime {
-  type Err = String;
+  type Err = chrono::format::ParseError;
 
   fn from_str(s: &str) -> Result<SysTime, Self::Err> {
-    NaiveDateTime::from_str(s).map(Into::into).map_err(|err| err.to_string())
+    NaiveDateTime::from_str(s).map(Into::into)
   }
 }
 

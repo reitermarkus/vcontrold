@@ -33,7 +33,7 @@ impl FromStr for CycleTime {
   type Err = String;
 
   fn from_str(s: &str) -> Result<CycleTime, Self::Err> {
-    unimplemented!("CycleTime::from_str")
+    Err(format!("could not parse {}, from_str is not implemented for CycleTime", s))
   }
 }
 

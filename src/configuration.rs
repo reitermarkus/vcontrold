@@ -106,11 +106,6 @@ impl Configuration {
   }
 }
 
-#[inline(always)]
-fn f32_one() -> f32 {
-  1.0
-}
-
 #[derive(Debug, Clone)]
 enum Unit {
   I8,

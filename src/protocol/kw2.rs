@@ -39,8 +39,6 @@ impl Protocol for Kw2 {
 
       o.read_exact(buf)?;
 
-      println!("{:?}", buf);
-
       // Retry once if the response only contains `0x05`,
       // since these could be synchronization bytes.
       if buf.iter().all(|byte| *byte == 0x05) {

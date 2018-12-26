@@ -2,6 +2,7 @@ use std::fmt;
 use std::str::FromStr;
 
 use chrono::{NaiveDate, NaiveDateTime, Datelike, Timelike};
+use serde::ser::{Serialize, Serializer};
 
 #[inline]
 fn byte_to_dec(byte: u8) -> u8 {
@@ -83,6 +84,12 @@ impl FromStr for SysTime {
 
   fn from_str(s: &str) -> Result<SysTime, Self::Err> {
     NaiveDateTime::from_str(s).map(Into::into)
+  }
+}
+
+impl Serialize for SysTime {
+  fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+    serializer.serialize_str(&self.to_string())
   }
 }
 

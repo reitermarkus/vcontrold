@@ -1,6 +1,8 @@
 use std::fmt;
 use std::str::FromStr;
 
+use serde::ser::{Serialize, Serializer};
+
 byte_type!(CycleTime, 8);
 
 impl CycleTime {
@@ -18,6 +20,12 @@ impl CycleTime {
       self.byte_to_time(4).and_then(|from| self.byte_to_time(5).map(|to| (from, to))),
       self.byte_to_time(6).and_then(|from| self.byte_to_time(7).map(|to| (from, to))),
     ]
+  }
+}
+
+impl Serialize for CycleTime {
+  fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+    self.times().serialize(serializer)
   }
 }
 

@@ -55,7 +55,7 @@ impl Command {
     self.addr.to_be().to_bytes()
   }
 
-  pub fn get<P: Protocol>(&self, o: &mut Optolink) -> Result<Box<fmt::Display>, io::Error> {
+  pub fn get<P: Protocol>(&self, o: &mut Optolink) -> Result<Value, io::Error> {
     let byte_len = self.byte_len.unwrap_or(self.unit.size());
 
     let mut buf = vec![0; byte_len];
@@ -142,31 +142,51 @@ impl<'de> Deserialize<'de> for Unit {
   }
 }
 
+pub enum Value {
+  Int(i64),
+  Float(f64),
+  SysTime(SysTime),
+  CycleTime(CycleTime),
+  String(String),
+}
+
+impl Serialize for Value {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+      S: Serializer,
+  {
+    match self {
+      Value::Int(n) => n.serialize(serializer),
+      Value::Float(f) => f.serialize(serializer),
+      Value::SysTime(systime) => systime.serialize(serializer),
+      Value::CycleTime(cycletime) => cycletime.serialize(serializer),
+      Value::String(s) => s.serialize(serializer),
+    }
+  }
+}
+
 impl Unit {
   pub fn size(&self) -> usize {
-    use self::Unit::*;
-
     match self {
-      I8 => std::mem::size_of::<i8>(),
-      I16 => std::mem::size_of::<i16>(),
-      I32 => std::mem::size_of::<i32>(),
-      U8 => std::mem::size_of::<u8>(),
-      U16 => std::mem::size_of::<u16>(),
-      U32 => std::mem::size_of::<u32>(),
-      SysTime => std::mem::size_of::<self::SysTime>(),
-      ErrState => std::mem::size_of::<self::ErrState>(),
-      CycleTime => std::mem::size_of::<self::CycleTime>(),
+      Unit::I8 => std::mem::size_of::<i8>(),
+      Unit::I16 => std::mem::size_of::<i16>(),
+      Unit::I32 => std::mem::size_of::<i32>(),
+      Unit::U8 => std::mem::size_of::<u8>(),
+      Unit::U16 => std::mem::size_of::<u16>(),
+      Unit::U32 => std::mem::size_of::<u32>(),
+      Unit::SysTime => std::mem::size_of::<SysTime>(),
+      Unit::CycleTime => std::mem::size_of::<CycleTime>(),
     }
   }
 
-  pub fn bytes_to_output(&self, bytes: &[u8], factor: Option<f32>, mapping: &Option<HashMap<Vec<u8>, String>>) -> Box<fmt::Display> {
+  pub fn bytes_to_output(&self, bytes: &[u8], factor: Option<f32>, mapping: &Option<HashMap<Vec<u8>, String>>) -> Value {
     if let Some(mapping) = mapping {
-      return Box::new(mapping[bytes].to_owned())
+      return Value::String(mapping[bytes].to_owned())
     }
 
     let n = match self {
-      Unit::SysTime => return Box::new(SysTime::from_bytes(bytes)),
-      Unit::CycleTime => return Box::new(CycleTime::from_bytes(bytes)),
+      Unit::SysTime => return Value::SysTime(SysTime::from_bytes(bytes)),
+      Unit::CycleTime => return Value::CycleTime(CycleTime::from_bytes(bytes)),
       Unit::I8 => i8::from_bytes(bytes).to_le() as i64,
       Unit::I16 => i16::from_bytes(bytes).to_le() as i64,
       Unit::I32 => i32::from_bytes(bytes).to_le() as i64,
@@ -176,10 +196,10 @@ impl Unit {
     };
 
     if let Some(factor) = factor {
-      return Box::new(n as f32 / factor)
+      return Value::Float(n as f64 / factor as f64)
     }
 
-    Box::new(n)
+    Value::Int(n)
   }
 
   pub fn input_to_bytes(&self, input: &str, factor: Option<f32>) -> Result<Vec<u8>, io::Error> {

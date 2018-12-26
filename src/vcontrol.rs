@@ -1,6 +1,7 @@
 use std::process::exit;
 
 use clap::{crate_version, Arg, App, SubCommand, AppSettings::ArgRequiredElseHelp};
+use serde_json;
 
 use vcontrol::{Configuration, Optolink, protocol::Kw2};
 
@@ -67,7 +68,7 @@ fn main() {
 
     match config.command(command).get::<Kw2>(&mut device) {
       Ok(output) => {
-        println!("{}", output);
+        println!("{}", serde_json::to_string(&output).unwrap());
       },
       Err(err) => {
         eprintln!("Error: {}", err);

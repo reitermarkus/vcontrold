@@ -233,7 +233,7 @@ fn get_number<T: Iterator<Item = char>>(it: &mut Peekable<T>) -> Result<Tok, Str
   Ok(Tok::Number(Number::Int(i32::from_str_radix(&number, radix).map_err(|err| err.to_string())?)))
 }
 
-fn get_var<T: Iterator<Item = char>>(it: &mut Peekable<T>) -> Result<Tok, String> {
+fn get_var<T: Iterator<Item = char>>(mut it: &mut Peekable<T>) -> Result<Tok, String> {
   use self::Tok::*;
   use self::Var::*;
 
@@ -247,8 +247,12 @@ fn get_var<T: Iterator<Item = char>>(it: &mut Peekable<T>) -> Result<Tok, String
       if let Some(c) = it.peek() {
         match *c {
           c @ '0'...'9' => {
-            it.next();
-            Ok(Var(Byte(c.to_digit(10).unwrap() as usize)))
+            let n = match get_number(&mut it)? {
+              Tok::Number(Number::Int(number)) => number,
+              n => return Err(format!("expected integer number, found '{:?}'", n)),
+            };
+
+            Ok(Var(Byte(n as usize)))
           },
           c => Err(format!("unexpected character '{}'", c)),
         }

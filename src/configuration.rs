@@ -15,6 +15,8 @@ const DEFAULT_CONFIG: &str = include_str!("../config/default.yml");
 pub struct Command {
   addr: Vec<u8>,
   unit: String,
+  len: Option<usize>,
+  pos: Option<usize>,
   get: Option<String>,
   set: Option<String>,
 }
@@ -41,12 +43,16 @@ impl FromStr for Configuration {
 
 impl Configuration {
   pub fn get_command<P: Protocol>(&self, o: &mut Optolink, command: &str) -> Result<Box<fmt::Display>, io::Error> {
-    let addr = &self.commands[command].addr;
     let unit = self.unit_for_command(&command);
 
-    let mut buf = vec![0; unit.size()];
+    let addr = &self.commands[command].addr;
+    let len = self.commands[command].len.unwrap_or(unit.size());
+    let pos = self.commands[command].pos.unwrap_or(0);
+
+    let mut buf = vec![0; len];
     P::get(o, &addr, &mut buf)?;
-    Ok(unit.bytes_to_output(&buf))
+
+    Ok(unit.bytes_to_output(&buf[pos..(pos + unit.size())]))
   }
 
   pub fn set_command<P: Protocol>(&self, o: &mut Optolink, command: &str, input: &str) -> Result<(), io::Error> {

@@ -137,6 +137,8 @@ commands:
     type: both
   hotwater_release:
     addr: [0x35, 0x00]
+    len: 22
+    pos: 8
     unit: E_WWF
     type: get
   hotwater_timer_mon:
@@ -169,7 +171,15 @@ commands:
     type: both
   heatingcircuit_mode:
     addr: [0x35, 0x00]
+    len: 22
+    pos: 1
     unit: E_BA
+    type: get
+  heatingcircuit_timer:
+    addr: [0x35, 0x00]
+    len: 22
+    pos: 2
+    unit: E_TIMER
     type: get
   heatingcircuit_pump_state:
     addr: [0x39, 0x06]
@@ -177,6 +187,8 @@ commands:
     type: get
   heatingcircuit_pump_command:
     addr: [0x35, 0x00]
+    len: 22
+    pos: 10
     unit: E_HKP
     type: get
   heatingcircuit_rp_temp_state:
@@ -197,6 +209,8 @@ commands:
     type: get
   heatingcircuit_fp_temp_desired:
     addr: [0x35, 0x00]
+    len: 22
+    pos: 12
     unit: TD
     type: get
   heatingcircuit_fp_temp_lowpass:
@@ -250,6 +264,8 @@ commands:
   frostwarning_state:
     addr: [0x35, 0x00]
     unit: B_FW
+    len: 22
+    pos: 16
     type: get
   error_01:
     addr: [0x75, 0x07]
@@ -292,6 +308,10 @@ commands:
     unit: ES
     type: get
 units:
+  E_TIMER:
+    name: AufheizTimerSekunden
+    type: u32
+    factor: 10
   ES:
     name: ErrorStatus
     type: errstate
@@ -408,9 +428,8 @@ units:
     name: Frostwarnung
     type: enum
     mapping:
-      [0x00]: 'OFF'
       [0x01]: 'ON'
-      [0x02]: 'OFF'
+      [0x00]: 'OFF'
   HKLN:
     name: Niveau
     type: i8

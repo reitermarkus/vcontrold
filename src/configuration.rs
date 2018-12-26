@@ -6,6 +6,7 @@ use std::str::FromStr;
 use serde_derive::*;
 use serde::de::{self, Deserialize, Deserializer};
 use serde_yaml;
+use yaml_merge_keys;
 
 use crate::types::{*};
 use crate::{Optolink, protocol::Protocol, FromBytes, ToBytes};
@@ -36,7 +37,7 @@ impl<'de> Deserialize<'de> for AccessMode {
 #[derive(Debug, Clone, Deserialize)]
 pub struct Command {
   addr: u16,
-  unit: String,
+  unit: Unit,
   len: Option<usize>,
   pos: Option<usize>,
   get: Option<String>,
@@ -47,7 +48,6 @@ pub struct Command {
 #[derive(Debug, Deserialize)]
 pub struct Configuration {
   pub commands: HashMap<String, Command>,
-  pub units: HashMap<String, Unit>,
 }
 
 impl Default for Configuration {
@@ -57,16 +57,20 @@ impl Default for Configuration {
 }
 
 impl FromStr for Configuration {
-  type Err = serde_yaml::Error;
+  type Err = String;
 
   fn from_str(s: &str) -> Result<Configuration, Self::Err> {
-    serde_yaml::from_str(&s)
+    let value: serde_yaml::Value = serde_yaml::from_str(&s).map_err(|err| err.to_string())?;
+
+    let value = yaml_merge_keys::merge_keys_serde(value).map_err(|err| err.kind().description().to_string())?;
+
+    serde_yaml::from_value(value).map_err(|err| err.to_string())
   }
 }
 
 impl Configuration {
   pub fn get_command<P: Protocol>(&self, o: &mut Optolink, command: &str) -> Result<Box<fmt::Display>, io::Error> {
-    let unit = self.unit_for_command(&command);
+    let unit = self.commands[command].unit.clone();
 
     let addr = &self.commands[command].addr.to_be().to_bytes();
     let len = self.commands[command].len.unwrap_or(unit.size());
@@ -80,15 +84,10 @@ impl Configuration {
 
   pub fn set_command<P: Protocol>(&self, o: &mut Optolink, command: &str, input: &str) -> Result<(), io::Error> {
     let addr = &self.commands[command].addr.to_be().to_bytes();
-    let unit = self.unit_for_command(&command);
+    let unit = self.commands[command].unit.clone();
 
     P::set(o, &addr, &unit.input_to_bytes(input).unwrap().to_bytes())?;
     Ok(())
-  }
-
-  fn unit_for_command(&self, command: &str) -> &Unit {
-    let unit = &self.commands[command].unit;
-    &self.units[unit]
   }
 }
 
@@ -101,25 +100,25 @@ fn f32_one() -> f32 {
 #[serde(tag = "type")]
 pub enum Unit {
   #[serde(rename = "i8")]
-  I8 { name: String, #[serde(default = "f32_one")] factor: f32 },
+  I8 { #[serde(default = "f32_one")] factor: f32 },
   #[serde(rename = "i16")]
-  I16 { name: String, #[serde(default = "f32_one")] factor: f32 },
+  I16 { #[serde(default = "f32_one")] factor: f32 },
   #[serde(rename = "i32")]
-  I32 { name: String, #[serde(default = "f32_one")] factor: f32 },
+  I32 { #[serde(default = "f32_one")] factor: f32 },
   #[serde(rename = "u8")]
-  U8 { name: String, #[serde(default = "f32_one")] factor: f32 },
+  U8 { #[serde(default = "f32_one")] factor: f32 },
   #[serde(rename = "u16")]
-  U16 { name: String, #[serde(default = "f32_one")] factor: f32 },
+  U16 { #[serde(default = "f32_one")] factor: f32 },
   #[serde(rename = "u32")]
-  U32 { name: String, #[serde(default = "f32_one")] factor: f32 },
+  U32 { #[serde(default = "f32_one")] factor: f32 },
   #[serde(rename = "enum")]
-  Enum { name: String, mapping: HashMap<Vec<u8>, String> },
+  Enum { mapping: HashMap<Vec<u8>, String> },
   #[serde(rename = "systime")]
-  SysTime { name: String },
+  SysTime,
   #[serde(rename = "errstate")]
-  ErrState { name: String, mapping: HashMap<Vec<u8>, String> },
+  ErrState { mapping: HashMap<Vec<u8>, String> },
   #[serde(rename = "cycletime")]
-  CycleTime { name: String },
+  CycleTime,
 }
 
 impl Unit {

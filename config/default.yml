@@ -1,320 +1,37 @@
 device: V200KW2_6
-commands:
-  system_type:
-    addr: 0x00F8
-    unit: DT
-    mode: read
-  system_time:
-    addr: 0x088E
-    unit: TI
-    mode: read_write
-  operatingmode:
-    addr: 0x3301
-    unit: E_BA2
-    mode: read_write
-  energysavermode_state:
-    addr: 0x3302
-    unit: E_ST
-    mode: read_write
-  partymode_state:
-    addr: 0x3303
-    unit: E_ST
-    mode: read_write
-  partymode_temp:
-    addr: 0x3308
-    unit: T1U
-    mode: read_write
-  vacationmode_state:
-    addr: 0x3535
-    unit: B_FB
-    mode: read_write
-  vacationmode_date_departure:
-    addr: 0x3309
-    unit: TI
-    mode: read_write
-  vacationmode_date_return:
-    addr: 0x3311
-    unit: TI
-    mode: read_write
-  boiler_temp_state:
-    addr: 0x083B
-    unit: E_TS
-    mode: read
-  boiler_temp_actual:
-    addr: 0x0802
-    unit: TD
-    mode: read
-  boiler_temp_desired:
-    addr: 0x5502
-    unit: TD
-    mode: read
-  boiler_temp_lowpass:
-    addr: 0x0810
-    unit: TD
-    mode: read
-  storagetank_chargingpump_state:
-    addr: 0x0845
-    unit: E_ST
-    mode: read
-  storagetank_temp_lowpass:
-    addr: 0x0812
-    unit: TD
-    mode: read
-  burner_state_1:
-    addr: 0x0842
-    unit: E_ST
-    mode: read
-  burner_state_2:
-    addr: 0x0849
-    unit: E_ST
-    mode: read
-  burner_state_error:
-    addr: 0x0883
-    unit: E_ST
-    mode: read
-  burner_starts:
-    addr: 0x088A
-    unit: CO
-    mode: read
-  burner_hours_1:
-    addr: 0x08A7
-    unit: HS
-    mode: read
-  outside_temp_state:
-    addr: 0x083A
-    unit: E_TS
-    mode: read
-  outside_temp_actual:
-    addr: 0x0800
-    unit: TD
-    mode: read
-  outside_temp_mixed:
-    addr: 0x5527
-    unit: TD
-    mode: read
-  outside_temp_lowpass:
-    addr: 0x5525
-    unit: TD
-    mode: read
-  circulationpump_state:
-    addr: 0x0846
-    unit: E_ST
-    mode: read
-  circulationpump_timer_mon:
-    addr: 0x2200
-    unit: CT
-    mode: read_write
-  circulationpump_timer_tue:
-    addr: 0x2208
-    unit: CT
-    mode: read_write
-  circulationpump_timer_wed:
-    addr: 0x2210
-    unit: CT
-    mode: read_write
-  circulationpump_timer_thu:
-    addr: 0x2218
-    unit: CT
-    mode: read_write
-  circulationpump_timer_fri:
-    addr: 0x2220
-    unit: CT
-    mode: read_write
-  circulationpump_timer_sat:
-    addr: 0x2228
-    unit: CT
-    mode: read_write
-  circulationpump_timer_sun:
-    addr: 0x2230
-    unit: CT
-    mode: read_write
-  hotwater_temp_actual:
-    addr: 0x0804
-    unit: TD
-    mode: read
-  hotwater_temp_desired:
-    addr: 0x6300
-    unit: T1U
-    mode: read_write
-  hotwater_release:
-    addr: 0x3500
-    len: 22
-    pos: 8
-    unit: E_WWF
-    mode: read
-  hotwater_timer_mon:
-    addr: 0x3100
-    unit: CT
-    mode: read_write
-  hotwater_timer_tue:
-    addr: 0x3108
-    unit: CT
-    mode: read_write
-  hotwater_timer_wed:
-    addr: 0x3110
-    unit: CT
-    mode: read_write
-  hotwater_timer_thu:
-    addr: 0x3118
-    unit: CT
-    mode: read_write
-  hotwater_timer_fri:
-    addr: 0x3120
-    unit: CT
-    mode: read_write
-  hotwater_timer_sat:
-    addr: 0x3128
-    unit: CT
-    mode: read_write
-  hotwater_timer_sun:
-    addr: 0x3130
-    unit: CT
-    mode: read_write
-  heatingcircuit_mode:
-    addr: 0x3500
-    len: 22
-    pos: 1
-    unit: E_BA
-    mode: read
-  heatingcircuit_timer:
-    addr: 0x3500
-    len: 22
-    pos: 2
-    unit: E_TIMER
-    mode: read
-  heatingcircuit_pump_state:
-    addr: 0x3906
-    unit: E_ST
-    mode: read
-  heatingcircuit_pump_command:
-    addr: 0x3500
-    len: 22
-    pos: 10
-    unit: E_HKP
-    mode: read
-  heatingcircuit_rp_temp_state:
-    addr: 0x083F
-    unit: E_TS
-    mode: read
-  heatingcircuit_rp_temp_lowpass:
-    addr: 0x081A
-    unit: TD
-    mode: read
-  heatingcircuit_fp_temp_state:
-    addr: 0x0840
-    unit: E_TS
-    mode: read
-  heatingcircuit_fp_temp_actual:
-    addr: 0x3900
-    unit: TD
-    mode: read
-  heatingcircuit_fp_temp_desired:
-    addr: 0x3500
-    len: 22
-    pos: 12
-    unit: TD
-    mode: read
-  heatingcircuit_fp_temp_lowpass:
-    addr: 0x0818
-    unit: TD
-    mode: read
-  heatingcircuit_timer_mon:
-    addr: 0x3000
-    unit: CT
-    mode: read_write
-  heatingcircuit_timer_tue:
-    addr: 0x3008
-    unit: CT
-    mode: read_write
-  heatingcircuit_timer_wed:
-    addr: 0x3010
-    unit: CT
-    mode: read_write
-  heatingcircuit_timer_thu:
-    addr: 0x3018
-    unit: CT
-    mode: read_write
-  heatingcircuit_timer_fri:
-    addr: 0x3020
-    unit: CT
-    mode: read_write
-  heatingcircuit_timer_sat:
-    addr: 0x3028
-    unit: CT
-    mode: read_write
-  heatingcircuit_timer_sun:
-    addr: 0x3030
-    unit: CT
-    mode: read_write
-  heatingcurve_niveau:
-    addr: 0x3304
-    unit: HKLN
-    mode: read_write
-  heatingcurve_incline:
-    addr: 0x3305
-    unit: HKLS
-    mode: read_write
-  roomtemp_day_desired:
-    addr: 0x3306
-    unit: T1U
-    mode: read_write
-  roomtemp_night_desired:
-    addr: 0x3307
-    unit: T1U
-    mode: read_write
-  frostwarning_state:
-    addr: 0x3500
-    unit: B_FW
-    len: 22
-    pos: 16
-    mode: read
-  error_01:
-    addr: 0x7507
-    unit: ES
-    mode: read
-  error_02:
-    addr: 0x7510
-    unit: ES
-    mode: read
-  error_03:
-    addr: 0x7519
-    unit: ES
-    mode: read
-  error_04:
-    addr: 0x7522
-    unit: ES
-    mode: read
-  error_05:
-    addr: 0x752B
-    unit: ES
-    mode: read
-  error_06:
-    addr: 0x7534
-    unit: ES
-    mode: read
-  error_07:
-    addr: 0x753D
-    unit: ES
-    mode: read
-  error_08:
-    addr: 0x7546
-    unit: ES
-    mode: read
-  error_09:
-    addr: 0x754F
-    unit: ES
-    mode: read
-  error_10:
-    addr: 0x7558
-    unit: ES
-    mode: read
-units:
-  E_TIMER:
-    name: AufheizTimerSekunden
-    type: u32
+
+temp_i16: &temp_i16
+  unit:
+    type: i16
     factor: 10
-  ES:
-    name: ErrorStatus
+temp_u8: &temp_u8
+  unit:
+    type: u8
+state: &state
+  unit:
+    type: enum
+    mapping:
+      [0x00]: OFF
+      [0x01]: ON
+temp_error_state: &temp_error_state
+  unit:
+    type: enum
+    mapping:
+      [0x00]: 'OK'
+      [0x01]: 'Kurzschluss'
+      [0x02]: 'nicht vorhanden'
+      [0x03]: 'Referenzfehler'
+      [0x04]: 'Referenzfehler'
+      [0x05]: 'Referenzfehler'
+      [0x06]: 'nicht vorhanden'
+cycletime: &cycletime
+  unit:
+    type: cycletime
+systime: &systime
+  unit:
+    type: systime
+error_state: &error_state
+  unit:
     type: errstate
     mapping:
       [0x00]: 'Normalbetrieb'
@@ -405,142 +122,391 @@ units:
       [0xFD]: 'Ausfall Anlage-2 Draht-Bus'
       [0xFE]: 'Ausfall Anlage-2 Draht-Bus'
       [0xFF]: 'Ausfall Anlage-2 Draht-Bus'
-  B_FW:
-    name: Frostwarnung
-    type: enum
-    mapping:
-      [0x01]: 'ON'
-      [0x00]: 'OFF'
-  HKLN:
-    name: Niveau
-    type: i8
-  HKLS:
-    name: Steigung
-    type: i8
-    factor: 10
-  E_HKP:
-    name: HeizkreisPumpenBefehl
-    type: enum
-    mapping:
-      [0x00]: OFF
-      [0x01]: ON
-      [0x02]: ON
-      [0x03]: RED
-  E_BA:
-    name: Betriebsart
-    type: enum
-    mapping:
-      [0x00]: NWW # Nur WW
-      [0x01]: RED # Dauernd Reduziert
-      [0x02]: NRM # Dauernd Normal
-      [0x03]: HWW # Heizen + WW
-      [0x04]: HWW # Heizen + WW
-      [0x05]: OFF # Abschalt
-  E_WWF:
-    name: Warmwasser-Freigabe
-    type: enum
-    mapping:
-      [0x00]: Freigabe aus
-      [0x01]: Freigabe nach WW-Schaltzeiten
-      [0x02]: Freigabe durch Party/Externe Umschaltung
-  COL:
-    name: Counter Liter
-    type: u32
-    factor: 1000
-  CO:
-    name: Anzahl
-    type: u32
-  HS:
-    name: Stunden
-    type: u32
-    factor: 3600
-  TD:
-    name: Temperatur
-    type: i16
-    factor: 10
-  T1U:
-    name: Temperatur
-    type: u8
-  B_FB:
-    name: FerienBetrieb
-    type: enum
-    mapping:
-      [0x12]: OFF
-      [0x01]: ON
-  E_ST:
-    name: Status
-    type: enum
-    mapping:
-      [0x00]: OFF
-      [0x01]: ON
-  E_TS:
-    name: SensorStatus
-    type: enum
-    mapping:
-      [0x00]: OK
-      [0x01]: Kurzschluss
-      [0x02]: Unterbruch
-      [0x03]: Referenzfehler
-      [0x04]: Referenz unter Min
-      [0x05]: Referenz über Max
-      [0x06]: nicht vorhanden
-      [0x07]: Check
-      [0x08]: Fehler
-      [0x09]: Kom Fehler
-  CT:
-    name: Schaltzeit
-    type: cycletime
-  E_BA2:
-    name: Betriebsart
-    type: enum
-    mapping:
-      [0x00]: NWW
-      [0x01]: RED
-      [0x02]: NRM
-      [0x03]: HWW
-      [0x04]: HWW
-      [0x05]: OFF
-  TI:
-    name: SystemTime
-    type: systime
-  DT:
-    name: SystemKennung
-    type: enum
-    mapping:
-      # [0x20, 0x54, 0x00]: GWG_BT2
-      # [0x20, 0x53, 0x01]: GWG_VBEM
-      # [0x20, 0x53, 0x02]: GWG_VBES
-      # [0x20, 0x53, 0x10]: GWG_VBT2
-      # [0x20, 0x53, 0x08]: GWG_VWMS
-      [0x20, 0xB4]: V050HK1M
-      [0x20, 0xAC]: V050HK1S
-      [0x20, 0xAA]: V050HK1W
-      [0x20, 0xAD]: V050HK3S
-      [0x20, 0xAB]: V050HK3W
-      [0x20, 0xA0]: V100GC1
-      [0x20, 0x91]: V100KC2
-      [0x20, 0x92]: V150KB1
-      [0x20, 0xA4]: V200GW1
-      [0x20, 0x94]: V200KW1
-      [0x20, 0x98]: V200KW2
-      [0x20, 0xA5]: V300GW2
-      [0x20, 0x9C]: V300KW3
-      [0x20, 0xB8]: V333MW1
-      [0x20, 0xB9]: V333MW1S
-      [0x20, 0xBA]: V333MW2
-      [0x20, 0x33]: VBC550P
-      [0x20, 0x32]: VBC550S
-      [0x20, 0x47]: VBC700_AW
-      [0x20, 0x46]: VBC700_BW_WW
-      [0x20, 0xC0]: VDensHC1
-      [0x20, 0xC1]: VDensHC2
-      [0x20, 0xC2]: VDensHO1
-      [0x20, 0xC3]: VPendHC1
-      [0x20, 0xC4]: VPendHC2
-      [0x20, 0xC5]: VPendHO1
-      [0x20, 0xC6]: VPlusHC1
-      [0x20, 0xC7]: VPlusHC2
-      [0x20, 0xC8]: VPlusHO1
-      [0x20, 0xC9]: VScotHC1
-      [0x20, 0xCA]: VScotHC2
-      [0x20, 0xCB]: VScotHO1
+
+commands:
+  system_type:
+    addr: 0x00F8
+    mode: read
+    unit:
+      type: enum
+      mapping:
+        [0x20, 0xB4]: V050HK1M
+        [0x20, 0xAC]: V050HK1S
+        [0x20, 0xAA]: V050HK1W
+        [0x20, 0xAD]: V050HK3S
+        [0x20, 0xAB]: V050HK3W
+        [0x20, 0xA0]: V100GC1
+        [0x20, 0x91]: V100KC2
+        [0x20, 0x92]: V150KB1
+        [0x20, 0xA4]: V200GW1
+        [0x20, 0x94]: V200KW1
+        [0x20, 0x98]: V200KW2
+        [0x20, 0xA5]: V300GW2
+        [0x20, 0x9C]: V300KW3
+        [0x20, 0xB8]: V333MW1
+        [0x20, 0xB9]: V333MW1S
+        [0x20, 0xBA]: V333MW2
+        [0x20, 0x33]: VBC550P
+        [0x20, 0x32]: VBC550S
+        [0x20, 0x47]: VBC700_AW
+        [0x20, 0x46]: VBC700_BW_WW
+        [0x20, 0xC0]: VDensHC1
+        [0x20, 0xC1]: VDensHC2
+        [0x20, 0xC2]: VDensHO1
+        [0x20, 0xC3]: VPendHC1
+        [0x20, 0xC4]: VPendHC2
+        [0x20, 0xC5]: VPendHO1
+        [0x20, 0xC6]: VPlusHC1
+        [0x20, 0xC7]: VPlusHC2
+        [0x20, 0xC8]: VPlusHO1
+        [0x20, 0xC9]: VScotHC1
+        [0x20, 0xCA]: VScotHC2
+        [0x20, 0xCB]: VScotHO1
+  system_time:
+    <<: *systime
+    addr: 0x088E
+    mode: read_write
+  operatingmode:
+    addr: 0x3301
+    unit:
+      type: enum
+      mapping:
+        [0x00]: NWW
+        [0x01]: RED
+        [0x02]: NRM
+        [0x03]: HWW
+        [0x04]: HWW
+        [0x05]: OFF
+    mode: read_write
+  energysavermode_state:
+    <<: *state
+    addr: 0x3302
+    mode: read_write
+  partymode_state:
+    <<: *state
+    addr: 0x3303
+    mode: read_write
+  partymode_temp:
+    <<: *temp_u8
+    addr: 0x3308
+    mode: read_write
+  vacationmode_state:
+    addr: 0x3535
+    unit:
+      type: enum
+      mapping:
+        [0x12]: OFF
+        [0x01]: ON
+    mode: read_write
+  vacationmode_date_departure:
+    <<: *systime
+    addr: 0x3309
+    mode: read_write
+  vacationmode_date_return:
+    <<: *systime
+    addr: 0x3311
+    mode: read_write
+  boiler_temp_state:
+    <<: *temp_error_state
+    addr: 0x083B
+    mode: read
+  boiler_temp_actual:
+    <<: *temp_i16
+    addr: 0x0802
+    mode: read
+  boiler_temp_desired:
+    <<: *temp_i16
+    addr: 0x5502
+    mode: read
+  boiler_temp_lowpass:
+    <<: *temp_i16
+    addr: 0x0810
+    mode: read
+  storagetank_chargingpump_state:
+    <<: *state
+    addr: 0x0845
+    mode: read
+  storagetank_temp_lowpass:
+    <<: *temp_i16
+    addr: 0x0812
+    mode: read
+  burner_state_1:
+    <<: *state
+    addr: 0x0842
+    mode: read
+  burner_state_2:
+    <<: *state
+    addr: 0x0849
+    mode: read
+  burner_state_error:
+    <<: *state
+    addr: 0x0883
+    mode: read
+  burner_starts:
+    addr: 0x088A
+    unit:
+      type: u32
+    mode: read
+  burner_hours_1:
+    addr: 0x08A7
+    unit:
+      type: u32
+      factor: 3600
+    mode: read
+  outside_temp_state:
+    <<: *temp_error_state
+    addr: 0x083A
+    mode: read
+  outside_temp_actual:
+    <<: *temp_i16
+    addr: 0x0800
+    mode: read
+  outside_temp_mixed:
+    <<: *temp_i16
+    addr: 0x5527
+    mode: read
+  outside_temp_lowpass:
+    <<: *temp_i16
+    addr: 0x5525
+    mode: read
+  circulationpump_state:
+    <<: *state
+    addr: 0x0846
+    mode: read
+  circulationpump_timer_mon:
+    <<: *cycletime
+    addr: 0x2200
+    mode: read_write
+  circulationpump_timer_tue:
+    <<: *cycletime
+    addr: 0x2208
+    mode: read_write
+  circulationpump_timer_wed:
+    <<: *cycletime
+    addr: 0x2210
+    mode: read_write
+  circulationpump_timer_thu:
+    <<: *cycletime
+    addr: 0x2218
+    mode: read_write
+  circulationpump_timer_fri:
+    <<: *cycletime
+    addr: 0x2220
+    mode: read_write
+  circulationpump_timer_sat:
+    <<: *cycletime
+    addr: 0x2228
+    mode: read_write
+  circulationpump_timer_sun:
+    <<: *cycletime
+    addr: 0x2230
+    mode: read_write
+  hotwater_temp_actual:
+    <<: *temp_i16
+    addr: 0x0804
+    mode: read
+  hotwater_temp_desired:
+    <<: *temp_u8
+    addr: 0x6300
+    mode: read_write
+  hotwater_release:
+    addr: 0x3500
+    len: 22
+    pos: 8
+    unit:
+      type: enum
+      mapping:
+        [0x00]: Freigabe aus
+        [0x01]: Freigabe nach WW-Schaltzeiten
+        [0x02]: Freigabe durch Party/Externe Umschaltung
+    mode: read
+  hotwater_timer_mon:
+    <<: *cycletime
+    addr: 0x3100
+    mode: read_write
+  hotwater_timer_tue:
+    <<: *cycletime
+    addr: 0x3108
+    mode: read_write
+  hotwater_timer_wed:
+    <<: *cycletime
+    addr: 0x3110
+    mode: read_write
+  hotwater_timer_thu:
+    <<: *cycletime
+    addr: 0x3118
+    mode: read_write
+  hotwater_timer_fri:
+    <<: *cycletime
+    addr: 0x3120
+    mode: read_write
+  hotwater_timer_sat:
+    <<: *cycletime
+    addr: 0x3128
+    mode: read_write
+  hotwater_timer_sun:
+    <<: *cycletime
+    addr: 0x3130
+    mode: read_write
+  heatingcircuit_mode:
+    addr: 0x3500
+    len: 22
+    pos: 1
+    unit:
+      type: enum
+      mapping:
+        [0x00]: NWW # Nur WW
+        [0x01]: RED # Dauernd Reduziert
+        [0x02]: NRM # Dauernd Normal
+        [0x03]: HWW # Heizen + WW
+        [0x04]: HWW # Heizen + WW
+        [0x05]: OFF # Abschalt
+    mode: read
+  heatingcircuit_timer:
+    addr: 0x3500
+    len: 22
+    pos: 2
+    unit:
+      type: u32
+      factor: 10
+    mode: read
+  heatingcircuit_pump_state:
+    <<: *state
+    addr: 0x3906
+    mode: read
+  heatingcircuit_pump_command:
+    addr: 0x3500
+    len: 22
+    pos: 10
+    unit:
+      type: enum
+      mapping:
+        [0x00]: OFF
+        [0x01]: ON
+        [0x02]: ON
+        [0x03]: RED
+    mode: read
+  heatingcircuit_rp_temp_state:
+    <<: *temp_error_state
+    addr: 0x083F
+    mode: read
+  heatingcircuit_rp_temp_lowpass:
+    <<: *temp_i16
+    addr: 0x081A
+    mode: read
+  heatingcircuit_fp_temp_state:
+    <<: *temp_error_state
+    addr: 0x0840
+    mode: read
+  heatingcircuit_fp_temp_actual:
+    <<: *temp_i16
+    addr: 0x3900
+    mode: read
+  heatingcircuit_fp_temp_desired:
+    <<: *temp_i16
+    addr: 0x3500
+    len: 22
+    pos: 12
+    mode: read
+  heatingcircuit_fp_temp_lowpass:
+    <<: *temp_i16
+    addr: 0x0818
+    mode: read
+  heatingcircuit_timer_mon:
+    <<: *cycletime
+    addr: 0x3000
+    mode: read_write
+  heatingcircuit_timer_tue:
+    <<: *cycletime
+    addr: 0x3008
+    mode: read_write
+  heatingcircuit_timer_wed:
+    <<: *cycletime
+    addr: 0x3010
+    mode: read_write
+  heatingcircuit_timer_thu:
+    <<: *cycletime
+    addr: 0x3018
+    mode: read_write
+  heatingcircuit_timer_fri:
+    <<: *cycletime
+    addr: 0x3020
+    mode: read_write
+  heatingcircuit_timer_sat:
+    <<: *cycletime
+    addr: 0x3028
+    mode: read_write
+  heatingcircuit_timer_sun:
+    <<: *cycletime
+    addr: 0x3030
+    mode: read_write
+  heatingcurve_niveau:
+    addr: 0x3304
+    unit:
+      type: i8
+    mode: read_write
+  heatingcurve_incline:
+    addr: 0x3305
+    unit:
+      type: i8
+      factor: 10
+    mode: read_write
+  roomtemp_day_desired:
+    <<: *temp_u8
+    addr: 0x3306
+    mode: read_write
+  roomtemp_night_desired:
+    <<: *temp_u8
+    addr: 0x3307
+    mode: read_write
+  frostwarning_state:
+    addr: 0x3500
+    unit:
+      type: enum
+      mapping:
+        [0x01]: 'ON'
+        [0x00]: 'OFF'
+    len: 22
+    pos: 16
+    mode: read
+  error_01:
+    <<: *error_state
+    addr: 0x7507
+    mode: read
+  error_02:
+    <<: *error_state
+    addr: 0x7510
+    mode: read
+  error_03:
+    <<: *error_state
+    addr: 0x7519
+    mode: read
+  error_04:
+    <<: *error_state
+    addr: 0x7522
+    mode: read
+  error_05:
+    <<: *error_state
+    addr: 0x752B
+    mode: read
+  error_06:
+    <<: *error_state
+    addr: 0x7534
+    mode: read
+  error_07:
+    <<: *error_state
+    addr: 0x753D
+    mode: read
+  error_08:
+    <<: *error_state
+    addr: 0x7546
+    mode: read
+  error_09:
+    <<: *error_state
+    addr: 0x754F
+    mode: read
+  error_10:
+    <<: *error_state
+    addr: 0x7558
+    mode: read
+

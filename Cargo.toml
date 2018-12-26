@@ -27,7 +27,7 @@ serial-core = "0.4"
 serde = "1"
 serde_derive = "1"
 serde_yaml = "0.8"
-
+yaml-merge-keys = { version = "0.3.0", features = [ "serde_yaml" ] }
 [build-dependencies]
 bindgen = "0.45"
 cbindgen = "0.6"

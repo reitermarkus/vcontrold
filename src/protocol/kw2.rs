@@ -1,4 +1,5 @@
 use std::io::{self, Read, Write};
+use std::time::{Instant, Duration};
 
 use crate::Optolink;
 
@@ -7,59 +8,87 @@ use super::Protocol;
 pub struct Kw2;
 
 impl Kw2 {
+  #[inline]
   fn sync(o: &mut Optolink) -> Result<(), std::io::Error> {
-    for _ in 0..2 {
-      o.purge()?;
+    let mut buf = [0xff];
 
-      o.write(&[0x04])?;
+    let start = Instant::now();
+
+    loop {
+      o.write_all(&[0x04])?;
       o.flush()?;
 
-      let mut buf = [0xff];
-      o.read_exact(&mut buf)?;
+      if o.read_exact(&mut buf).is_ok() {
+        if buf == [0x05] {
+          o.purge()?;
+          return Ok(())
+        }
+      }
 
-      if buf == [0x05] {
-        return Ok(())
+      let stop = Instant::now();
+
+      if (stop - start) > Optolink::TIMEOUT {
+        break
       }
     }
 
-    Err(std::io::Error::new(std::io::ErrorKind::Other, "sync failed"))
+    Err(std::io::Error::new(std::io::ErrorKind::TimedOut, "sync timed out"))
   }
 }
 
 impl Protocol for Kw2 {
   fn get(o: &mut Optolink, addr: &[u8], buf: &mut [u8]) -> Result<(), io::Error> {
-    for _ in 0..2 {
-      Self::sync(o)?;
+    let mut vec = Vec::new();
+    vec.extend(&[0x01, 0xf7]);
+    vec.extend(addr);
+    vec.extend(&[buf.len() as u8]);
 
-      o.write(&[0x01, 0xf7])?;
-      o.write(addr)?;
-      o.purge()?;
-      o.write(&[buf.len() as u8])?;
+    let start = Instant::now();
+
+    Self::sync(o)?;
+
+    loop {
+      o.write_all(&vec)?;
       o.flush()?;
 
       o.read_exact(buf)?;
 
-      // Retry once if the response only contains `0x05`,
+      let stop = Instant::now();
+
+      // Retry if the response only contains `0x05`,
       // since these could be synchronization bytes.
       if buf.iter().all(|byte| *byte == 0x05) {
+        // Return `Ok` if they were received in a short amount of time,
+        // since then they most likely are not synchronization bytes.
+        if (stop - start) < Duration::from_millis(500 * buf.len() as u64) {
+          return Ok(())
+        }
+
+        o.purge()?;
+
         eprintln!("{:?} -> retrying", buf);
-        continue
       } else {
+        return Ok(())
+      }
+
+      if (stop - start) > Optolink::TIMEOUT {
         break
       }
     }
 
-    Ok(())
+    Err(io::Error::new(io::ErrorKind::TimedOut, "get timed out"))
   }
 
   fn set(o: &mut Optolink, addr: &[u8], value: &[u8]) -> Result<(), io::Error> {
-    Self::sync(o)?;
+    let mut vec = Vec::new();
+    vec.extend(&[0x01, 0xf4]);
+    vec.extend(addr);
+    vec.extend(&[value.len() as u8]);
 
-    o.write(&[0x01, 0xf4])?;
-    o.write(addr)?;
-    o.write(&[value.len() as u8])?;
+    Self::sync(o)?;
     o.purge()?;
-    o.write(value)?;
+
+    o.write_all(&vec)?;
     o.flush()?;
 
     let mut buf = [0xff];
@@ -69,6 +98,6 @@ impl Protocol for Kw2 {
       return Ok(())
     }
 
-    Err(std::io::Error::new(std::io::ErrorKind::Other, "set failed"))
+    Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "set failed"))
   }
 }

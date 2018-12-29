@@ -1,6 +1,6 @@
 use std::ffi::OsStr;
 use std::io::{self, Read, Write};
-use std::net::{TcpStream, ToSocketAddrs};
+use std::net::{TcpStream, ToSocketAddrs, SocketAddr};
 use std::time::Duration;
 
 use serial_core::{SerialPort, SerialPortSettings, BaudRate::Baud4800, Parity::ParityEven, StopBits::Stop2, CharSize::Bits8};
@@ -11,15 +11,34 @@ enum Device {
   Stream(TcpStream),
 }
 
+/// An Optolink connection via either a serial or TCP connection.
 pub struct Optolink {
   device: Device,
 }
 
 impl Optolink {
-  const TIMEOUT: Duration = Duration::from_secs(10);
+  pub(crate) const TIMEOUT: Duration = Duration::from_secs(60);
 
+  /// Opens a serial device.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use vcontrol::Optolink;
+  ///
+  /// let mut device = Optolink::open("/dev/ttyUSB0")?;
+  /// ```
   pub fn open(port: impl AsRef<OsStr>) -> Result<Optolink, io::Error> {
-    let mut tty = serial::open(&port)?;
+    let mut tty = serial::open(&port)
+      .map_err(|err| {
+        let err = io::Error::from(err);
+
+        if err.kind() == io::ErrorKind::NotFound {
+          return io::Error::new(err.kind(), format!("{}: {}", err, port.as_ref().to_string_lossy()))
+        }
+
+        err
+      })?;
 
     tty.set_timeout(Self::TIMEOUT)?;
 
@@ -33,28 +52,37 @@ impl Optolink {
     Ok(Optolink { device: Device::Tty(tty) })
   }
 
+  /// Connects to a device via TCP.
+  ///
+  /// # Examples
+  ///
+  /// ```
+  /// use vcontrol::Optolink;
+  ///
+  /// let mut device = Optolink::connect(("localhost", 1234))?;
+  /// ```
   pub fn connect(addr: impl ToSocketAddrs) -> Result<Optolink, io::Error> {
-    let stream = TcpStream::connect(addr)?;
+    let addrs: Vec<SocketAddr> = addr.to_socket_addrs()?.collect();
+
+    let stream = TcpStream::connect(&addrs as &[SocketAddr])
+      .map_err(|err| {
+        return io::Error::new(err.kind(), format!("{}: {}", err, addrs.iter().map(|addr| addr.to_string()).collect::<Vec<String>>().join(", ")))
+      })?;
     stream.set_read_timeout(Some(Self::TIMEOUT))?;
     Ok(Optolink { device: Device::Stream(stream) })
   }
 
+  /// Purge all contents of the input buffer.
   pub fn purge(&mut self) -> Result<(), io::Error> {
     match &mut self.device {
       Device::Tty(tty) => {
         tty.set_timeout(Duration::new(0, 0))?;
-
-        let mut buf = [0];
-        while tty.read_exact(&mut buf).is_ok() { }
-
+        let _ = tty.bytes().try_for_each(|b| b.map(|_| ()));
         tty.set_timeout(Self::TIMEOUT)?;
       }
       Device::Stream(stream) => {
         stream.set_nonblocking(true)?;
-
-        let mut buf = [0];
-        while stream.read_exact(&mut buf).is_ok() { }
-
+        let _ = stream.bytes().try_for_each(|b| b.map(|_| ()));
         stream.set_nonblocking(false)?;
       },
     }

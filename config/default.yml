@@ -1,4 +1,6 @@
-device: V200KW2_6
+device:
+  id: V200KW2_6
+  path: /dev/ttyUSB0
 
 temp_i16: &temp_i16
   unit: i16

@@ -19,7 +19,6 @@ required-features = ["cli"]
 
 [lib]
 name = "vcontrol"
-crate-type = ["staticlib", "rlib"]
 
 [dependencies]
 clap = { version = "2.32", optional = true }

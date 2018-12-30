@@ -1,10 +1,9 @@
 use std::collections::HashMap;
-use std::io;
 
 use serde_derive::*;
 use serde::de::{self, Deserialize, Deserializer};
 
-use crate::{Optolink, protocol::Protocol, Unit, Value, ToBytes};
+use crate::{Error, Optolink, protocol::Protocol, Unit, Value, ToBytes};
 
 #[derive(Debug, Clone, Copy)]
 pub enum AccessMode {
@@ -53,7 +52,7 @@ pub struct Command {
   byte_pos: Option<usize>,
   bit_pos: Option<usize>,
   bit_len: Option<usize>,
-  factor: Option<f32>,
+  factor: Option<f64>,
   mapping: Option<HashMap<Vec<u8>, String>>,
 }
 
@@ -63,9 +62,9 @@ impl Command {
     self.addr.to_be().to_bytes()
   }
 
-  pub fn get<P: Protocol>(&self, o: &mut Optolink) -> Result<Value, io::Error> {
+  pub fn get<P: Protocol>(&self, o: &mut Optolink) -> Result<Value, Error> {
     if !self.mode.is_read() {
-      return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Address 0x{:04X} does not support reading.", self.addr)))
+      return Err(Error::UnsupportedMode(format!("Address 0x{:04X} does not support reading.", self.addr)))
     }
 
     let byte_len = self.byte_len.unwrap_or(self.unit.size());
@@ -85,11 +84,11 @@ impl Command {
     Ok(self.unit.bytes_to_output(&buf[byte_pos..(byte_pos + self.unit.size())], self.factor, &self.mapping))
   }
 
-  pub fn set<P: Protocol>(&self, o: &mut Optolink, input: &str) -> Result<(), io::Error> {
+  pub fn set<P: Protocol>(&self, o: &mut Optolink, input: &Value) -> Result<(), Error> {
     if !self.mode.is_write() {
-      return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Address 0x{:04X} does not support writing.", self.addr)))
+      return Err(Error::UnsupportedMode(format!("Address 0x{:04X} does not support writing.", self.addr)))
     }
 
-    P::set(o, &self.addr(), &self.unit.input_to_bytes(input, self.factor, &self.mapping)?)
+    P::set(o, &self.addr(), &self.unit.input_to_bytes(input, self.factor, &self.mapping)?).map_err(Into::into)
   }
 }

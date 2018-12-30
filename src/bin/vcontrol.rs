@@ -3,7 +3,7 @@ use std::process::exit;
 use clap::{crate_version, Arg, App, SubCommand, AppSettings::ArgRequiredElseHelp};
 use serde_json;
 
-use vcontrol::{Configuration, Optolink, VControl};
+use vcontrol::{Configuration, Optolink, VControl, Value};
 
 fn main() {
   let app = App::new("vcontrol")
@@ -93,7 +93,9 @@ fn main() {
     let command = matches.value_of("command").unwrap();
     let value = matches.value_of("value").unwrap();
 
-    match vcontrol.set(command, value) {
+    let value: Value = serde_json::from_str(&value).unwrap_or(Value::String(value.to_string()));
+
+    match vcontrol.set(command, &value) {
       Ok(()) => {},
       Err(err) => {
         eprintln!("Error: {}", err);

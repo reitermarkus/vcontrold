@@ -1,10 +1,9 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::io;
 
 use serde::de::{self, Deserialize, Deserializer};
 
-use crate::{Value, FromBytes, ToBytes, types::{SysTime, CycleTime}};
+use crate::{Error, Value, FromBytes, ToBytes, types::{SysTime, CycleTime}};
 
 #[derive(Debug, Clone)]
 pub enum Unit {
@@ -51,7 +50,7 @@ impl Unit {
     }
   }
 
-  pub fn bytes_to_output(&self, bytes: &[u8], factor: Option<f32>, mapping: &Option<HashMap<Vec<u8>, String>>) -> Value {
+  pub fn bytes_to_output(&self, bytes: &[u8], factor: Option<f64>, mapping: &Option<HashMap<Vec<u8>, String>>) -> Value {
     if let Some(mapping) = mapping {
       return Value::String(mapping[bytes].to_owned())
     }
@@ -68,32 +67,59 @@ impl Unit {
     };
 
     if let Some(factor) = factor {
-      return Value::Float(n as f64 / factor as f64)
+      return Value::Number(n as f64 / factor as f64)
     }
 
-    Value::Int(n)
+    Value::Number(n as f64)
   }
 
-  pub fn input_to_bytes(&self, input: &str, factor: Option<f32>, mapping: &Option<HashMap<Vec<u8>, String>>) -> Result<Vec<u8>, io::Error> {
+  pub fn input_to_bytes(&self, input: &Value, factor: Option<f64>, mapping: &Option<HashMap<Vec<u8>, String>>) -> Result<Vec<u8>, Error> {
     if let Some(mapping) = mapping {
-      return Ok(mapping.iter().find_map(|(key, value)| if value == input { Some(key.clone()) } else { None }).unwrap())
+      if let Value::String(s) = input {
+        return mapping.iter()
+                 .find_map(|(key, value)| if value == s { Some(key.clone()) } else { None })
+                 .ok_or(Error::InvalidArgument(format!("no mapping found for {:?}", s)))
+      } else {
+        return Err(Error::InvalidArgument(format!("expected string, found {:?}", input)))
+      }
     }
 
-    let factor = factor.unwrap_or(1.0);
-
-    fn invalid_input(err: impl fmt::Display) -> io::Error {
-      io::Error::new(std::io::ErrorKind::InvalidInput, err.to_string())
+    fn invalid_input(err: impl fmt::Display) -> Error {
+      Error::InvalidArgument(err.to_string())
     }
 
-    match self {
-      Unit::I8 => input.parse::<f32>().map(|v| ((v * factor) as i8).to_bytes()).map_err(invalid_input),
-      Unit::I16 => input.parse::<f32>().map(|v| ((v * factor) as i16).to_bytes()).map_err(invalid_input),
-      Unit::I32 => input.parse::<f32>().map(|v| ((v * factor) as i32).to_bytes()).map_err(invalid_input),
-      Unit::U8 => input.parse::<f32>().map(|v| ((v * factor) as u8).to_bytes()).map_err(invalid_input),
-      Unit::U16 => input.parse::<f32>().map(|v| ((v * factor) as u16).to_bytes()).map_err(invalid_input),
-      Unit::U32 => input.parse::<f32>().map(|v| ((v * factor) as u32).to_bytes()).map_err(invalid_input),
-      Unit::SysTime => input.parse::<SysTime>().map(|v| v.to_bytes()).map_err(invalid_input),
-      Unit::CycleTime => input.parse::<CycleTime>().map(|v| v.to_bytes()).map_err(invalid_input),
-    }
+    Ok(match self {
+      Unit::SysTime => {
+        if let Value::SysTime(systime) = input {
+          systime.to_bytes()
+        } else {
+          return Err(Error::InvalidArgument(format!("expected systime, found {:?}", input)))
+        }
+      },
+      Unit::CycleTime => {
+        if let Value::CycleTime(cycletime) = input {
+          cycletime.to_bytes()
+        } else {
+          return Err(Error::InvalidArgument(format!("expected cycletime, found {:?}", input)))
+        }
+      },
+      _ => {
+        if let Value::Number(n) = input {
+          let n = n * factor.unwrap_or(1.0);
+
+          match self {
+            Unit::I8  => (n as i8).to_bytes(),
+            Unit::I16 => (n as i16).to_bytes(),
+            Unit::I32 => (n as i32).to_bytes(),
+            Unit::U8  => (n as u8).to_bytes(),
+            Unit::U16 => (n as u16).to_bytes(),
+            Unit::U32 => (n as u32).to_bytes(),
+            _ => unreachable!(),
+          }
+        } else {
+          return Err(Error::InvalidArgument(format!("expected number, found {:?}", input)))
+        }
+      },
+    })
   }
 }

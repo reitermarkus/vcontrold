@@ -66,8 +66,6 @@ impl Protocol for Kw2 {
         }
 
         o.purge()?;
-
-        eprintln!("{:?} -> retrying", buf);
       } else {
         return Ok(())
       }
@@ -109,6 +107,6 @@ impl Protocol for Kw2 {
       }
     }
 
-    Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "set failed"))
+    Err(std::io::Error::new(std::io::ErrorKind::TimedOut, "set timed out"))
   }
 }

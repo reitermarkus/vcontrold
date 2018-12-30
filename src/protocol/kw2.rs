@@ -85,6 +85,7 @@ impl Protocol for Kw2 {
     vec.extend(&[0x01, 0xf4]);
     vec.extend(addr);
     vec.extend(&[value.len() as u8]);
+    vec.extend(value);
 
     Self::sync(o)?;
     o.purge()?;

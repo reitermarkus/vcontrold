@@ -2,6 +2,7 @@ use serde::ser::{Serialize, Serializer};
 
 use crate::types::{SysTime, CycleTime};
 
+#[derive(Debug)]
 pub enum Value {
   Int(i64),
   Float(f64),

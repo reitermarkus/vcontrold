@@ -5,6 +5,7 @@ use crate::Optolink;
 
 use super::Protocol;
 
+#[derive(Debug)]
 pub struct Kw2;
 
 impl Kw2 {

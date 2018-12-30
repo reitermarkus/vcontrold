@@ -3,6 +3,7 @@ use std::io;
 
 use crate::{Configuration, Command, Optolink, protocol::Kw2, Value};
 
+#[derive(Debug)]
 pub struct VControl {
   device: Optolink,
   commands: HashMap<String, Command>,

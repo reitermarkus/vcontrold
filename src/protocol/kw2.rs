@@ -87,17 +87,26 @@ impl Protocol for Kw2 {
     vec.extend(&[value.len() as u8]);
     vec.extend(value);
 
+    let start = Instant::now();
+
     Self::sync(o)?;
-    o.purge()?;
 
-    o.write_all(&vec)?;
-    o.flush()?;
+    loop {
+      o.write_all(&vec)?;
+      o.flush()?;
 
-    let mut buf = [0xff];
-    o.read_exact(&mut buf)?;
+      let mut buf = [0xff];
+      o.read_exact(&mut buf)?;
 
-    if buf == [0x00] {
-      return Ok(())
+      let stop = Instant::now();
+
+      if buf == [0x00] {
+        return Ok(())
+      }
+
+      if (stop - start) > Optolink::TIMEOUT {
+        break
+      }
     }
 
     Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "set failed"))

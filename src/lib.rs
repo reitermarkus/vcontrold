@@ -1,5 +1,8 @@
 #![deny(missing_debug_implementations)]
 
+mod error;
+pub use crate::error::Error;
+
 mod configuration;
 pub use crate::configuration::{Configuration};
 

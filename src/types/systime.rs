@@ -3,6 +3,7 @@ use std::str::FromStr;
 
 use chrono::{NaiveDate, NaiveDateTime, Datelike, Timelike};
 use serde::ser::{Serialize, Serializer};
+use serde::de::{self, Deserialize, Deserializer};
 
 #[inline]
 fn byte_to_dec(byte: u8) -> u8 {
@@ -84,6 +85,16 @@ impl FromStr for SysTime {
 
   fn from_str(s: &str) -> Result<SysTime, Self::Err> {
     NaiveDateTime::from_str(s).map(Into::into)
+  }
+}
+
+impl<'de> Deserialize<'de> for SysTime {
+  fn deserialize<D>(deserializer: D) -> Result<SysTime, D::Error>
+  where
+      D: Deserializer<'de>,
+  {
+    let string = String::deserialize(deserializer)?;
+    SysTime::from_str(&string).map_err(|err| de::Error::custom(err))
   }
 }
 

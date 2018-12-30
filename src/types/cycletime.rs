@@ -2,6 +2,7 @@ use std::fmt;
 use std::str::FromStr;
 
 use serde::ser::{Serialize, Serializer};
+use serde::de::{self, Deserialize, Deserializer};
 
 byte_type!(CycleTime, 8);
 
@@ -34,6 +35,16 @@ impl FromStr for CycleTime {
 
   fn from_str(s: &str) -> Result<CycleTime, Self::Err> {
     Err(format!("could not parse {}, from_str is not implemented for CycleTime", s))
+  }
+}
+
+impl<'de> Deserialize<'de> for CycleTime {
+  fn deserialize<D>(deserializer: D) -> Result<CycleTime, D::Error>
+  where
+      D: Deserializer<'de>,
+  {
+    let string = String::deserialize(deserializer)?;
+    CycleTime::from_str(&string).map_err(|err| de::Error::custom(err))
   }
 }
 

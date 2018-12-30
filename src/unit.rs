@@ -74,7 +74,11 @@ impl Unit {
     Value::Int(n)
   }
 
-  pub fn input_to_bytes(&self, input: &str, factor: Option<f32>) -> Result<Vec<u8>, io::Error> {
+  pub fn input_to_bytes(&self, input: &str, factor: Option<f32>, mapping: &Option<HashMap<Vec<u8>, String>>) -> Result<Vec<u8>, io::Error> {
+    if let Some(mapping) = mapping {
+      return Ok(mapping.iter().find_map(|(key, value)| if value == input { Some(key.clone()) } else { None }).unwrap())
+    }
+
     let factor = factor.unwrap_or(1.0);
 
     fn invalid_input(err: impl fmt::Display) -> io::Error {

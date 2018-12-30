@@ -90,6 +90,6 @@ impl Command {
       return Err(std::io::Error::new(std::io::ErrorKind::Other, format!("Address 0x{:04X} does not support writing.", self.addr)))
     }
 
-    P::set(o, &self.addr(), &self.unit.input_to_bytes(input, self.factor)?)
+    P::set(o, &self.addr(), &self.unit.input_to_bytes(input, self.factor, &self.mapping)?)
   }
 }

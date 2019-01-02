@@ -2,7 +2,7 @@ use serde_derive::*;
 
 use crate::types::{SysTime, CycleTime};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Value {
   Number(f64),

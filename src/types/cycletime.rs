@@ -3,6 +3,7 @@ use std::str::FromStr;
 
 use serde::ser::{Serialize, Serializer};
 use serde::de::{self, Deserialize, Deserializer};
+use serde_derive::*;
 
 byte_type!(CycleTime, 8);
 
@@ -14,19 +15,83 @@ impl CycleTime {
     }
   }
 
-  pub fn times(&self) -> [Option<((u8, u8), (u8, u8))>; 4] {
+  fn times(&self) -> [TimeSpan; 4] {
     [
-      self.byte_to_time(0).and_then(|from| self.byte_to_time(1).map(|to| (from, to))),
-      self.byte_to_time(2).and_then(|from| self.byte_to_time(3).map(|to| (from, to))),
-      self.byte_to_time(4).and_then(|from| self.byte_to_time(5).map(|to| (from, to))),
-      self.byte_to_time(6).and_then(|from| self.byte_to_time(7).map(|to| (from, to))),
+      TimeSpan { from: self.byte_to_time(0).into(), to: self.byte_to_time(1).into() },
+      TimeSpan { from: self.byte_to_time(2).into(), to: self.byte_to_time(3).into() },
+      TimeSpan { from: self.byte_to_time(4).into(), to: self.byte_to_time(5).into() },
+      TimeSpan { from: self.byte_to_time(6).into(), to: self.byte_to_time(7).into() },
     ]
+  }
+}
+
+#[derive(Serialize, Clone)]
+struct TimeSpan {
+  from: Time,
+  to: Time,
+}
+
+impl fmt::Display for TimeSpan {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{} – {}", self.from, self.to)
+  }
+}
+
+#[derive(Serialize, Clone)]
+struct Time {
+  hh: String,
+  mm: String,
+}
+
+impl fmt::Display for Time {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{}:{}", self.hh, self.mm)
+  }
+}
+
+impl From<Option<(u8, u8)>> for Time {
+  fn from(tuple: Option<(u8, u8)>) -> Self {
+    if let Some((hh, mm)) = tuple {
+      Time { hh: format!("{:02}", hh), mm: format!("{:02}", mm) }
+    } else {
+      Time { hh: "--".into(), mm: "--".into() }
+    }
   }
 }
 
 impl Serialize for CycleTime {
   fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-    self.times().serialize(serializer)
+    #[derive(Serialize)]
+    struct TimeSpanFull {
+      full: String,
+      from: TimeFull,
+      to: TimeFull,
+    }
+
+    #[derive(Serialize)]
+    struct TimeFull {
+      full: String,
+      hh: String,
+      mm: String,
+    }
+
+    self.times().into_iter()
+      .map(|ts|
+        TimeSpanFull {
+          full: ts.to_string(),
+          from: TimeFull {
+            full: ts.from.to_string(),
+            hh: ts.from.hh.to_owned(),
+            mm: ts.from.mm.to_owned(),
+          },
+          to: TimeFull {
+            full: ts.to.to_string(),
+            hh: ts.to.hh.to_owned(),
+            mm: ts.to.mm.to_owned(),
+          },
+      })
+      .collect::<Vec<TimeSpanFull>>()
+      .serialize(serializer)
   }
 }
 
@@ -51,7 +116,7 @@ impl<'de> Deserialize<'de> for CycleTime {
 impl fmt::Display for CycleTime {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{:?}",
-      self.times().into_iter().map(|o| o.map(|((from_h, from_m), (to_h, to_m))| format!("{:02}:{:02}-{:02}:{:02}", from_h, from_m, to_h, to_m)).unwrap_or("".into())).collect::<Vec<String>>().join(","),
+      self.times().into_iter().map(|timespan| timespan.to_string()).collect::<Vec<String>>().join(","),
     )
   }
 }

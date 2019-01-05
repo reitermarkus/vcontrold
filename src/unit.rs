@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::fmt;
 
 use serde::de::{self, Deserialize, Deserializer};
 
@@ -58,12 +57,12 @@ impl Unit {
     let n = match self {
       Unit::SysTime => return Value::SysTime(SysTime::from_bytes(bytes)),
       Unit::CycleTime => return Value::CycleTime(CycleTime::from_bytes(bytes)),
-      Unit::I8 => i8::from_bytes(bytes).to_le() as i64,
-      Unit::I16 => i16::from_bytes(bytes).to_le() as i64,
-      Unit::I32 => i32::from_bytes(bytes).to_le() as i64,
-      Unit::U8 => u8::from_bytes(bytes).to_le() as i64,
-      Unit::U16 => u16::from_bytes(bytes).to_le() as i64,
-      Unit::U32 => u32::from_bytes(bytes).to_le() as i64,
+      Unit::I8 => i64::from(i8::from_bytes(bytes).to_le()),
+      Unit::I16 => i64::from(i16::from_bytes(bytes).to_le()),
+      Unit::I32 => i64::from(i32::from_bytes(bytes).to_le()),
+      Unit::U8 => i64::from(u8::from_bytes(bytes).to_le()),
+      Unit::U16 => i64::from(u16::from_bytes(bytes).to_le()),
+      Unit::U32 => i64::from(u32::from_bytes(bytes).to_le()),
     };
 
     if let Some(factor) = factor {
@@ -78,14 +77,10 @@ impl Unit {
       if let Value::String(s) = input {
         return mapping.iter()
                  .find_map(|(key, value)| if value == s { Some(key.clone()) } else { None })
-                 .ok_or(Error::InvalidArgument(format!("no mapping found for {:?}", s)))
+                 .ok_or_else(|| Error::InvalidArgument(format!("no mapping found for {:?}", s)))
       } else {
         return Err(Error::InvalidArgument(format!("expected string, found {:?}", input)))
       }
-    }
-
-    fn invalid_input(err: impl fmt::Display) -> Error {
-      Error::InvalidArgument(err.to_string())
     }
 
     Ok(match self {

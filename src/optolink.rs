@@ -78,7 +78,7 @@ impl Optolink {
 
     let stream = TcpStream::connect(&addrs as &[SocketAddr])
       .map_err(|err| {
-        return io::Error::new(err.kind(), format!("{}: {}", err, addrs.iter().map(|addr| addr.to_string()).collect::<Vec<String>>().join(", ")))
+        io::Error::new(err.kind(), format!("{}: {}", err, addrs.iter().map(|addr| addr.to_string()).collect::<Vec<String>>().join(", ")))
       })?;
     stream.set_read_timeout(Some(Self::TIMEOUT))?;
     Ok(Optolink { device: Device::Stream(stream) })

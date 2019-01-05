@@ -109,7 +109,7 @@ impl<'de> Deserialize<'de> for CycleTime {
       D: Deserializer<'de>,
   {
     let string = String::deserialize(deserializer)?;
-    CycleTime::from_str(&string).map_err(|err| de::Error::custom(err))
+    CycleTime::from_str(&string).map_err(de::Error::custom)
   }
 }
 

@@ -19,11 +19,11 @@ byte_type!(SysTime, 8);
 
 impl SysTime {
   pub fn new(year: u16, month: u8, day: u8, hour: u8, minute: u8, second: u8) -> SysTime {
-    NaiveDate::from_ymd(year as i32, month as u32, day as u32).and_hms(hour as u32, minute as u32, second as u32).into()
+    NaiveDate::from_ymd(year.into(), month.into(), day.into()).and_hms(hour.into(), minute.into(), second.into()).into()
   }
 
   pub fn year(&self) -> u16 {
-    byte_to_dec(self.0[0]) as u16 * 100 + byte_to_dec(self.0[1]) as u16
+    u16::from(byte_to_dec(self.0[0])) * 100 + u16::from(byte_to_dec(self.0[1]))
   }
 
   pub fn month(&self) -> u8 {
@@ -35,7 +35,7 @@ impl SysTime {
   }
 
   pub fn weekday(&self) -> u8 {
-    self.0[4]
+    self.0[4] % 7
   }
 
   pub fn hour(&self) -> u8 {
@@ -54,13 +54,13 @@ impl SysTime {
 impl From<SysTime> for NaiveDateTime {
   fn from(systime: SysTime) -> NaiveDateTime {
     NaiveDate::from_ymd(
-      systime.year() as i32,
-      systime.month() as u32,
-      systime.day() as u32,
+      systime.year().into(),
+      systime.month().into(),
+      systime.day().into(),
     ).and_hms(
-      systime.hour() as u32,
-      systime.minute() as u32,
-      systime.second() as u32,
+      systime.hour().into(),
+      systime.minute().into(),
+      systime.second().into(),
     )
   }
 }
@@ -94,7 +94,7 @@ impl<'de> Deserialize<'de> for SysTime {
       D: Deserializer<'de>,
   {
     let string = String::deserialize(deserializer)?;
-    SysTime::from_str(&string).map_err(|err| de::Error::custom(err))
+    SysTime::from_str(&string).map_err(de::Error::custom)
   }
 }
 

@@ -13,14 +13,14 @@ pub enum AccessMode {
 }
 
 impl AccessMode {
-  pub fn is_read(&self) -> bool {
+  pub fn is_read(self) -> bool {
     match self {
       AccessMode::Read | AccessMode::ReadWrite => true,
       _ => false,
     }
   }
 
-  pub fn is_write(&self) -> bool {
+  pub fn is_write(self) -> bool {
     match self {
       AccessMode::Write | AccessMode::ReadWrite => true,
       _ => false,
@@ -67,7 +67,7 @@ impl Command {
       return Err(Error::UnsupportedMode(format!("Address 0x{:04X} does not support reading.", self.addr)))
     }
 
-    let byte_len = self.byte_len.unwrap_or(self.unit.size());
+    let byte_len = self.byte_len.unwrap_or_else(|| self.unit.size());
     let byte_pos = self.byte_pos.unwrap_or(0);
 
     let mut buf = vec![0; byte_len];

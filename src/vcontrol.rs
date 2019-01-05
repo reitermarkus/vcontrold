@@ -15,7 +15,7 @@ impl VControl {
   }
 
   pub fn from_config(config: Configuration) -> Result<VControl, io::Error> {
-    Ok(VControl { device: config.device()?, commands: config.commands() })
+    config.into()
   }
 
   /// Gets the value for the given command.
@@ -42,5 +42,11 @@ impl VControl {
     };
 
     command.set::<Kw2>(&mut self.device, input)
+  }
+}
+
+impl From<Configuration> for Result<VControl, io::Error> {
+  fn from(config: Configuration) -> Result<VControl, io::Error> {
+    Ok(VControl { device: config.device()?, commands: config.commands() })
   }
 }

@@ -39,7 +39,7 @@ impl<'de> Deserialize<'de> for Expression {
       D: Deserializer<'de>,
   {
     let s = String::deserialize(deserializer)?;
-    Expression::from_str(&s).map_err(|err| de::Error::custom(err))
+    Expression::from_str(&s).map_err(de::Error::custom)
   }
 }
 

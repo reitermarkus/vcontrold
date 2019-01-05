@@ -19,11 +19,9 @@ impl Kw2 {
       o.write_all(&[0x04])?;
       o.flush()?;
 
-      if o.read_exact(&mut buf).is_ok() {
-        if buf == [0x05] {
-          o.purge()?;
-          return Ok(())
-        }
+      if o.read_exact(&mut buf).is_ok() && buf == [0x05] {
+        o.purge()?;
+        return Ok(())
       }
 
       let stop = Instant::now();

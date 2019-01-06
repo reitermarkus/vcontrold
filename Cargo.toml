@@ -1,8 +1,17 @@
 [package]
 name = "vcontrol"
+description = "A library for communication with Viessmann heating controllers."
 version = "0.1.0"
-authors = ["Markus Reiter <me@reitermark.us>"]
 edition = "2018"
+authors = ["Markus Reiter <me@reitermark.us>"]
+documentation = "https://docs.rs/vcontrol"
+repository = "https://github.com/reitermarkus/vcontrol-rs"
+homepage = "https://github.com/reitermarkus/vcontrol-rs"
+keywords = ["heating", "control", "automation"]
+categories = ["hardware-support"]
+exclude = ["/.travis.yml"]
+license = "MIT OR Apache-2.0"
+readme = "ReadMe.md"
 
 [features]
 cli = ["clap"]

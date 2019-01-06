@@ -1,2 +1,0 @@
-vclient -h 192.168.1.4:3002 -f ./vc-commands.txt -t ./rrdb-update.tmpl -x ./rrdb-update.sh
-

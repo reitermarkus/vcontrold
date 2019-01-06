@@ -8,11 +8,11 @@ rust:
   - nightly
 
 install:
-  - rustup component add clippy
+  - [ $TRAVIS_RUST_VERSION = stable ] && rustup component add clippy
 
 script:
   - cargo test
-  - cargo clippy
+  - [ $TRAVIS_RUST_VERSION = stable ] && cargo clippy
 
 deploy:
   provider: script

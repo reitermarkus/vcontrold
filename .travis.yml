@@ -13,7 +13,8 @@ install: |
   fi
 
 script:
-  - cargo test
+  - cargo test --all --all-features
+  - cargo test --all --all-features --release
   - |
     if [ "$TRAVIS_RUST_VERSION" != nightly ]; then
       cargo clippy

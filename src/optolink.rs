@@ -35,10 +35,13 @@ impl Optolink {
   ///
   /// # Examples
   ///
-  /// ```
+  /// ```no_run
   /// use vcontrol::Optolink;
   ///
+  /// # fn main() -> Result<(), Box<std::error::Error>> {
   /// let mut device = Optolink::open("/dev/ttyUSB0")?;
+  /// # Ok(())
+  /// # }
   /// ```
   pub fn open(port: impl AsRef<OsStr>) -> Result<Optolink, io::Error> {
     let mut tty = serial::open(&port)
@@ -68,10 +71,13 @@ impl Optolink {
   ///
   /// # Examples
   ///
-  /// ```
+  /// ```no_run
   /// use vcontrol::Optolink;
   ///
+  /// # fn main() -> Result<(), Box<std::error::Error>> {
   /// let mut device = Optolink::connect(("localhost", 1234))?;
+  /// # Ok(())
+  /// # }
   /// ```
   pub fn connect(addr: impl ToSocketAddrs) -> Result<Optolink, io::Error> {
     let addrs: Vec<SocketAddr> = addr.to_socket_addrs()?.collect();

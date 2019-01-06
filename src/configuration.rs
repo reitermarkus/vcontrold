@@ -66,11 +66,9 @@ impl Configuration {
 mod tests {
   use super::*;
 
-  use serde_yaml;
-
   #[test]
   fn config() {
-    let config: Configuration = include_str!("../config/default.yml").parse().unwrap();
-    println!("{:#?}", config);
+    let config = include_str!("../config/default.yml").parse::<Configuration>();
+    assert!(config.is_ok());
   }
 }

@@ -75,7 +75,7 @@ impl Serialize for CycleTime {
       mm: String,
     }
 
-    self.times().into_iter()
+    self.times().iter()
       .map(|ts|
         TimeSpanFull {
           full: ts.to_string(),
@@ -116,7 +116,7 @@ impl<'de> Deserialize<'de> for CycleTime {
 impl fmt::Display for CycleTime {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{:?}",
-      self.times().into_iter().map(|timespan| timespan.to_string()).collect::<Vec<String>>().join(","),
+      self.times().iter().map(|timespan| timespan.to_string()).collect::<Vec<String>>().join(","),
     )
   }
 }

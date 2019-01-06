@@ -81,7 +81,7 @@ impl Command {
       buf.push((byte << (bit_pos % 8)) >> (8 - bit_len));
     }
 
-    Ok(self.unit.bytes_to_output(&buf[byte_pos..(byte_pos + self.unit.size())], self.factor, &self.mapping))
+    self.unit.bytes_to_output(&buf[byte_pos..(byte_pos + self.unit.size())], self.factor, &self.mapping)
   }
 
   pub fn set<P: Protocol>(&self, o: &mut Optolink, input: &Value) -> Result<(), Error> {

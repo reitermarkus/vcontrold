@@ -49,14 +49,18 @@ impl Unit {
     }
   }
 
-  pub fn bytes_to_output(&self, bytes: &[u8], factor: Option<f64>, mapping: &Option<HashMap<Vec<u8>, String>>) -> Value {
+  pub fn bytes_to_output(&self, bytes: &[u8], factor: Option<f64>, mapping: &Option<HashMap<Vec<u8>, String>>) -> Result<Value, Error> {
     if let Some(mapping) = mapping {
-      return Value::String(mapping[bytes].to_owned())
+      if let Some(text) = mapping.get(bytes) {
+        return Ok(Value::String(text.to_owned()))
+      }
+
+      return Err(Error::UnknownEnumVariant(format!("No enum mapping found for [{}].", bytes.iter().map(|byte| format!("0x{:02X}", byte)).collect::<Vec<String>>().join(", "))))
     }
 
     let n = match self {
-      Unit::SysTime => return Value::SysTime(SysTime::from_bytes(bytes)),
-      Unit::CycleTime => return Value::CycleTime(CycleTime::from_bytes(bytes)),
+      Unit::SysTime => return Ok(Value::SysTime(SysTime::from_bytes(bytes))),
+      Unit::CycleTime => return Ok(Value::CycleTime(CycleTime::from_bytes(bytes))),
       Unit::I8 => i64::from(i8::from_bytes(bytes).to_le()),
       Unit::I16 => i64::from(i16::from_bytes(bytes).to_le()),
       Unit::I32 => i64::from(i32::from_bytes(bytes).to_le()),
@@ -66,10 +70,10 @@ impl Unit {
     };
 
     if let Some(factor) = factor {
-      return Value::Number(n as f64 / factor as f64)
+      return Ok(Value::Number(n as f64 / factor as f64))
     }
 
-    Value::Number(n as f64)
+    Ok(Value::Number(n as f64))
   }
 
   pub fn input_to_bytes(&self, input: &Value, factor: Option<f64>, mapping: &Option<HashMap<Vec<u8>, String>>) -> Result<Vec<u8>, Error> {

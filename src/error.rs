@@ -6,6 +6,7 @@ pub enum Error {
   UnsupportedCommand(String),
   UnsupportedMode(String),
   InvalidArgument(String),
+  UnknownEnumVariant(String),
   Io(io::Error)
 }
 
@@ -21,6 +22,7 @@ impl fmt::Display for Error {
       Error::UnsupportedCommand(command) => write!(f, "command {} is not supported", command),
       Error::UnsupportedMode(description) => description.fmt(f),
       Error::InvalidArgument(description) => description.fmt(f),
+      Error::UnknownEnumVariant(description) => description.fmt(f),
       Error::Io(err) => err.fmt(f),
     }
   }

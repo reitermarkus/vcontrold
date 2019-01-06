@@ -35,7 +35,7 @@ impl SysTime {
   }
 
   pub fn weekday(&self) -> u8 {
-    self.0[4] % 7
+    self.0[4]
   }
 
   pub fn hour(&self) -> u8 {

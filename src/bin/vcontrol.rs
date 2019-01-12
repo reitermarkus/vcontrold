@@ -3,19 +3,13 @@ use std::process::exit;
 use clap::{crate_version, Arg, App, SubCommand, AppSettings::ArgRequiredElseHelp};
 use serde_json;
 
-use vcontrol::{Configuration, Optolink, VControl, Value};
+use vcontrol::{Optolink, VControl, device::V200KW2, Value};
 
 fn main() {
   let app = App::new("vcontrol")
               .version(crate_version!())
               .setting(ArgRequiredElseHelp)
               .help_short("?")
-              .arg(Arg::with_name("config")
-                .short("c")
-                .long("config")
-                .takes_value(true)
-                .required(true)
-                .help("path to the configuration file"))
               .arg(Arg::with_name("device")
                 .short("d")
                 .long("device")
@@ -51,14 +45,9 @@ fn main() {
 
   let matches = app.get_matches();
 
-  let config = Configuration::open(matches.value_of("config").unwrap()).unwrap_or_else(|err| {
-    eprintln!("Error: {}", err);
-    exit(1);
-  });
-
   let mut vcontrol = if let Some(device) = matches.value_of("device") {
     Optolink::open(device)
-      .map(|device| VControl::new(device, config.commands()))
+      .map(|device| VControl::<V200KW2>::new(device))
   } else if let Some(port) = matches.value_of("port") {
     let host = matches.value_of("host").unwrap_or("localhost");
     let port = port.parse().unwrap_or_else(|_| {
@@ -67,9 +56,9 @@ fn main() {
     });
 
     Optolink::connect((host, port))
-      .map(|device| VControl::new(device, config.commands()))
+      .map(|device| VControl::<V200KW2>::new(device))
   } else {
-    VControl::from_config(config)
+    unreachable!()
   }.unwrap_or_else(|err| {
     eprintln!("Error: {}", err);
     exit(1);

@@ -1,11 +1,10 @@
-use std::collections::HashMap;
-
+use phf;
 use serde::de::{self, Deserialize, Deserializer};
 
-use crate::{Error, Value, FromBytes, ToBytes, types::{SysTime, CycleTime}};
+use crate::{Error, Value, FromBytes, ToBytes, types::{Bytes, SysTime, CycleTime}};
 
 #[derive(Debug, Clone)]
-pub enum Unit {
+pub(crate) enum Unit {
   I8,
   I16,
   I32,
@@ -49,10 +48,10 @@ impl Unit {
     }
   }
 
-  pub fn bytes_to_output(&self, bytes: &[u8], factor: Option<f64>, mapping: &Option<HashMap<Vec<u8>, String>>) -> Result<Value, Error> {
+  pub fn bytes_to_output(&self, bytes: &[u8], factor: f64, mapping: &Option<phf::map::Map<Bytes, &'static str>>) -> Result<Value, Error> {
     if let Some(mapping) = mapping {
-      if let Some(text) = mapping.get(bytes) {
-        return Ok(Value::String(text.to_owned()))
+      if let Some(text) = mapping.get(&Bytes::from_bytes(bytes)) {
+        return Ok(Value::String(text.to_string()))
       }
 
       return Err(Error::UnknownEnumVariant(format!("No enum mapping found for [{}].", bytes.iter().map(|byte| format!("0x{:02X}", byte)).collect::<Vec<String>>().join(", "))))
@@ -69,18 +68,14 @@ impl Unit {
       Unit::U32 => i64::from(u32::from_bytes(bytes).to_le()),
     };
 
-    if let Some(factor) = factor {
-      return Ok(Value::Number(n as f64 / factor as f64))
-    }
-
-    Ok(Value::Number(n as f64))
+    return Ok(Value::Number(n as f64 / factor as f64))
   }
 
-  pub fn input_to_bytes(&self, input: &Value, factor: Option<f64>, mapping: &Option<HashMap<Vec<u8>, String>>) -> Result<Vec<u8>, Error> {
+  pub fn input_to_bytes(&self, input: &Value, factor: f64, mapping: &Option<phf::map::Map<Bytes, &'static str>>) -> Result<Vec<u8>, Error> {
     if let Some(mapping) = mapping {
       if let Value::String(s) = input {
-        return mapping.iter()
-                 .find_map(|(key, value)| if value == s { Some(key.clone()) } else { None })
+        return mapping.entries()
+                 .find_map(|(key, value)| if value == s { Some(key.to_bytes()) } else { None })
                  .ok_or_else(|| Error::InvalidArgument(format!("no mapping found for {:?}", s)))
       } else {
         return Err(Error::InvalidArgument(format!("expected string, found {:?}", input)))
@@ -104,7 +99,7 @@ impl Unit {
       },
       _ => {
         if let Value::Number(n) = input {
-          let n = n * factor.unwrap_or(1.0);
+          let n = n * factor;
 
           match self {
             Unit::I8  => (n as i8).to_bytes(),

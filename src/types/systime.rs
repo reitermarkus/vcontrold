@@ -121,7 +121,7 @@ impl fmt::Display for SysTime {
 mod tests {
   use super::*;
 
-  use crate::traits::{FromBytes, ToBytes};
+  use crate::types::{FromBytes, ToBytes};
 
   #[test]
   fn new() {

@@ -1,12 +1,10 @@
-use std::collections::HashMap;
-
-use serde_derive::*;
+use phf;
 use serde::de::{self, Deserialize, Deserializer};
 
-use crate::{Error, Optolink, protocol::Protocol, Unit, Value, ToBytes};
+use crate::{Error, Optolink, protocol::Protocol, Unit, Value, ToBytes, types::Bytes};
 
 #[derive(Debug, Clone, Copy)]
-pub enum AccessMode {
+pub(crate) enum AccessMode {
   Read,
   Write,
   ReadWrite,
@@ -43,17 +41,17 @@ impl<'de> Deserialize<'de> for AccessMode {
 }
 
 /// A command which can be executed on an Optolink connection.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug)]
 pub struct Command {
-  addr: u16,
-  mode: AccessMode,
-  unit: Unit,
-  byte_len: Option<usize>,
-  byte_pos: Option<usize>,
-  bit_pos: Option<usize>,
-  bit_len: Option<usize>,
-  factor: Option<f64>,
-  mapping: Option<HashMap<Vec<u8>, String>>,
+  pub(crate) addr: u16,
+  pub(crate) mode: AccessMode,
+  pub(crate) unit: Unit,
+  pub(crate) byte_len: usize,
+  pub(crate) byte_pos: usize,
+  pub(crate) bit_pos: Option<usize>,
+  pub(crate) bit_len: Option<usize>,
+  pub(crate) factor: f64,
+  pub(crate) mapping: Option<phf::map::Map<Bytes, &'static str>>,
 }
 
 impl Command {
@@ -67,8 +65,8 @@ impl Command {
       return Err(Error::UnsupportedMode(format!("Address 0x{:04X} does not support reading.", self.addr)))
     }
 
-    let byte_len = self.byte_len.unwrap_or_else(|| self.unit.size());
-    let byte_pos = self.byte_pos.unwrap_or(0);
+    let byte_len = self.byte_len;
+    let byte_pos = self.byte_pos;
 
     let mut buf = vec![0; byte_len];
     P::get(o, &self.addr(), &mut buf)?;

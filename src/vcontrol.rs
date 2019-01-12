@@ -1,52 +1,36 @@
-use std::collections::HashMap;
-use std::io;
-
-use crate::{Error, Configuration, Command, Optolink, protocol::Kw2, Value};
+use crate::{Error, Optolink, Device, Value};
 
 #[derive(Debug)]
-pub struct VControl {
+pub struct VControl<D: Device> {
   device: Optolink,
-  commands: HashMap<String, Command>,
+  phantom: std::marker::PhantomData<D>,
 }
 
-impl VControl {
-  pub fn new(device: Optolink, commands: HashMap<String, Command>) -> VControl {
-    VControl { device, commands }
-  }
-
-  pub fn from_config(config: Configuration) -> Result<VControl, io::Error> {
-    config.into()
+impl<D: Device> VControl<D> {
+  pub fn new(device: Optolink) -> Self {
+    VControl { device, phantom: std::marker::PhantomData }
   }
 
   /// Gets the value for the given command.
   ///
   /// If the command specified is not available, an IO error of the kind `AddrNotAvailable` is returned.
   pub fn get(&mut self, command: &str) -> Result<Value, Error> {
-    let command = if let Some(command) = self.commands.get(command) {
-      command
+    if let Some(command) = D::command(command) {
+      command.get::<D::Protocol>(&mut self.device)
     } else {
       return Err(Error::UnsupportedCommand(command.to_owned()))
-    };
-
-    command.get::<Kw2>(&mut self.device)
+    }
   }
 
   /// Sets the value for the given command.
   ///
   /// If the command specified is not available, an IO error of the kind `AddrNotAvailable` is returned.
   pub fn set(&mut self, command: &str, input: &Value) -> Result<(), Error> {
-    let command = if let Some(command) = self.commands.get(command) {
-      command
+    if let Some(command) = D::command(command) {
+      command.set::<D::Protocol>(&mut self.device, input)
     } else {
       return Err(Error::UnsupportedCommand(command.to_owned()))
-    };
-
-    command.set::<Kw2>(&mut self.device, input)
+    }
   }
 }
 
-impl From<Configuration> for Result<VControl, io::Error> {
-  fn from(config: Configuration) -> Result<VControl, io::Error> {
-    Ok(VControl { device: config.device()?, commands: config.commands() })
-  }
-}

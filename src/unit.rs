@@ -68,7 +68,7 @@ impl Unit {
       Unit::U32 => i64::from(u32::from_bytes(bytes).to_le()),
     };
 
-    return Ok(Value::Number(n as f64 / factor as f64))
+    Ok(Value::Number(n as f64 / factor))
   }
 
   pub fn input_to_bytes(&self, input: &Value, factor: f64, mapping: &Option<phf::map::Map<Bytes, &'static str>>) -> Result<Vec<u8>, Error> {

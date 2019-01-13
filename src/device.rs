@@ -1,8 +1,17 @@
 use phf;
 
-use crate::{Error, Command, Optolink, types::Bytes, protocol::*, Value};
+use crate::{Error, Command, Optolink, Protocol, Value};
 
-include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
+#[allow(clippy::unreadable_literal)]
+mod codegen {
+  use super::*;
+  use crate::types::Bytes;
+  use crate::protocol::*;
+
+  include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
+}
+
+pub use self::codegen::*;
 
 pub trait Device {
   type Protocol: Protocol;
@@ -10,7 +19,7 @@ pub trait Device {
   fn map() -> &'static phf::Map<&'static str, Command>;
 
   fn commands() -> Vec<&'static str> {
-    Self::map().keys().map(|s| *s).collect::<Vec<_>>()
+    Self::map().keys().cloned().collect::<Vec<_>>()
   }
 
   fn command(name: &str) -> Option<&Command> {

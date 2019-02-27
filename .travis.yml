@@ -7,6 +7,11 @@ rust:
   - beta
   - nightly
 
+matrix:
+  allow_failures:
+    - rust: beta
+    - rust: nightly
+
 install: |
   if [ "$TRAVIS_RUST_VERSION" != nightly ]; then
     rustup component add clippy

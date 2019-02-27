@@ -1,4 +1,4 @@
-use crate::{Error, Optolink, Device, Value};
+use crate::{Error, Optolink, Device, Protocol, Value};
 
 #[derive(Debug)]
 pub struct VControl<D: Device> {
@@ -7,8 +7,9 @@ pub struct VControl<D: Device> {
 }
 
 impl<D: Device> VControl<D> {
-  pub fn new(device: Optolink) -> Self {
-    VControl { device, phantom: std::marker::PhantomData }
+  pub fn connect(mut device: Optolink) -> Result<VControl<D>, Error> {
+    D::Protocol::negotiate(&mut device)?;
+    Ok(VControl { device, phantom: std::marker::PhantomData })
   }
 
   /// Gets the value for the given command.
@@ -33,4 +34,3 @@ impl<D: Device> VControl<D> {
     }
   }
 }
-

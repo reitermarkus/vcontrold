@@ -3,6 +3,9 @@ use std::io;
 use crate::Optolink;
 
 pub trait Protocol {
+  /// Negotiates the protocol.
+  fn negotiate(o: &mut Optolink) -> Result<(), io::Error>;
+
   /// Reads the value at the address `addr` into `buf`.
   fn get(o: &mut Optolink, addr: &[u8], buf: &mut [u8]) -> Result<(), io::Error>;
 
@@ -12,3 +15,6 @@ pub trait Protocol {
 
 mod kw2;
 pub use self::kw2::Kw2;
+
+mod p300;
+pub use self::p300::P300;

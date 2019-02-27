@@ -5,6 +5,9 @@ use crate::Optolink;
 
 use super::Protocol;
 
+const RESET: u8 = 0x04;
+const SYNC: u8  = 0x05;
+
 #[derive(Debug)]
 pub struct Kw2;
 
@@ -16,10 +19,10 @@ impl Kw2 {
     let start = Instant::now();
 
     loop {
-      o.write_all(&[0x04])?;
-      o.flush()?;
+      // Reset the Optolink connection to get a faster SYNC (`0x05`)
+      Self::negotiate(o)?;
 
-      if o.read_exact(&mut buf).is_ok() && buf == [0x05] {
+      if o.read_exact(&mut buf).is_ok() && buf == [SYNC] {
         o.purge()?;
         return Ok(())
       }
@@ -31,11 +34,18 @@ impl Kw2 {
       }
     }
 
-    Err(std::io::Error::new(std::io::ErrorKind::TimedOut, "sync timed out"))
+    Err(io::Error::new(io::ErrorKind::TimedOut, "sync timed out"))
   }
 }
 
 impl Protocol for Kw2 {
+  fn negotiate(o: &mut Optolink) -> Result<(), io::Error> {
+    o.write_all(&[RESET])?;
+    o.flush()?;
+
+    Ok(())
+  }
+
   fn get(o: &mut Optolink, addr: &[u8], buf: &mut [u8]) -> Result<(), io::Error> {
     let mut vec = Vec::new();
     vec.extend(&[0x01, 0xf7]);
@@ -54,9 +64,9 @@ impl Protocol for Kw2 {
 
       let stop = Instant::now();
 
-      // Retry if the response only contains `0x05`,
+      // Retry if the response only contains SYNC (`0x05`),
       // since these could be synchronization bytes.
-      if buf.iter().all(|byte| *byte == 0x05) {
+      if buf.iter().all(|byte| *byte == SYNC) {
         // Return `Ok` if they were received in a short amount of time,
         // since then they most likely are not synchronization bytes.
         if (stop - start) < Duration::from_millis(500 * buf.len() as u64) {
@@ -105,6 +115,6 @@ impl Protocol for Kw2 {
       }
     }
 
-    Err(std::io::Error::new(std::io::ErrorKind::TimedOut, "set timed out"))
+    Err(io::Error::new(io::ErrorKind::TimedOut, "set timed out"))
   }
 }

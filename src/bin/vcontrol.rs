@@ -47,7 +47,7 @@ fn main() {
 
   let mut vcontrol = if let Some(device) = matches.value_of("device") {
     Optolink::open(device)
-      .map(|device| VControl::<V200KW2>::new(device))
+      .map(|device| VControl::<V200KW2>::connect(device).unwrap())
   } else if let Some(port) = matches.value_of("port") {
     let host = matches.value_of("host").unwrap_or("localhost");
     let port = port.parse().unwrap_or_else(|_| {
@@ -56,7 +56,7 @@ fn main() {
     });
 
     Optolink::connect((host, port))
-      .map(|device| VControl::<V200KW2>::new(device))
+      .map(|device| VControl::<V200KW2>::connect(device).unwrap())
   } else {
     unreachable!()
   }.unwrap_or_else(|err| {

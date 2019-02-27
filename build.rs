@@ -30,6 +30,8 @@ fn main() {
   let path = Path::new(&env::var("OUT_DIR").unwrap()).join("codegen.rs");
   let mut file = BufWriter::new(File::create(&path).unwrap());
 
+  let protocol = config.device.protocol;
+
   let mut map = phf_codegen::Map::new();
 
   for (name, command) in config.commands {
@@ -47,21 +49,27 @@ fn main() {
     pub enum {} {{}}
 
     impl Device for {} {{
-      type Protocol = Kw2;
+      type Protocol = {};
 
       #[inline(always)]
       fn map() -> &'static phf::Map<&'static str, Command> {{
         &{}_COMMANDS
       }}
     }}
-  ", device, device, device).unwrap();
+  ", device, device, protocol, device).unwrap();
 
   write!(&mut file, "pub type V200KW2 = V200KW2_6;").unwrap();
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Configuration {
+  pub device: Device,
   pub commands: HashMap<String, Command>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Device {
+  protocol: String
 }
 
 /// A command which can be executed on an Optolink connection.

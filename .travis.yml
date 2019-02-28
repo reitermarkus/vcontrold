@@ -9,6 +9,7 @@ matrix:
   include:
     - os: linux
       rust: stable
+      env: DEPLOY=true
     - os: linux
       rust: nightly
     - os: linux
@@ -90,8 +91,8 @@ deploy:
     - cargo publish --token "${CRATES_IO_TOKEN}"
   on:
     tags: true
-    all_branches: true
-    condition: $TRAVIS_RUST_VERSION = stable
+    branch: master
+    condition: $DEPLOY = true
 
 notifications:
   email:

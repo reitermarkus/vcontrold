@@ -148,13 +148,13 @@ impl Protocol for P300 {
     if expected_len != read_response.len() {
       return Err(io::Error::new(io::ErrorKind::InvalidData, "unexpected response length"))
     }
-    if [RESPONSE, READDATA] != read_response[0..2] {
+    if read_response[0..2] != [RESPONSE, READDATA] {
       return Err(io::Error::new(io::ErrorKind::InvalidData, "invalid read data response"))
     }
-    if *addr != read_response[2..4] {
+    if read_response[2..4] != *addr {
       return Err(io::Error::new(io::ErrorKind::InvalidData, "wrong address"))
     }
-    if buf.len() as u8 != read_response[4] {
+    if read_response[4] != buf.len() as u8 {
       return Err(io::Error::new(io::ErrorKind::InvalidData, "wrong data length"))
     }
 
@@ -178,13 +178,13 @@ impl Protocol for P300 {
     if expected_len != write_response.len() {
       return Err(io::Error::new(io::ErrorKind::InvalidData, "unexpected response length"))
     }
-    if [RESPONSE, WRITEDATA] != write_response[0..2] {
+    if write_response[0..2] != [RESPONSE, WRITEDATA] {
       return Err(io::Error::new(io::ErrorKind::InvalidData, "invalid write data response"))
     }
-    if *addr != write_response[2..4] {
+    if write_response[2..4] != *addr {
       return Err(io::Error::new(io::ErrorKind::InvalidData, "wrong address"))
     }
-    if value.len() as u8 != write_response[5] {
+    if write_response[4] != value.len() as u8 {
       return Err(io::Error::new(io::ErrorKind::InvalidData, "could not write data"))
     }
 

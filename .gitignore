@@ -1,2 +1,6 @@
 /target
 Cargo.lock
+
+codegen/*.yml
+codegen/Vitosoft300SID1_Setup
+codegen/Vitosoft300SID1_Setup.exe

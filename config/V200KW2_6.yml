@@ -446,6 +446,12 @@ commands:
     addr: 0x3307
     mode: read_write
     unit: u8
+  roomtemp_desired_current:
+    <<: *temp_i16
+    addr: 0x3500
+    mode: read
+    byte_len: 22
+    byte_pos: 12
   frostwarning_state:
     <<: *state
     addr: 0x3500

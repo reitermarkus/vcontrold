@@ -394,9 +394,9 @@ commands:
   heatingcircuit_fp_temp_desired:
     <<: *temp_i16
     addr: 0x3500
+    mode: read
     byte_len: 22
     byte_pos: 17
-    mode: read
   heatingcircuit_fp_temp_lowpass:
     <<: *temp_i16
     addr: 0x0818

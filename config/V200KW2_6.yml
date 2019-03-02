@@ -164,6 +164,7 @@ commands:
     mode: read_write
   operatingmode:
     addr: 0x3301
+    mode: read_write
     unit: u8
     mapping:
       [0x00]: NWW
@@ -172,7 +173,6 @@ commands:
       [0x03]: HWW
       [0x04]: HWW
       [0x05]: OFF
-    mode: read_write
   energysavermode_state:
     <<: *state
     addr: 0x3302
@@ -183,16 +183,16 @@ commands:
     mode: read_write
   partymode_temp:
     addr: 0x3308
-    unit: u8
     mode: read_write
+    unit: u8
   vacationmode_state:
     addr: 0x3535
+    mode: read
     unit: u8
     bit_pos: 7
     mapping:
       [0x00]: OFF
       [0x01]: ON
-    mode: read
   vacationmode_date_departure:
     <<: *systime
     addr: 0x3309
@@ -243,9 +243,9 @@ commands:
     mode: read
   burner_hours_1:
     addr: 0x08A7
+    mode: read
     unit: u32
     factor: 3600
-    mode: read
   outside_temp_state:
     <<: *temp_error_state
     addr: 0x083A
@@ -300,18 +300,18 @@ commands:
     mode: read
   hotwater_temp_desired:
     addr: 0x6300
-    unit: u8
     mode: read_write
+    unit: u8
   hotwater_release:
     addr: 0x3500
+    mode: read
+    unit: u8
     byte_len: 22
     byte_pos: 8
-    unit: u8
     mapping:
       [0x00]: Freigabe aus
       [0x01]: Freigabe nach WW-Schaltzeiten
       [0x02]: Freigabe durch Party/Externe Umschaltung
-    mode: read
   hotwater_timer_mon:
     <<: *cycletime
     addr: 0x3100
@@ -342,9 +342,10 @@ commands:
     mode: read_write
   heatingcircuit_mode:
     addr: 0x3500
+    mode: read
+    unit: u8
     byte_len: 22
     byte_pos: 1
-    unit: u8
     mapping:
       [0x00]: NWW # Nur WW
       [0x01]: RED # Dauernd Reduziert
@@ -352,7 +353,6 @@ commands:
       [0x03]: HWW # Heizen + WW
       [0x04]: HWW # Heizen + WW
       [0x05]: OFF # Abschalt
-    mode: read
   heatingcircuit_timer:
     addr: 0x3500
     byte_len: 22
@@ -366,6 +366,7 @@ commands:
     mode: read
   heatingcircuit_pump_command:
     addr: 0x3500
+    mode: read
     byte_len: 22
     byte_pos: 10
     unit: u8
@@ -374,7 +375,6 @@ commands:
       [0x01]: ON
       [0x02]: ON
       [0x03]: RED
-    mode: read
   heatingcircuit_rp_temp_state:
     <<: *temp_error_state
     addr: 0x083F
@@ -431,27 +431,27 @@ commands:
     mode: read_write
   heatingcurve_niveau:
     addr: 0x3304
-    unit: i8
     mode: read_write
+    unit: i8
   heatingcurve_incline:
     addr: 0x3305
+    mode: read_write
     unit: i8
     factor: 10
-    mode: read_write
   roomtemp_day_desired:
     addr: 0x3306
-    unit: u8
     mode: read_write
+    unit: u8
   roomtemp_night_desired:
     addr: 0x3307
-    unit: u8
     mode: read_write
+    unit: u8
   frostwarning_state:
     <<: *state
     addr: 0x3500
+    mode: read
     byte_len: 22
     byte_pos: 16
-    mode: read
   error_01:
     <<: *error_state
     addr: 0x7507

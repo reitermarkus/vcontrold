@@ -14,7 +14,7 @@ temp_error_state: &temp_error_state
   mapping:
     [0x00]: 'OK'
     [0x01]: 'Kurzschluss'
-    [0x02]: 'nicht vorhanden'
+    [0x02]: 'Unterbrechung'
     [0x03]: 'Referenzfehler'
     [0x04]: 'Referenzfehler'
     [0x05]: 'Referenzfehler'
@@ -377,9 +377,13 @@ commands:
     <<: *temp_error_state
     addr: 0x083F
     mode: read
+  heatingcircuit_rp_temp_actual:
+    <<: *temp_i16
+    addr: 0x3902
+    mode: read
   heatingcircuit_rp_temp_lowpass:
     <<: *temp_i16
-    addr: 0x081A
+    addr: 0x0818
     mode: read
   heatingcircuit_fp_temp_state:
     <<: *temp_error_state
@@ -397,7 +401,7 @@ commands:
     byte_pos: 17
   heatingcircuit_fp_temp_lowpass:
     <<: *temp_i16
-    addr: 0x0818
+    addr: 0x081A
     mode: read
   heatingcircuit_timer_mon:
     <<: *cycletime

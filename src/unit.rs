@@ -35,19 +35,6 @@ impl<'de> Deserialize<'de> for Unit {
 }
 
 impl Unit {
-  pub fn size(&self) -> usize {
-    match self {
-      Unit::I8 => std::mem::size_of::<i8>(),
-      Unit::I16 => std::mem::size_of::<i16>(),
-      Unit::I32 => std::mem::size_of::<i32>(),
-      Unit::U8 => std::mem::size_of::<u8>(),
-      Unit::U16 => std::mem::size_of::<u16>(),
-      Unit::U32 => std::mem::size_of::<u32>(),
-      Unit::SysTime => std::mem::size_of::<SysTime>(),
-      Unit::CycleTime => std::mem::size_of::<CycleTime>(),
-    }
-  }
-
   pub fn bytes_to_output(&self, bytes: &[u8], factor: f64, mapping: &Option<phf::map::Map<Bytes, &'static str>>) -> Result<Value, Error> {
     if let Some(mapping) = mapping {
       if let Some(text) = mapping.get(&Bytes::from_bytes(bytes)) {

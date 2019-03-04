@@ -46,6 +46,7 @@ pub struct Command {
   pub(crate) addr: u16,
   pub(crate) mode: AccessMode,
   pub(crate) unit: Unit,
+  pub(crate) block_len: usize,
   pub(crate) byte_len: usize,
   pub(crate) byte_pos: usize,
   pub(crate) bit_pos: Option<usize>,
@@ -65,10 +66,11 @@ impl Command {
       return Err(Error::UnsupportedMode(format!("Address 0x{:04X} does not support reading.", self.addr)))
     }
 
+    let block_len = self.block_len;
     let byte_len = self.byte_len;
     let byte_pos = self.byte_pos;
 
-    let mut buf = vec![0; byte_len];
+    let mut buf = vec![0; block_len];
     P::get(o, &self.addr(), &mut buf)?;
 
     if let Some(bit_pos) = self.bit_pos {
@@ -79,7 +81,7 @@ impl Command {
       buf.push((byte << (bit_pos % 8)) >> (8 - bit_len));
     }
 
-    self.unit.bytes_to_output(&buf[byte_pos..(byte_pos + self.unit.size())], self.factor, &self.mapping)
+    self.unit.bytes_to_output(&buf[byte_pos..(byte_pos + byte_len)], self.factor, &self.mapping)
   }
 
   pub fn set<P: Protocol>(&self, o: &mut Optolink, input: &Value) -> Result<(), Error> {

@@ -25,10 +25,10 @@ systime: &systime
   unit: systime
 error_time: &error_time
   <<: *systime
-  byte_len: 9
+  block_len: 9
   byte_pos: 1
 error_state: &error_state
-  byte_len: 9
+  block_len: 9
   unit: u8
   mapping:
     [0x00]: 'Normalbetrieb'
@@ -306,7 +306,7 @@ commands:
     addr: 0x3500
     mode: read
     unit: u8
-    byte_len: 22
+    block_len: 22
     byte_pos: 8
     mapping:
       [0x00]: Freigabe aus
@@ -344,7 +344,7 @@ commands:
     addr: 0x3500
     mode: read
     unit: u8
-    byte_len: 22
+    block_len: 22
     byte_pos: 1
     mapping:
       [0x00]: 'Abschaltbetrieb'
@@ -353,7 +353,7 @@ commands:
       [0x03]: 'Normalbetrieb'
   heatingcircuit_heat_up_phase_timer:
     addr: 0x3500
-    byte_len: 22
+    block_len: 22
     byte_pos: 2
     unit: u32
     factor: 10
@@ -365,7 +365,7 @@ commands:
   heatingcircuit_pump_command:
     addr: 0x3500
     mode: read
-    byte_len: 22
+    block_len: 22
     byte_pos: 10
     unit: u8
     mapping:
@@ -393,7 +393,7 @@ commands:
     <<: *temp_i16
     addr: 0x3500
     mode: read
-    byte_len: 22
+    block_len: 22
     byte_pos: 17
   heatingcircuit_fp_temp_lowpass:
     <<: *temp_i16
@@ -448,13 +448,13 @@ commands:
     <<: *temp_i16
     addr: 0x3500
     mode: read
-    byte_len: 22
+    block_len: 22
     byte_pos: 12
   frostwarning_state:
     <<: *state
     addr: 0x3500
     mode: read
-    byte_len: 22
+    block_len: 22
     byte_pos: 16
   error_01:
     <<: *error_state

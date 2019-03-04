@@ -78,8 +78,9 @@ pub struct Command {
   addr: u16,
   mode: AccessMode,
   unit: Unit,
-  byte_pos: Option<usize>,
+  block_len: Option<usize>,
   byte_len: Option<usize>,
+  byte_pos: Option<usize>,
   bit_pos: Option<usize>,
   bit_len: Option<usize>,
   factor: Option<f64>,
@@ -88,8 +89,9 @@ pub struct Command {
 
 impl fmt::Debug for Command {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    let byte_pos = self.byte_pos.unwrap_or(0);
+    let block_len = self.block_len.unwrap_or_else(|| self.unit.size());
     let byte_len = self.byte_len.unwrap_or_else(|| self.unit.size());
+    let byte_pos = self.byte_pos.unwrap_or(0);
 
     let mapping = if let Some(mapping) = &self.mapping {
       let mut map = phf_codegen::Map::new();
@@ -110,8 +112,9 @@ impl fmt::Debug for Command {
        .field("addr", &format_args!("0x{:04X}", self.addr))
        .field("mode", &format_args!("crate::AccessMode::{:?}", self.mode))
        .field("unit", &format_args!("crate::Unit::{:?}", self.unit))
-       .field("byte_pos", &byte_pos)
+       .field("block_len", &block_len)
        .field("byte_len", &byte_len)
+       .field("byte_pos", &byte_pos)
        .field("bit_len", &self.bit_len)
        .field("bit_pos", &self.bit_pos)
        .field("factor", &self.factor.unwrap_or(1.0))

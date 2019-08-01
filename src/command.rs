@@ -62,6 +62,8 @@ impl Command {
   }
 
   pub fn get<P: Protocol>(&self, o: &mut Optolink) -> Result<Value, Error> {
+    log::trace!("Command::get(…)");
+
     if !self.mode.is_read() {
       return Err(Error::UnsupportedMode(format!("Address 0x{:04X} does not support reading.", self.addr)))
     }
@@ -85,6 +87,8 @@ impl Command {
   }
 
   pub fn set<P: Protocol>(&self, o: &mut Optolink, input: &Value) -> Result<(), Error> {
+    log::trace!("Command::set(…)");
+
     if !self.mode.is_write() {
       return Err(Error::UnsupportedMode(format!("Address 0x{:04X} does not support writing.", self.addr)))
     }

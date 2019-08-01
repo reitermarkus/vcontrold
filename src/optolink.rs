@@ -44,6 +44,8 @@ impl Optolink {
   /// # }
   /// ```
   pub fn open(port: impl AsRef<OsStr>) -> Result<Optolink, io::Error> {
+    log::trace!("Optolink::open(…)");
+
     let mut tty = serial::open(&port)
       .map_err(|err| {
         let err = io::Error::from(err);
@@ -57,7 +59,7 @@ impl Optolink {
 
     tty.set_timeout(Self::TIMEOUT)?;
 
-    tty.reconfigure(&|settings: &mut SerialPortSettings| -> Result<(), serial_core::Error> {
+    tty.reconfigure(&|settings: &mut dyn SerialPortSettings| -> Result<(), serial_core::Error> {
       settings.set_parity(ParityEven);
       settings.set_stop_bits(Stop2);
       settings.set_char_size(Bits8);
@@ -80,6 +82,8 @@ impl Optolink {
   /// # }
   /// ```
   pub fn connect(addr: impl ToSocketAddrs) -> Result<Optolink, io::Error> {
+    log::trace!("Optolink::connect(…)");
+
     let addrs: Vec<SocketAddr> = addr.to_socket_addrs()?.collect();
 
     let stream = TcpStream::connect(&addrs as &[SocketAddr])
@@ -92,6 +96,8 @@ impl Optolink {
 
   /// Purge all contents of the input buffer.
   pub fn purge(&mut self) -> Result<(), io::Error> {
+    log::trace!("Optolink::purge()");
+
     match &mut self.device {
       Device::Tty(tty) => {
         tty.set_timeout(Duration::new(0, 0))?;

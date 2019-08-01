@@ -27,10 +27,14 @@ pub trait Device {
   }
 
   fn get(o: &mut Optolink, cmd: &Command) -> Result<Value, Error> {
+    log::trace!("Device::get(…)");
+
     cmd.get::<Self::Protocol>(o)
   }
 
   fn set(o: &mut Optolink, cmd: &Command, input: &Value) -> Result<(), Error> {
+    log::trace!("Device::set(…)");
+
     cmd.set::<Self::Protocol>(o, input)
   }
 }

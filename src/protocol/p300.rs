@@ -22,8 +22,9 @@ const WRITEDATA: u8 = 0x02;
 pub struct P300;
 
 impl P300 {
-  #[inline]
   fn write_telegram(o: &mut Optolink, message: &[u8]) -> Result<(), std::io::Error> {
+    log::trace!("P300::write_telegram(…)");
+
     let message_length = message.len() as u8;
     let checksum: u8 = message.iter().sum();
     let checksum = checksum + message_length;
@@ -55,8 +56,9 @@ impl P300 {
     Err(io::Error::new(io::ErrorKind::TimedOut, "send telegram timed out"))
   }
 
-  #[inline]
   fn read_telegram(o: &mut Optolink) -> Result<Vec<u8>, std::io::Error> {
+    log::trace!("P300::read_telegram(…)");
+
     let mut buf = [0xff];
 
     let start = Instant::now();
@@ -100,6 +102,8 @@ impl P300 {
 
 impl Protocol for P300 {
   fn negotiate(o: &mut Optolink) -> Result<(), io::Error> {
+    log::trace!("P300::negotiate(…)");
+
     o.write_all(&[RESET])?;
     o.flush()?;
 
@@ -135,6 +139,8 @@ impl Protocol for P300 {
   }
 
   fn get(o: &mut Optolink, addr: &[u8], buf: &mut [u8]) -> Result<(), io::Error> {
+    log::trace!("P300::get(…)");
+
     let mut read_request = Vec::new();
     read_request.extend(&[REQUEST, READDATA]);
     read_request.extend(addr);
@@ -164,6 +170,8 @@ impl Protocol for P300 {
   }
 
   fn set(o: &mut Optolink, addr: &[u8], value: &[u8]) -> Result<(), io::Error> {
+    log::trace!("P300::set(…)");
+
     let mut write_request = Vec::new();
     write_request.extend(&[REQUEST, WRITEDATA]);
     write_request.extend(addr);

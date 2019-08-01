@@ -19,7 +19,7 @@ impl<D: Device> VControl<D> {
     if let Some(command) = D::command(command) {
       command.get::<D::Protocol>(&mut self.device)
     } else {
-      return Err(Error::UnsupportedCommand(command.to_owned()))
+      Err(Error::UnsupportedCommand(command.to_owned()))
     }
   }
 
@@ -30,7 +30,7 @@ impl<D: Device> VControl<D> {
     if let Some(command) = D::command(command) {
       command.set::<D::Protocol>(&mut self.device, input)
     } else {
-      return Err(Error::UnsupportedCommand(command.to_owned()))
+      Err(Error::UnsupportedCommand(command.to_owned()))
     }
   }
 }

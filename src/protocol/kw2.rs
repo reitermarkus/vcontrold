@@ -12,14 +12,17 @@ const SYNC: u8  = 0x05;
 pub struct Kw2;
 
 impl Kw2 {
-  #[inline]
   fn sync(o: &mut Optolink) -> Result<(), std::io::Error> {
+    log::trace!("Kw2::sync(…)");
+
     let mut buf = [0xff];
 
     let start = Instant::now();
 
     loop {
-      // Reset the Optolink connection to get a faster SYNC (`0x05`)
+      log::trace!("Kw2::sync(…) loop");
+
+      // Reset the Optolink connection to get a faster SYNC (`0x05`).
       Self::negotiate(o)?;
 
       if o.read_exact(&mut buf).is_ok() && buf == [SYNC] {
@@ -40,6 +43,8 @@ impl Kw2 {
 
 impl Protocol for Kw2 {
   fn negotiate(o: &mut Optolink) -> Result<(), io::Error> {
+    log::trace!("Kw2::negotiate(…)");
+
     o.write_all(&[RESET])?;
     o.flush()?;
 
@@ -47,6 +52,8 @@ impl Protocol for Kw2 {
   }
 
   fn get(o: &mut Optolink, addr: &[u8], buf: &mut [u8]) -> Result<(), io::Error> {
+    log::trace!("Kw2::get(…)");
+
     let mut vec = Vec::new();
     vec.extend(&[0x01, 0xf7]);
     vec.extend(addr);
@@ -57,6 +64,8 @@ impl Protocol for Kw2 {
     Self::sync(o)?;
 
     loop {
+      log::trace!("Kw2::get(…) loop");
+
       o.write_all(&vec)?;
       o.flush()?;
 
@@ -87,6 +96,8 @@ impl Protocol for Kw2 {
   }
 
   fn set(o: &mut Optolink, addr: &[u8], value: &[u8]) -> Result<(), io::Error> {
+    log::trace!("Kw2::set(…)");
+
     let mut vec = Vec::new();
     vec.extend(&[0x01, 0xf4]);
     vec.extend(addr);

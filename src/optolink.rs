@@ -129,6 +129,49 @@ impl Write for Optolink {
     log::trace!("Optolink::flush()");
 
     match &mut self.device {
+      // This is a workaround for `tcdrain`, which `SystemPort::flush`
+      // uses under the hood. If a device is disconnected, `tcdrain`
+      // will block forever instead of timing out, so we spawn it in a
+      // separate thread and manually create a timeout.
+      #[cfg(unix)]
+      Device::Tty(ref mut tty) => {
+        use std::mem;
+        use std::os::unix::thread::JoinHandleExt;
+        use std::sync::mpsc::channel;
+        use std::thread;
+        use std::time::Instant;
+
+        let start = Instant::now();
+
+        // Allow moving this to the helper thread. This is safe because we either
+        // join the thread in this scope or cancel it if it times out.
+        let tty: &mut SystemPort = tty;
+        let tty: &'static mut SystemPort = unsafe { mem::transmute(tty) };
+
+        let (tx, rx) = channel();
+
+        let t = thread::spawn(move || {
+          let res = tty.flush();
+          tx.send(()).unwrap();
+          res
+        });
+
+        loop {
+          log::trace!("Optolink::flush() loop");
+
+          if rx.try_recv().is_ok() {
+            return t.join().unwrap()
+          }
+
+          let stop = Instant::now();
+
+          if (stop - start) > Self::TIMEOUT {
+            unsafe { libc::pthread_cancel(t.into_pthread_t()) };
+            return Err(io::Error::new(io::ErrorKind::TimedOut, "flush timed out"))
+          }
+        }
+      },
+      #[cfg(not(unix))]
       Device::Tty(tty) => tty.flush(),
       Device::Stream(stream) => stream.flush(),
     }

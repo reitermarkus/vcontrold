@@ -117,6 +117,8 @@ impl Optolink {
 
 impl Write for Optolink {
   fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
+    log::trace!("Optolink::write(…)");
+
     match &mut self.device {
       Device::Tty(tty) => tty.write(buf),
       Device::Stream(stream) => stream.write(buf),
@@ -124,6 +126,8 @@ impl Write for Optolink {
   }
 
   fn flush(&mut self) -> Result<(), io::Error> {
+    log::trace!("Optolink::flush()");
+
     match &mut self.device {
       Device::Tty(tty) => tty.flush(),
       Device::Stream(stream) => stream.flush(),
@@ -133,6 +137,8 @@ impl Write for Optolink {
 
 impl Read for Optolink {
   fn read(&mut self, buf: &mut [u8]) -> Result<usize, io::Error> {
+    log::trace!("Optolink::read(…)");
+
     match &mut self.device {
       Device::Tty(tty) => tty.read(buf),
       Device::Stream(stream) => stream.read(buf),

@@ -70,16 +70,23 @@ impl Protocol for Kw2 {
       o.write_all(&vec)?;
       o.flush()?;
 
+      let read_start = Instant::now();
+
       o.read_exact(buf)?;
 
       let stop = Instant::now();
 
-      // Retry if the response only contains SYNC (`0x05`),
+      // Retry if the response contains `SYNC` (`0x05`),
       // since these could be synchronization bytes.
-      if buf.iter().all(|byte| *byte == SYNC) {
-        // Return `Ok` if they were received in a short amount of time,
+      if buf.iter().any(|byte| *byte == SYNC) {
+        let read_time = stop - read_start;
+
+        log::debug!("Kw2::get(…) buf = {}", buf.iter().map(|b| format!("{:02X}", b)).collect::<Vec<String>>().join(" "));
+        log::debug!("Kw2::get(…) read_time = {:?}", read_time);
+
+        // Return `Ok` if the response was received in a short amount of time,
         // since then they most likely are not synchronization bytes.
-        if (stop - start) < Duration::from_millis(500 * buf.len() as u64) {
+        if read_time < Duration::from_millis(500 * buf.len() as u64) {
           return Ok(())
         }
 

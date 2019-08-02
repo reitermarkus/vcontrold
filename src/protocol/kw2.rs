@@ -19,11 +19,11 @@ impl Kw2 {
 
     let start = Instant::now();
 
+    // Reset the Optolink connection to get a faster SYNC (`0x05`).
+    Self::negotiate(o)?;
+
     loop {
       log::trace!("Kw2::sync(…) loop");
-
-      // Reset the Optolink connection to get a faster SYNC (`0x05`).
-      Self::negotiate(o)?;
 
       if o.read_exact(&mut buf).is_ok() && buf == [SYNC] {
         o.purge()?;
@@ -45,6 +45,7 @@ impl Protocol for Kw2 {
   fn negotiate(o: &mut Optolink) -> Result<(), io::Error> {
     log::trace!("Kw2::negotiate(…)");
 
+    o.purge()?;
     o.write_all(&[RESET])?;
     o.flush()?;
 

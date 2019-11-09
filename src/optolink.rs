@@ -166,7 +166,7 @@ impl Write for Optolink {
           let stop = Instant::now();
 
           if (stop - start) > Self::TIMEOUT {
-            unsafe { libc::pthread_cancel(t.into_pthread_t()) };
+            unsafe { libc::pthread_cancel(t.into_pthread_t() as _) };
             return Err(io::Error::new(io::ErrorKind::TimedOut, "flush timed out"))
           }
         }

@@ -41,23 +41,7 @@ install: |
   set -o pipefail
 
   if [ -n "$TARGET" ]; then
-    git clone https://github.com/rust-embedded/cross
-
-    cd cross
-
-    cargo install --force --path .
-
-    mkdir -p "$HOME/docker"
-
-    if [ -e "$HOME/docker/$TARGET.tar" ]; then
-      docker load -i "$HOME/docker/$TARGET.tar"
-    else
-      ./build-docker-image.sh "$TARGET"
-      docker save "japaric/$TARGET" -o "$HOME/docker/$TARGET.tar"
-    fi
-
-    cd -
-
+    cargo install --force cross
     rm -f ~/.cargo/bin/cargo-clippy
   fi
 

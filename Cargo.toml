@@ -1,7 +1,7 @@
 [package]
 name = "vcontrol"
 description = "A library for communication with Viessmann heating controllers."
-version = "0.3.1"
+version = "0.3.2"
 edition = "2018"
 authors = ["Markus Reiter <me@reitermark.us>"]
 documentation = "https://docs.rs/vcontrol"

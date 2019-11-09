@@ -33,7 +33,8 @@ name = "vcontrol"
 clap = { version = "2.33", optional = true }
 chrono = "0.4"
 log = "0.4"
-phf = "0.7"
+phf = "0.8"
+phf_shared = "0.8"
 serial = "0.4"
 serial-core = "0.4"
 serde = "1"
@@ -45,9 +46,9 @@ libc = "0.2"
 
 [build-dependencies]
 chrono = "0.4"
-phf = "0.7"
-phf_codegen = "0.7"
+phf_shared = "0.8"
+phf_codegen = "0.8"
 serde = "1"
 serde_derive = "1"
 serde_yaml = "0.8"
-yaml-merge-keys = { version = "0.3.0", features = [ "serde_yaml" ] }
+yaml-merge-keys = { version = "0.4.0", features = [ "serde_yaml" ] }

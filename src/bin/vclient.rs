@@ -142,7 +142,7 @@ fn main() {
     Vec::new()
   };
 
-  let mut out: Box<Write> = if let Some(outfile) = matches.value_of("outfile") {
+  let mut out: Box<dyn Write> = if let Some(outfile) = matches.value_of("outfile") {
     Box::new(File::create(outfile).expect(&format!("could not create output file '{}'", outfile)))
   } else {
     Box::new(io::stdout())

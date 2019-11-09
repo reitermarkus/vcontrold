@@ -1,8 +1,6 @@
 use std::fmt;
 use std::hash::Hasher;
 
-use phf;
-
 pub(crate) trait FromBytes {
   fn from_bytes(bytes: &[u8]) -> Self;
 }
@@ -125,12 +123,19 @@ impl ToBytes for Bytes {
   }
 }
 
-impl phf::PhfHash for Bytes {
+impl phf_shared::PhfHash for Bytes {
   #[inline]
   fn phf_hash<H: Hasher>(&self, state: &mut H) {
     match self {
       Bytes::One(bytes) => bytes.to_vec().phf_hash(state),
       Bytes::Two(bytes) => bytes.to_vec().phf_hash(state),
     }
+  }
+}
+
+impl phf_shared::FmtConst for Bytes {
+  #[inline]
+  fn fmt_const(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{:?}", self)
   }
 }

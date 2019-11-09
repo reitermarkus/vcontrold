@@ -32,17 +32,13 @@ fn main() {
 
   let protocol = config.device.protocol;
 
-  let mut map = phf_codegen::Map::new();
+  let mut map = phf_codegen::Map::<&str>::new();
 
-  for (name, command) in config.commands {
+  for (name, command) in config.commands.iter() {
     map.entry(name, &format!("{:?}", command));
   }
 
-  write!(&mut file, "static {}_COMMANDS: phf::Map<&'static str, Command> =", device).unwrap();
-
-  map.build(&mut file).unwrap();
-
-  write!(&mut file, ";\n").unwrap();
+  writeln!(&mut file, "static {}_COMMANDS: phf::Map<&'static str, Command> = {};", device, map.build()).unwrap();
 
   write!(&mut file, "
     #[derive(Debug)]
@@ -100,10 +96,7 @@ impl fmt::Debug for Command {
         map.entry(Bytes::from_bytes(k), &format!("{:?}", v));
       }
 
-      let mut buf = Vec::new();
-      map.build(&mut buf).unwrap();
-
-      format!("Some({})", String::from_utf8(buf).unwrap())
+      format!("Some({})", map.build())
     } else {
       "None".into()
     };

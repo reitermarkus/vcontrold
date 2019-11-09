@@ -16,6 +16,12 @@ class Pathname
   alias to_str to_s
 end
 
+class Hash
+  def sort_by_key
+    map { |k, v| [k, v.is_a?(Hash) ? v.sort_by_key : v] }.sort_by { |k,| k }.to_h
+  end
+end
+
 VITOSOFT_DIR = Pathname('Vitosoft300SID1_Setup')
 VITOSOFT_EXE = 'Vitosoft300SID1_Setup.exe'
 
@@ -26,13 +32,13 @@ SYSTEM_EVENT_TYPES_XML = VITOSOFT_DIR/'data/OFFLINE/3C8BB38F/67C8D997/sysEventTy
 TEXT_RESOURCES_GLOB    = VITOSOFT_DIR/'data/OFFLINE/C6C1A272/BF368101/Textresource_*.xml'
 RELEASE_NOTES          = VITOSOFT_DIR/'data/OFFLINE/C6C1A272/69ADA3A4/ReleaseNotes_en.htm'
 
-TRANSLATIONS = 'translations.yml'
+TRANSLATIONS_RAW = 'translations_raw.yml'
 DEVICES = 'devices.yml'
 SYSTEM_EVENT_TYPES = 'system_event_types.yml'
 EVENT_TYPES = 'event_types.yml'
-VITOSOFT = 'vitosoft.yml'
-MAPPINGS = 'mappings.yml'
-EVENT_VALUE_TRANSLATIONS = 'event_value_translations.yml'
+VITOSOFT_VERSION = 'vitosoft_version.yml'
+MAPPINGS_UNIQUE = 'mappings_unique.yml'
+TRANSLATIONS_UNIQUE = 'translations_unique.yml'
 
 file VITOSOFT_EXE do |t|
   # https://connectivity.viessmann.com/de-de/mp_rt/vitosoft.html
@@ -43,7 +49,7 @@ file VITOSOFT_EXE do |t|
      '-o', t.name
 end
 
-file VITOSOFT => RELEASE_NOTES do |t|
+file VITOSOFT_VERSION => RELEASE_NOTES do |t|
   /Release\s+(?<version>\d+\.\d+\.\d+\.\d+)\s+\((?<day>\d+)\.(?<month>\d+)\.(?<year>\d+)\)/ =~ File.read(t.source)
   File.write t.name, {version: version, release_date: "#{year}-#{month}-#{day}"}.to_yaml
 end
@@ -61,7 +67,7 @@ end
 
 task :extract_all => VITOSOFT_DIR/'*'
 
-file TRANSLATIONS => TEXT_RESOURCES_GLOB do |t|
+file TRANSLATIONS_RAW => TEXT_RESOURCES_GLOB do |t|
   next if File.exist?(t.name)
 
   languages = {}
@@ -83,14 +89,12 @@ file TRANSLATIONS => TEXT_RESOURCES_GLOB do |t|
         value = node.attribute('Value').strip.gsub('##ecnnewline##', "\n").gsub('##ecntab##', "\t").gsub('##ecnsemicolon##', ';').gsub('##nl##', "\n")
 
         translations[label] ||= {}
-        translations[label][languages.fetch(language_id)] = value unless value.empty?
+        translations[label][languages.fetch(language_id)] = value
       end
     end
   end
 
-  translations = translations.map { |k, v| [k, v.sort_by { |k,| k }.to_h] }.sort_by { |k,| k }.to_h
-
-  File.write t.name, translations.to_yaml
+  File.write t.name, translations.sort_by_key.to_yaml
 end
 
 task :commands => DEVICES
@@ -131,14 +135,30 @@ def event_types(path)
       id,
       node.at('./EventType').children.map { |n|
         value = case name = n.name.underscore
+        when 'address', 'vitocom_channel_id'
+          n.text.empty? ? nil : Integer(n.text, 16)
         when /^(block|byte|bit)_(length|position)$/
           Integer(n.text)
-        when /^(lower|upper)_border$/
+        when /^conversion_(factor|offset)$/
+          v = Float(n.text)
+          v == 0.0 ? nil : v
+        when /^((lower|upper)_border|stepping)$/
           Float(n.text)
+        when 'access_mode'
+          n.text.empty? ? nil : n.text.underscore
+        when /^fc_(read|write)$/
+          {
+            ''                           => nil,
+            'undefined'                  => nil,
+            'Virtual_MarktManager_READ'  => 'virtual_market_manager_read',
+            'Virtual_MarktManager_WRITE' => 'virtual_market_manager_write',
+          }.fetch(n.text, n.text.underscore)
         when 'option_list'
           n.text.split(';')
         when 'value_list'
-          n.text.split(';').map { |v| v.split('=', 2) }&.map { |(k, v)| [k.to_i, v.strip] }&.to_h
+          n.text.split(';').map { |v| v.split('=', 2) }.map { |(k, v)| [k.to_i, v.strip] }.to_h
+        when /^prefix_(read|write)$/
+          n.text.empty? ? nil : n.text.each_char.each_slice(2).map { |c| Integer(c.join, 16) }
         else
           n.text
         end
@@ -146,6 +166,7 @@ def event_types(path)
         name = name.to_sym
 
         next if name.in?([:text, :id])
+        next if value.nil?
 
         [name, value]
       }.compact.to_h,
@@ -188,7 +209,7 @@ task :diff => DEVICES do |t|
 
 end
 
-file MAPPINGS => EVENT_VALUE_TRANSLATIONS do |t|
+file MAPPINGS_UNIQUE => TRANSLATIONS_UNIQUE do |t|
   translations = YAML.safe_load(File.read(t.sources.first), [Symbol]).fetch(:mapping)
 
   mappings = {}
@@ -203,49 +224,74 @@ file MAPPINGS => EVENT_VALUE_TRANSLATIONS do |t|
     end
   end
 
-  File.write t.name, mappings.to_yaml
+  File.write t.name, create_mapping_to_unique(mappings).to_yaml
 end
 
-file EVENT_VALUE_TRANSLATIONS => TRANSLATIONS do |t|
-  translations = YAML.safe_load(File.read(t.sources.first))
+task :check_error_mappings => MAPPINGS_UNIQUE do |t|
+  mappings = YAML.safe_load(File.read(t.source))
 
-  reversed_translations = {}
+  codes = {}
 
-  translations.each do |k, v|
-    next unless k =~ /^viessmann\.eventvaluetype\.(?<id>.*)~(?<value>.*)$/ || k =~ /^(?<id>viessmann\.errorcode\.[^.]+)\.(?<value>..)$/
+  mappings.each do |k, v|
+    next unless /^viessmann\.errorcode\.(?<id>[^.]+)$/ =~ k
 
-    reversed_translations[v] ||= []
-    reversed_translations[v] << k
-    reversed_translations[v] = reversed_translations[v].sort.uniq
+    v.each do |value, translation|
+      if previous = codes[value]
+        next if previous == translation
+
+        $stderr.puts translation
+
+        next if "#{id}.#{value}".in?(['CU401B_S.41', 'Ecotronic.218'])
+
+        raise "Differing value for #{id}.#{value}"
+      else
+        codes[value] = translation
+      end
+    end
+  end
+end
+
+def create_mapping_to_unique(input)
+  reversed = {}
+
+  input.each do |k, v|
+    reversed[v] ||= []
+    reversed[v] << k
+    reversed[v] = reversed[v].sort.uniq
   end
 
   mapping = {}
-  combined_translations = {}
+  combined = {}
 
-  reversed_translations.each do |k, v|
+  reversed.each do |k, v|
     require 'digest'
 
-    new_id = Digest::SHA1.hexdigest(v.sort_by(&:length).first)
+    new_id = Digest::MD5.hexdigest(v.sort_by(&:length).first)
 
     v.each do |old_id|
       mapping[old_id] = new_id
     end
 
-    combined_translations[new_id] = k
+    combined[new_id] = k
   end
 
-  File.write t.name, {
+  {
     mapping: mapping,
-    translations: combined_translations,
-  }.to_yaml
+    translations: combined,
+  }.sort_by_key
 end
 
-rule '.yml' => [TRANSLATIONS, DEVICES, MAPPINGS, DEFINITIONS, EVENT_TYPES, SYSTEM_EVENT_TYPES] do |t|
+file TRANSLATIONS_UNIQUE => TRANSLATIONS_RAW do |t|
+  translations = YAML.safe_load(File.read(t.sources.first))
+  File.write t.name, create_mapping_to_unique(translations).to_yaml
+end
+
+rule '.yml' => [TRANSLATIONS_RAW, DEVICES, MAPPINGS_UNIQUE, DEFINITIONS, EVENT_TYPES, SYSTEM_EVENT_TYPES] do |t|
   device = Pathname(t.name).sub_ext('').to_s
 
-  translations = YAML.safe_load(File.read(TRANSLATIONS))
+  translations = YAML.safe_load(File.read(TRANSLATIONS_RAW))
 
-  mappings = YAML.safe_load(File.read(MAPPINGS))
+  mappings = YAML.safe_load(File.read(MAPPINGS_UNIQUE), [Symbol])
 
   commands = YAML.safe_load(File.read(DEVICES)).fetch(device)
 
@@ -433,13 +479,7 @@ rule '.yml' => [TRANSLATIONS, DEVICES, MAPPINGS, DEFINITIONS, EVENT_TYPES, SYSTE
           raise "No factor for conversion '#{conversion}'."
         end
       end
-      mode = case mode = type.fetch(:access_mode)
-      when 'Read' then 'read'
-      when 'Write' then 'write'
-      when 'ReadWrite' then 'read_write'
-      else
-        raise "Unknown mode '#{mode}'."
-      end
+      mode = type.fetch(:access_mode)
 
       unit = case unit = [type[:sdk_data_type], type[:parameter]]
       when ['DateTime', 'Array']
@@ -471,11 +511,7 @@ rule '.yml' => [TRANSLATIONS, DEVICES, MAPPINGS, DEFINITIONS, EVENT_TYPES, SYSTE
       else
         raise "No unit for #{unit} for #{type_id}."
       end
-      mapping = if type_id =~ /ecnsysFehlerhistorie\d/
-        (0x00..0xff).map { |k| [k, nil] }.to_h
-      else
-        type.fetch(:value_list, {})
-      end
+      mapping = type.fetch(:value_list, {})
       block_length = type.fetch(:block_length)
       byte_length = type.fetch(:byte_length)
       byte_position = type.fetch(:byte_position)
@@ -487,7 +523,7 @@ rule '.yml' => [TRANSLATIONS, DEVICES, MAPPINGS, DEFINITIONS, EVENT_TYPES, SYSTE
       f.puts "  # #{type_translations.fetch('de')}" unless type_translations.empty?
       f.puts "  # #{type_translations.fetch('en')}" unless type_translations.empty?
       f.puts "  #{id}: # #{type_id}"
-      f.puts "    addr: #{addr}"
+      f.puts "    addr: 0x#{addr.to_s(16).rjust(4, '0')}"
       f.puts "    mode: #{mode}"
       f.puts "    unit: #{unit}" unless unit.nil?
       f.puts "    factor: #{factor}" unless factor.nil?
@@ -496,8 +532,8 @@ rule '.yml' => [TRANSLATIONS, DEVICES, MAPPINGS, DEFINITIONS, EVENT_TYPES, SYSTE
       f.puts "    byte_pos: #{byte_position}"  unless byte_position.zero?
       f.puts "    bit_len: #{bit_length}"      unless bit_length.zero?
       f.puts "    bit_pos: #{bit_position}"    unless bit_position.zero?
-      f.puts "    mapping:" unless mapping.empty?
-      mapping.each do |(k, v)|
+
+      if !mapping.empty? || type_id =~ /ecnsysFehlerhistorie\d/
         translation_id = case type_id
         when 'ecnsysLONCommunicationModul', 'ecnsysLONCommunicationModulWP'
           'NRF_K76_KonfiKommunikationsmodul'
@@ -509,11 +545,83 @@ rule '.yml' => [TRANSLATIONS, DEVICES, MAPPINGS, DEFINITIONS, EVENT_TYPES, SYSTE
           type_id
         end
 
-        next if translation_id.start_with?('viessmann.errorcode.') && !mappings.fetch(translation_id).key?(k)
-
-        f.puts "      [0x#{k.to_s(16).rjust(2, '0')}]: #{mappings.fetch(translation_id).fetch(k)}"
+        f.puts "    mapping: #{mappings.fetch(:mapping).fetch(translation_id)}"
       end
       f.puts
     end
   end
+end
+
+def conversion_to_type(conversion, factor, offset)
+  return conversion if factor.nil? && offset.nil?
+
+  if conversion == 'MultOffset' && !factor.nil? && offset.nil?
+    if factor == (integer_factor = Integer(factor))
+      return "Mult#{integer_factor}"
+    end
+  end
+
+  raise "Conversion #{[conversion, factor, offset]} is not implemented."
+end
+
+file 'conversion.rs' => [EVENT_TYPES, SYSTEM_EVENT_TYPES] do |t|
+  types = YAML.safe_load(File.read(EVENT_TYPES), [Symbol])
+  sys_types = YAML.safe_load(File.read(SYSTEM_EVENT_TYPES), [Symbol])
+
+  all_types = types.merge(sys_types)
+
+  all_types = all_types.delete_if { |_, type|
+    keep = false
+
+    if type[:fc_read] && type[:fc_read] == 'virtual_read'
+      keep = true
+    end
+
+    if type[:fc_write] && type[:fc_write] == 'virtual_write'
+      keep = true
+    end
+
+    !keep
+  }
+
+  conversions = all_types.map { |_, type|
+    conversion_to_type(
+      type.fetch(:conversion, 'NoConversion'),
+      type.fetch(:conversion_factor, nil),
+      type.fetch(:conversion_offset, nil),
+    )
+  }.uniq.sort
+
+  conversion_factors = all_types.map { |_, type| type.fetch(:conversion_factor, 'NoConversionFactor') }.uniq.sort_by(&:to_s)
+  conversion_offsets = all_types.map { |_, type| type.fetch(:conversion_offset, 0.0) }.uniq.sort_by(&:to_s)
+
+  File.open(t.name, 'w+') do |f|
+    conversions.each do |conversion|
+      f.puts "pub struct #{conversion};"
+    end
+  end
+end
+
+file 'sdk_data_types.rs' => [EVENT_TYPES, SYSTEM_EVENT_TYPES] do |t|
+  types = YAML.safe_load(File.read(EVENT_TYPES), [Symbol])
+  sys_types = YAML.safe_load(File.read(SYSTEM_EVENT_TYPES), [Symbol])
+
+  all_types = types.merge(sys_types)
+  all_types = all_types.delete_if { |_, type|
+    keep = false
+
+    if type[:fc_read] && type[:fc_read] == 'virtual_read'
+      keep = true
+    end
+
+    if type[:fc_write] && type[:fc_write] == 'virtual_write'
+      keep = true
+    end
+
+    !keep
+  }
+
+  sdk_data_types = all_types.map { |_, type| [type[:sdk_data_type], type[:parameter]].compact.join('_') }.compact.uniq.sort
+
+  puts sdk_data_types
 end

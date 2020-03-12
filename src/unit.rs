@@ -38,7 +38,7 @@ impl Unit {
   pub fn bytes_to_output(&self, bytes: &[u8], factor: f64, mapping: &Option<phf::map::Map<Bytes, &'static str>>) -> Result<Value, Error> {
     if let Some(mapping) = mapping {
       if let Some(text) = mapping.get(&Bytes::from_bytes(bytes)) {
-        return Ok(Value::String(text.to_string()))
+        return Ok(Value::String((*text).to_string()))
       }
 
       return Err(Error::UnknownEnumVariant(format!("No enum mapping found for [{}].", bytes.iter().map(|byte| format!("0x{:02X}", byte)).collect::<Vec<String>>().join(", "))))

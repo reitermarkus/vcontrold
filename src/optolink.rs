@@ -169,6 +169,8 @@ impl Write for Optolink {
             unsafe { libc::pthread_cancel(t.into_pthread_t() as _) };
             return Err(io::Error::new(io::ErrorKind::TimedOut, "flush timed out"))
           }
+
+          thread::yield_now();
         }
       },
       #[cfg(not(unix))]

@@ -51,4 +51,4 @@ phf_codegen = "0.8"
 serde = "1"
 serde_derive = "1"
 serde_yaml = "0.8"
-yaml-merge-keys = { version = "0.4.0", features = [ "serde_yaml" ] }
+yaml-merge-keys = { version = "0.4.0", features = ["serde_yaml"] }

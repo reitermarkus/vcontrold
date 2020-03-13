@@ -28,7 +28,7 @@ macro_rules! from_bytes_le {
         fn from_bytes(bytes: &[u8]) -> Self {
           let mut buf = [0; std::mem::size_of::<Self>()];
           buf.copy_from_slice(&bytes);
-          Self::from_le(unsafe { std::mem::transmute(buf) })
+          Self::from_le_bytes(buf)
         }
       }
     )+

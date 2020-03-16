@@ -26,6 +26,7 @@ impl fmt::Debug for Device   {
 #[derive(Debug)]
 pub struct Optolink {
   device: Device,
+  timeout: Option<Duration>,
 }
 
 impl Optolink {
@@ -43,7 +44,7 @@ impl Optolink {
   /// # Ok(())
   /// # }
   /// ```
-  pub fn open(port: impl AsRef<OsStr>) -> Result<Optolink, io::Error> {
+  pub fn open(port: impl AsRef<OsStr>) -> io::Result<Optolink> {
     log::trace!("Optolink::open(…)");
 
     let mut tty = serial::open(&port)
@@ -66,7 +67,7 @@ impl Optolink {
       settings.set_baud_rate(Baud4800)
     })?;
 
-    Ok(Optolink { device: Device::Tty(tty) })
+    Ok(Optolink { device: Device::Tty(tty), timeout: None })
   }
 
   /// Connects to a device via TCP.
@@ -81,7 +82,7 @@ impl Optolink {
   /// # Ok(())
   /// # }
   /// ```
-  pub fn connect(addr: impl ToSocketAddrs) -> Result<Optolink, io::Error> {
+  pub fn connect(addr: impl ToSocketAddrs) -> io::Result<Optolink> {
     log::trace!("Optolink::connect(…)");
 
     let addrs: Vec<SocketAddr> = addr.to_socket_addrs()?.collect();
@@ -91,7 +92,7 @@ impl Optolink {
         io::Error::new(err.kind(), format!("{}: {}", err, addrs.iter().map(|addr| addr.to_string()).collect::<Vec<String>>().join(", ")))
       })?;
     stream.set_read_timeout(Some(Self::TIMEOUT))?;
-    Ok(Optolink { device: Device::Stream(stream) })
+    Ok(Optolink { device: Device::Stream(stream), timeout: None })
   }
 
   /// Purge all contents of the input buffer.
@@ -102,7 +103,7 @@ impl Optolink {
       Device::Tty(tty) => {
         tty.set_timeout(Duration::new(0, 0))?;
         let _ = tty.bytes().try_for_each(|b| b.map(|_| ()));
-        tty.set_timeout(Self::TIMEOUT)?;
+        tty.set_timeout(self.timeout.unwrap_or(Self::TIMEOUT))?;
       }
       Device::Stream(stream) => {
         stream.set_nonblocking(true)?;
@@ -113,10 +114,19 @@ impl Optolink {
 
     Ok(())
   }
+
+  pub fn set_timeout(&mut self, timeout: Option<Duration>) -> io::Result<()> {
+    self.timeout = timeout;
+
+    match &mut self.device {
+      Device::Tty(tty) => Ok(tty.set_timeout(timeout.unwrap_or(Self::TIMEOUT))?),
+      Device::Stream(stream) => stream.set_read_timeout(timeout),
+    }
+  }
 }
 
 impl Write for Optolink {
-  fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
+  fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
     log::trace!("Optolink::write(…)");
 
     match &mut self.device {

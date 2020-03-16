@@ -115,6 +115,7 @@ impl Optolink {
     Ok(())
   }
 
+  /// Set timeout for operations on the Optolink device.
   pub fn set_timeout(&mut self, timeout: Option<Duration>) -> io::Result<()> {
     self.timeout = timeout;
 
